@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="Maven: com.topspectrum:dotfeedback-lib:1.20-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/topspectrum/dotfeedback-lib/1.20-SNAPSHOT/dotfeedback-lib-1.20-SNAPSHOT.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/com/topspectrum/dotfeedback-lib/1.20-SNAPSHOT/dotfeedback-lib-1.20-SNAPSHOT-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../dotfeedback-lib/src/main/java" />
+      <root url="file://$PROJECT_DIR$/../dotfeedback-lib/src/test/java" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/topspectrum/dotfeedback-lib/1.20-SNAPSHOT/dotfeedback-lib-1.20-SNAPSHOT-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

@@ -1,0 +1,73 @@
+<div id="page">
+    <header>
+        <nav class="navbar" role="navigation">
+            <div class="container">
+                <div class="navbar-header">
+
+                    <!-- LOGO -->
+                    <a class="navbar-brand" href="/" shape="rect" tabindex="-1">
+                        <span>Free.feedback</span>
+                    </a>
+                </div>
+            </div>
+            <!-- /END CONTAINER -->
+        </nav>
+    </header>
+
+    <div id="cookie_announcement" class="container mt" style="margin-bottom: -25px; display:none;">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="panel">
+                    <div class="panel-body">
+                        Cookies help us deliver our services. By using our services, you agree to our use of cookies.
+                    </div>
+                    <div class="panel-footer">
+                        <button class="btn btn-primary btn-close" style="font-size:1rem;">Got it</button>
+                        <a href="/terms" style="margin-left: 10px;">Learn More</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="wrapper">
+        <section id="content">
+            <div class="vert_flex_container">
+                <div>&nbsp;</div>
+
+                <div class="width:100%">
+                    <div class="container">
+                        <div class="row">
+                            <div class="steps col-xs-12 col-sm-8 col-sm-offset-2 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3">
+
+                                <div class="step domains active">
+                                  {{outlet}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>&nbsp;</div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+                <span class="pull-left">
+                    <a href="/" data-intent="clear_all_cookies">Clear all cookies</a>
+                </span>
+
+                <span class="pull-right">
+                    <a class="ml" href="/terms" tabindex="-1">Terms</a>
+                    <a class="ml" href="/privacy" tabindex="-1">Privacy</a>
+                    <!--<a class="ml" href="/feedback" tabindex="-1">Feedback</a>-->
+                </span>
+            </div>
+        </div>
+    </div>
+</footer>

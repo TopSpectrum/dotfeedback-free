@@ -1,0 +1,41 @@
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             version="1.0">
+    <persistence-unit name="default" transaction-type="RESOURCE_LOCAL">
+        <!-- By default your mappings can be defined in orm.xml file, -->
+        <!-- which is discovered automatically.                       -->
+        <mapping-file>META-INF/orm.xml</mapping-file>
+
+        <!-- Enables auto discovery of persistent classes, -->
+        <!-- otherwise they must be listed using <class>  -->
+        <exclude-unlisted-classes>false</exclude-unlisted-classes>
+
+        <properties>
+            <property name="hibernate.format_sql" value="true"/>
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.use_sql_comments" value="true"/>
+
+            <!--<prop key="hibernate.hbm2ddl.auto">create-drop</prop> &lt;!&ndash; create | create-drop | validate | update &ndash;&gt;-->
+            <property name="hibernate.ejb.naming_strategy" value="org.hibernate.cfg.ImprovedNamingStrategy"/>
+
+            <property name="javax.persistence.sharedCache.mode" value="DISABLE_SELECTIVE"/>
+
+            <property name="hibernate.connection.useUnicode" value="true"/>
+            <property name="hibernate.connection.characterEncoding" value="utf8"/>
+            <property name="hibernate.connection.charSet" value="UTF-8"/>
+
+            <property name="hibernate.generate_statistics" value="false"/>
+            <property name="hibernate.cache.use_second_level_cache" value="false"/>
+            <property name="hibernate.cache.use_structured_entries" value="true"/>
+            <property name="hibernate.cache.use_query_cache" value="false"/>
+
+            <!--<property name="hibernate.cache.provider_class" value="org.hibernate.cache.EhCacheProvider"/>-->
+            <property name="hibernate.cache.region.factory_class" value="org.hibernate.cache.redis.SingletonRedisRegionFactory"/>
+            <!-- I don't think a custom region prefix is needed. -->
+            <!--<property name="hibernate.cache.region.region_prefix" value="hibernate"/>-->
+
+            <!--  These properties do not seem to work. -->
+            <property name="jadira.usertype.autoRegisterUserTypes" value="true" />
+            <property name="jadira.usertype.databaseZone" value="jvm" />
+        </properties>
+    </persistence-unit>
+</persistence>

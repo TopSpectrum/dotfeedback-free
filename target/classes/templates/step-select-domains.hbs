@@ -1,0 +1,166 @@
+<table class="table">
+    <thead>
+    <tr>
+        <td>
+            Property
+        </td>
+        <td>
+            Value
+        </td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>destinationCustomerDomainName</td>
+        <td>{{destinationCustomerDomainName}}</td>
+    </tr>
+
+    <tr>
+        <td>newDestinationCustomerDomainName</td>
+        <td>{{newDestinationCustomerDomainName}}</td>
+    </tr>
+
+    <tr>
+        <td>newDestinationFullDomainName</td>
+        <td>{{newDestinationFullDomainName}}</td>
+    </tr>
+
+    <tr>
+        <td>model.destinationFullDomainName</td>
+        <td>{{model.destinationFullDomainName}}</td>
+    </tr>
+
+    <tr>
+        <td>hasValidNewDestinationCustomerDomainName</td>
+        <td>{{hasValidNewDestinationCustomerDomainName}}</td>
+    </tr>
+
+    <tr>
+        <td>isFetchingWhois</td>
+        <td>{{isFetchingWhois}}</td>
+    </tr>
+
+    <tr>
+        <td>isFetchingAvailability</td>
+        <td>{{isFetchingAvailability}}</td>
+    </tr>
+
+    <tr>
+        <td>isFetchingSomething</td>
+        <td>{{isFetchingSomething}}</td>
+    </tr>
+
+    <tr>
+        <td>isEditingSource</td>
+        <td>{{isEditingSource}}</td>
+    </tr>
+
+    <tr>
+        <td>hasSourceRecord</td>
+        <td>{{hasSourceRecord}}</td>
+    </tr>
+
+    <tr>
+        <td>model.newSourceFullDomainName</td>
+        <td>{{model.newSourceFullDomainName}}</td>
+    </tr>
+
+    <tr>
+        <td>model.sourceFullDomainName</td>
+        <td>{{model.sourceFullDomainName}}</td>
+    </tr>
+
+    <tr>
+        <td>availabilityStatus</td>
+        <td>{{availabilityStatus}}</td>
+    </tr>
+
+    <tr>
+        <td>hasDestinationAvailabilityRecord</td>
+        <td>{{hasDestinationAvailabilityRecord}}</td>
+    </tr>
+
+    <tr>
+        <td>model.destinationAvailabilityRecord.id</td>
+        <td>{{model.destinationAvailabilityRecord.id}}</td>
+    </tr>
+
+    <tr>
+        <td>model.fetchingDestinationAvailabilityRecord</td>
+        <td>{{model.fetchingDestinationAvailabilityRecord}}</td>
+    </tr>
+    </tbody>
+</table>
+
+{{#unless isEditingSource}}
+
+  {{#if hasDestinationAvailabilityRecord}}
+      <div class="{{model.destinationAvailabilityRecord.status}}">
+          <span class="availability-status" data-value="true">{{model.destinationFullDomainName}} is available</span>
+          <span class="availability-status" data-value="false">Unavailable</span>
+          <span class="availability-status" data-value="reserved">Reserved</span>
+      </div>
+  {{/if}}
+
+  <h1 class="label-free-domain-name">
+      Free domain
+  </h1>
+
+  {{#validated-input type="text" data-minlength="3" tabindex="0" autocomplete="off" placeholder="" value=model.newDestinationCustomerDomainName errors=errors.model.domainName enter='enterWasHitOnDestinationDomainName' disabled=model.loading mask='^[^.]*$'}}
+      <div class="pull-out" style="position: relative;">
+          <div class="btn-add-controls">
+
+            {{#unless isEditingDestination}}
+              {{#ladda-button class="btn-add btn btn-primary ladda-button" data-style="slide-left" tabindex="1" action='next' disabled=nextIsDisabled spinning=isFetchingSomething}}
+                  Finish
+              {{/ladda-button}}
+            {{/unless}}
+
+            {{#if isEditingDestination}}
+              {{#ladda-button class="btn-add btn btn-primary ladda-button" data-style="slide-left" tabindex="1" action='finishUpdateDestinationCustomerDomainName' disabled=hasInvalidNewDestinationCustomerDomainName spinning=isFetchingSomething}}
+                  Check
+              {{/ladda-button}}
+            {{/if}}
+          </div>
+      </div>
+  {{/validated-input}}con
+{{/unless}}
+
+<div class="hidden">{{showModelingBar}}</div>
+<div class="hidden">{{isEditingEditDestinationFullDomainName}}</div>
+
+{{#if shouldShowModelingBar}}
+    <div class="alert alert-info clearfix">
+        <h4>Modeling
+            <strong>{{ model.sourceFullDomainName }}</strong> whois
+
+            <a href="#" {{action 'chooseDifferentSourceFullDomainName'}} class="" style="text-decoration: underline;">change source</a>
+        </h4>
+
+        We will use the whois record for {{ model.sourceFullDomainName }} listed below. Please choose a different model domain to clone a whois record for your registration or edit the record.
+    </div>
+{{/if}}
+
+{{#if shouldShowWhoisTable }}
+    <div id="whois" class="section col-sm-12">
+        <h3>Whois to be used on {{ model.destinationFullDomainName }}</h3>
+      {{#if model.fetchingSourceFullDomainNameRecord}}
+          Loading...
+      {{else}}
+        {{whois-table model=model.sourceFullDomainNameRecord email=model.email errors=errors}}
+      {{/if}}
+    </div>
+{{else}}
+  {{#if isEditingSource}}
+    {{#validated-input type="text" label="Enter a domain name to model the whois information after" data-minlength="3" tabindex="0" autocomplete="off" placeholder="" value=model.newSourceFullDomainName enter='selectModelFromDomainName' actionReceiver=selectModelFromDomainNameInput}}
+        <div class="pull-out" style="position: relative;">
+
+            <div class="btn-add-controls">
+              {{#ladda-button class="btn-add btn btn-primary ladda-button" data-style="slide-left" tabindex="1" action='selectModelFromDomainName' disabled=hasInvalidNewSourceFullDomainName spinning=model.loading}}
+                  Update
+              {{/ladda-button}}
+            </div>
+        </div>
+    {{/validated-input}}
+  {{/if}}
+{{/if}}

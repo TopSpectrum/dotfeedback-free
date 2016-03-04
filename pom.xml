@@ -1,0 +1,495 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <name>free.feedback</name>
+    <url>http://www.topspectrum.com</url>
+
+    <groupId>com.topspectrum</groupId>
+    <artifactId>dotfeedback-free</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <packaging>war</packaging>
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+    mvn clean package beanstalk:upload-source-bundle beanstalk:create-application-version beanstalk:replace-environment -DskipTests=true -e
+    -->
+    <!--<scm>-->
+        <!--&lt;!&ndash; Replace the connection below with your project connection &ndash;&gt;-->
+        <!--<connection>scm:git:git://github.com/TopSpectrum/topspectrum-mvc.git</connection>-->
+    <!--</scm>-->
+
+    <distributionManagement>
+        <repository>
+            <id>central</id>
+            <name>Top Level Spectrum-releases</name>
+            <url>http://artifactory.topspectrum.com/artifactory/libs-release-local</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>Top Level Spectrum-snapshots</name>
+            <url>http://artifactory.topspectrum.com/artifactory/libs-snapshot-local</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>central</id>
+            <name>plugins-release</name>
+            <url>http://artifactory.topspectrum.com/artifactory/plugins-release</url>
+        </pluginRepository>
+        <pluginRepository>
+            <snapshots/>
+            <id>snapshots</id>
+            <name>plugins-snapshot</name>
+            <url>http://artifactory.topspectrum.com/artifactory/plugins-snapshot</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>s3-moarepo</id>
+            <url>s3://moarepo/release</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>s3-moarepo-snapshot</id>
+            <url>s3://moarepo/snapshot</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <profiles>
+        <profile>
+            <id>artifactory</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <server-ip>54.191.162.183</server-ip>
+                <profile.id>artifactory</profile.id>
+            </properties>
+        </profile>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <server-ip>54.191.162.183</server-ip>
+                <profile.id>dev</profile.id>
+            </properties>
+        </profile>
+        <profile>
+            <id>staging</id>
+            <properties>
+                <server-ip>54.191.162.183</server-ip>
+                <profile.id>staging</profile.id>
+            </properties>
+        </profile>
+        <profile>
+            <id>prod</id>
+            <properties>
+                <server-ip>54.191.162.183</server-ip>
+                <profile.id>prod</profile.id>
+            </properties>
+        </profile>
+    </profiles>
+
+    <properties>
+        <beanstalk.applicationName>dotfeedback-free</beanstalk.applicationName>
+        <baseEnvironmentName>dotfeedback-free</baseEnvironmentName>
+        <environmentName>${baseEnvironmentName}</environmentName>
+        <beanstalk.environmentName>${environmentName}</beanstalk.environmentName>
+        <beanstalk.cnamePrefix>${baseEnvironmentName}</beanstalk.cnamePrefix>
+        <beanstalk.environmentRef>${environmentName}.us-west-2.elasticbeanstalk.com</beanstalk.environmentRef>
+        <beanstalk.useStagingDirectory>true</beanstalk.useStagingDirectory>
+
+        <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
+
+        <beanstalk.versionLabel>${maven.build.timestamp}</beanstalk.versionLabel>
+        <beanstalker.region>us-west-2</beanstalker.region>
+
+        <jee.version>7.0</jee.version>
+        <jetty.version>9.0.5.v20130815</jetty.version>
+        <!--Build timestamp injected into version.properties. See: http://jira.codehaus.org/browse/MRESOURCES-99 -->
+        <timestamp>${maven.build.timestamp}</timestamp>
+        <spring.integration.version>2.2.1.RELEASE</spring.integration.version>
+        <spring.integration.aws.version>0.5.0.RELEASE</spring.integration.aws.version>
+
+        <java-version>1.8</java-version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <profile.id>unknown</profile.id>
+        <server-ip>54.191.162.183</server-ip>
+        <deploy-destination>${server-ip}/var/www/topspectrum-docs/${profile.id}/${project.artifactId}/${project.version}/javadocs</deploy-destination>
+    </properties>
+
+    <build>
+        <finalName>${project.name}-${project.version}</finalName>
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh</artifactId>
+                <version>2.8</version>
+            </extension>
+
+            <extension>
+                <groupId>org.springframework.build.aws</groupId>
+                <artifactId>org.springframework.build.aws.maven</artifactId>
+                <version>3.0.0.RELEASE</version>
+            </extension>
+        </extensions>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.2</version>
+                <configuration>
+                    <source>${java-version}</source>
+                    <target>${java-version}</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <executions>
+                    <execution>
+                        <id>generate-javadocs</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>javadoc</goal>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <!-- add this to disable checking -->
+                            <additionalparam>-Xdoclint:none</additionalparam>
+                            <failOnError>false</failOnError>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- RequireJS Plugin -->
+            <!--<plugin>-->
+                <!--<groupId>com.github.bringking</groupId>-->
+                <!--<artifactId>requirejs-maven-plugin</artifactId>-->
+                <!--<version>2.0.4</version>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<goals>-->
+                            <!--<goal>optimize</goal>-->
+                        <!--</goals>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+                <!--<configuration>-->
+                    <!--&lt;!&ndash; optional path to a nodejs executable &ndash;&gt;-->
+                    <!--<runner>-->
+                        <!--Nashorn-->
+                    <!--</runner>-->
+                    <!--&lt;!&ndash; path to optimizer json config file(s) &ndash;&gt;-->
+                    <!--<configFile>-->
+                        <!--${basedir}/src/main/tools/build.json-->
+                    <!--</configFile>-->
+                    <!--&lt;!&ndash; optional path to optimizer executable &ndash;&gt;-->
+                    <!--&lt;!&ndash; optional parameters to optimizer executable &ndash;&gt;-->
+                    <!--<optimizerParameters>-->
+                        <!--<parameter>optimize=uglify</parameter>-->
+                    <!--</optimizerParameters>-->
+                    <!--&lt;!&ndash;-->
+                    <!--Whether or not to process configFile with maven filters.-->
+                    <!--If you use this option, some options in your configFile-->
+                    <!--must resolve to absolute paths (see below)-->
+                    <!--&ndash;&gt;-->
+                    <!--<filterConfig>-->
+                        <!--true-->
+                    <!--</filterConfig>-->
+                    <!--&lt;!&ndash; Skip requirejs optimization if true &ndash;&gt;-->
+                    <!--<skip>-->
+                        <!--false-->
+                    <!--</skip>-->
+                <!--</configuration>-->
+            <!--</plugin>-->
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>wagon-maven-plugin</artifactId>
+                <version>1.0</version>
+
+                <configuration>
+                    <serverId>asdfasdf</serverId>
+                </configuration>
+
+                <executions>
+                    <execution>
+                        <id>upload-javadoc</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>upload</goal>
+                        </goals>
+                        <configuration>
+                            <serverId>ec2-user</serverId>
+                            <fromDir>${basedir}/target/apidocs/</fromDir>
+                            <includes>**</includes>
+                            <excludes>pom.xml</excludes>
+                            <url>
+                                scp://${deploy-destination}
+                            </url>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.1.2</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.6</version>
+                <configuration>
+                    <webResources>
+                        <resource>
+                            <directory>src/main/resources</directory>
+                            <includes>
+                                <include>*.yml</include>
+                            </includes>
+                            <targetPath>WEB-INF/lib</targetPath>
+                        </resource>
+                    </webResources>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>br.com.ingenieux</groupId>
+                <artifactId>beanstalk-maven-plugin</artifactId>
+                <version>1.4.0</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.7</version>
+            </plugin>
+
+            <plugin>
+                <groupId>external.atlassian.jgitflow</groupId>
+                <artifactId>jgitflow-maven-plugin</artifactId>
+                <version>1.0-m5.1</version>
+                <configuration>
+                    <flowInitContext>
+                        <masterBranchName>master</masterBranchName>
+                        <developBranchName>develop</developBranchName>
+                        <featureBranchPrefix>feature/</featureBranchPrefix>
+                        <releaseBranchPrefix>release/</releaseBranchPrefix>
+                        <hotfixBranchPrefix>hotfix/</hotfixBranchPrefix>
+                        <versionTagPrefix />
+                    </flowInitContext>
+
+                    <allowSnapshots>true</allowSnapshots>
+                    <releaseBranchVersionSuffix />
+                    <pushReleases>true</pushReleases>
+                    <alwaysUpdateOrigin>true</alwaysUpdateOrigin>
+                    <pullDevelop>true</pullDevelop>
+                    <pullMaster>true</pullMaster>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <allowUntracked>true</allowUntracked>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>br.com.kibutx</groupId>
+                <artifactId>slack-maven-plugin</artifactId>
+                <version>1.1.0-SNAPSHOT</version>
+
+                <executions>
+                    <execution>
+                        <id>MSG inicio deploy</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>slackmessage</goal>
+                        </goals>
+                        <configuration>
+                            <apiHash>/T063PFYBX/B0HUZTNDV/RtSdR9yNqUnoA1JMMRX7fxnW</apiHash>
+                            <username>${project.artifactId} ${project.version}</username>
+                            <channel>#dev-events</channel>
+                            <message>Documentation:</message>
+                            <attachments>
+                                <attachment>
+                                    <text>For more information, please look at the documentation:</text>
+                                </attachment>
+                                <attachment>
+                                    <title>http://docs.corp.topspectrum.com/dev/${project.artifactId}/${project.version}/javadocs/index.html</title>
+                                    <title_link>http://docs.corp.topspectrum.com/dev/${project.artifactId}/${project.version}/javadocs/index.html</title_link>
+                                </attachment>
+                            </attachments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>com.newrelic.agent.java</groupId>
+            <artifactId>newrelic-java</artifactId>
+            <version>3.19.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.newrelic.agent.java</groupId>
+            <artifactId>newrelic-api</artifactId>
+            <version>3.19.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.topspectrum</groupId>
+            <artifactId>dotfeedback-lib</artifactId>
+            <version>1.20-SNAPSHOT</version>
+
+            <exclusions>
+                <exclusion>
+                    <groupId>com.maxmind.geoip</groupId>
+                    <artifactId>geoip-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Actual log provider -->
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+        </dependency>
+
+        <!-- The provider bridge for logging. -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.10</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>${jee.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- BEGIN: Dependencies for ning testing -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>1.10.19</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+            <version>${jetty.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlets</artifactId>
+            <version>${jetty.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-security</artifactId>
+            <version>${jetty.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-proxy</artifactId>
+            <version>${jetty.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty.websocket</groupId>
+            <artifactId>websocket-server</artifactId>
+            <version>${jetty.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty.websocket</groupId>
+            <artifactId>websocket-servlet</artifactId>
+            <version>${jetty.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- END: Dependencies for ning testing -->
+
+        <!-- BEGIN: Test dependencies -->
+        <dependency>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>2.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>4.2.0.RELEASE</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- END: Test dependencies -->
+
+        <dependency>
+            <groupId>org.silvertunnel-ng</groupId>
+            <artifactId>netlib</artifactId>
+            <version>0.0.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.3.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-net</groupId>
+            <artifactId>commons-net</artifactId>
+            <version>3.4</version>
+        </dependency>
+    </dependencies>
+</project>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans" xmlns:aop="http://www.springframework.org/schema/aop" xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!--<import resource="classpath*:common-mvc.xml"/>-->
+
+    <tx:annotation-driven/>
+    <context:annotation-config/>
+
+    <mvc:resources mapping="/assets/**" location="/static/assets/" order="0">
+        <mvc:cache-control cache-public="true" must-revalidate="false" max-age="86400" />
+    </mvc:resources>
+
+    <mvc:resources mapping="/static/index.html" location="/" order="1">
+        <mvc:cache-control cache-public="true" must-revalidate="false" max-age="86400" />
+    </mvc:resources>
+
+    <bean class="feedback.free.controllers.EmberHandlerMapping"/>
+
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="order" value="0"/>
+        <property name="prefix" value="/static/"/>
+        <property name="suffix" value=".html"/>
+
+        <property name="viewNames">
+            <list>
+                <value>index</value>
+                <value>404</value>
+            </list>
+        </property>
+    </bean>
+
+    <mvc:annotation-driven>
+        <!--<mvc:argument-resolvers>-->
+        <!--<bean class="feedback.myservice.web.controllers.SiteDetailsArgumentResolver" lazy-init="false"/>-->
+        <!--</mvc:argument-resolvers>-->
+
+        <!--<mvc:annotation-driven conversion-service="conversionService">-->
+        <mvc:message-converters>
+            <!-- This allows us to magically marshal objects in/out of json. -->
+            <bean class="com.topspectrum.http.GsonHttpMessageConverter"/>
+            <bean class="feedback.web.http.JavascriptHttpMessageConverter"/>
+            <bean class="org.springframework.http.converter.FormHttpMessageConverter"/>
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>text/plain;charset=UTF-8</value>
+                    </list>
+                </property>
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+
+    <bean class="feedback.free.controllers.EmberController"/>
+
+</beans>

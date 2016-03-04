@@ -1,0 +1,27 @@
+<div>
+    <h1>Confirm {{model.record.destinationFullDomainName}}</h1>
+
+    <div>
+      {{whois-table model=model.record email=model.email disabled=true}}
+    </div>
+
+  <div class="row">
+      <textarea class="form-control" style="overflow-y: scroll; height: 100px; width: 100%;">{{model.terms}}</textarea>
+  </div>
+
+  <div class="row">
+        <a target="_blank" href="/terms" class="pull-right">View Terms</a>
+  </div>
+
+    <div class="checkbox">
+        <label>
+          {{input type="checkbox" name="isAdmin" checked=model.acceptsTos disabled=model.spinning}} I agree to the terms of service
+        </label>
+    </div>
+
+    <div>
+      {{#ladda-button class="btn-add btn btn-primary ladda-button" data-style="slide-left" tabindex="1" action='next' disabled=isInvalid spinning=model.spinning}}
+          Finish
+      {{/ladda-button}}
+    </div>
+</div>

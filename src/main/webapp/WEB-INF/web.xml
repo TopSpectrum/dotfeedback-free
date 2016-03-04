@@ -1,0 +1,147 @@
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1">
+
+    <display-name>register.feedback</display-name>
+
+    <session-config>
+        <session-timeout>31556926</session-timeout>
+        <cookie-config>
+            <path>/</path>
+            <http-only>true</http-only>
+            <max-age>31556926</max-age>
+        </cookie-config>
+    </session-config>
+
+    <filter>
+        <filter-name>currentIPServletFilter</filter-name>
+        <filter-class>
+            org.springframework.web.filter.DelegatingFilterProxy
+        </filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>currentIPServletFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>encoding-filter</filter-name>
+        <filter-class>
+            org.springframework.web.filter.CharacterEncodingFilter
+        </filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+        <init-param>
+            <param-name>forceEncoding</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>encoding-filter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!-- <WE NEED TO RUN THIS BEFORE THE SECURITY FILTER!!> -->
+    <!--<filter>-->
+        <!--<filter-name>jsonpCallbackFilter</filter-name>-->
+        <!--<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>-->
+    <!--</filter>-->
+
+    <!--<filter-mapping>-->
+        <!--<filter-name>jsonpCallbackFilter</filter-name>-->
+        <!--&lt;!&ndash;  TODO: figure out if we care about restricting JSONP to certain URLs &ndash;&gt;-->
+        <!--<url-pattern>*.jsonp</url-pattern>-->
+    <!--</filter-mapping>-->
+    <!--<filter-mapping>-->
+        <!--<filter-name>jsonpCallbackFilter</filter-name>-->
+        <!--&lt;!&ndash;  TODO: figure out if we care about restricting JSONP to certain URLs &ndash;&gt;-->
+        <!--<url-pattern>/session/interconnect</url-pattern>-->
+    <!--</filter-mapping>-->
+    <!-- </WE NEED TO RUN THIS BEFORE THE SECURITY FILTER!!> -->
+
+    <!--<filter-mapping>-->
+        <!--<filter-name>springSecurityFilterChain</filter-name>-->
+        <!--<url-pattern>/*</url-pattern>-->
+    <!--</filter-mapping>-->
+
+    <!-- BEGIN: Support for web-form parameters with PUT -->
+    <filter>
+        <filter-name>httpPutFormFilter</filter-name>
+        <filter-class>org.springframework.web.filter.HttpPutFormContentFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>httpPutFormFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    <!-- END: Support for web-form parameters with PUT -->
+
+    <!-- BEGIN: Define the ApplicationContext -->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>/WEB-INF/applicationContext.xml</param-value>
+    </context-param>
+    <context-param>
+        <param-name>spring.profiles.default</param-name>
+        <param-value>dev</param-value>
+    </context-param>
+
+    <listener>
+        <listener-class>com.topspectrum.services.TimezoneInitializer</listener-class>
+    </listener>
+    <listener>
+        <listener-class>
+            org.springframework.web.context.ContextLoaderListener
+        </listener-class>
+    </listener>
+    <!-- END: Define the ApplicationContext -->
+
+    <filter>
+        <filter-name>httpHeadFilter</filter-name>
+        <filter-class>com.topspectrum.filters.HttpHeadFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>httpHeadFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    <!--<filter-mapping>-->
+        <!--<filter-name>springSecurityFilterChain</filter-name>-->
+        <!--<url-pattern>/*</url-pattern>-->
+    <!--</filter-mapping>-->
+
+    <servlet>
+        <servlet-name>ember-ui</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>java-api</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>java-api</servlet-name>
+        <url-pattern>/api/v1/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>java-api</servlet-name>
+        <url-pattern>/version</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>ember-ui</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>ember-ui</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+</web-app>

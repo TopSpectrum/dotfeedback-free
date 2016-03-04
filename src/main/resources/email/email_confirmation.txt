@@ -1,0 +1,11 @@
+Thanks for your reservation!
+
+$reservations:{reservation|
+  - $reservation.fullDomainName$ ($reservation.displayablePriceInDollars$)$if(reservation.displayableUnpaidInDollars)$ (Unpaid: $reservation.displayableUnpaidInDollars$)$endif$
+}$
+$if(displayableDiscountInDollars)$Discount: $displayableDiscountInDollars$
+$endif$Total: $displayableTotalAmountPaidInDollars$
+
+$disclaimer$
+
+Thanks!

@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: feedback.register.web.controllers.whois.DefaultWhoisConnectionTest
+-------------------------------------------------------------------------------
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 4, Time elapsed: 0.304 sec

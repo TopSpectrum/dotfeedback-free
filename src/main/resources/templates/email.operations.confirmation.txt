@@ -1,0 +1,35 @@
+$if(reservation.pendingPolicyApproval)$
+
+$reservation.destinationWhoisRecord.adminName$ ($reservation.email$) is attempting to reserve $reservation.destinationFullDomainName$
+
+    APPROVE: http://$baseUrl$/api/v1/admin/reservation/$reservation.id$/approve
+
+    DECLINE: http://$baseUrl$/api/v1/admin/reservation/$reservation.id$/decline
+
+    SUMMARY: http://$baseUrl$/api/v1/admin/reservation/$reservation.id$
+
+    GENERIC ADMIN: http://$baseUrl$/api/v1/admin
+$else$
+
+Overview
+--------
+
+$reservation.destinationWhoisRecord.adminName$ ($reservation.email$) has just reserved $reservation.destinationFullDomainName$ for 1 year free.
+
+$reservation.destinationFullDomainName$ was modeled after http://www.$reservation.sourceFullDomainName$
+
+SUMMARY: http://$baseUrl$/api/v1/admin/reservation/$reservation.id$
+
+GENERIC ADMIN: http://$baseUrl$/api/v1/admin
+
+WHOIS Record
+------------
+
+| Field        | Value |
+| ------------ | ----- |
+| Name         | $reservation.destinationWhoisRecord.adminName$
+| Organization | $reservation.destinationWhoisRecord.adminOrganization$
+| Phone        | $reservation.destinationWhoisRecord.adminPhone$
+| Address      | $reservation.destinationWhoisRecord.adminStreet$ $reservation.destinationWhoisRecord.adminCity$, $reservation.destinationWhoisRecord.adminState$, $reservation.destinationWhoisRecord.adminPostal$. $reservation.destinationWhoisRecord.adminCountry$
+
+$endif$

@@ -13,6 +13,8 @@ module.exports = function(defaults) {
   app.import('bower_components/ladda/dist/ladda.min.js');
   app.import('bower_components/ladda/dist/ladda-themeless.min.css');
 
+  app.import('bower_components/js-cookie/src/js.cookie.js');
+
   // Use `app.import` to add additional libraries to the generated
   // output files.
   //

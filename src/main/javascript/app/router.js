@@ -14,12 +14,15 @@ Router.map(function() {
     });
   });
 
+  this.route('step-select-registrar', { path: '/registrar'});
+
   this.route('step-check-email');
 
   this.route('step-checkout', { path: '/checkout' });
 
   this.route('checkout');
   this.route('complete');
+  this.route('step-submitting');
 });
 
 export default Router;

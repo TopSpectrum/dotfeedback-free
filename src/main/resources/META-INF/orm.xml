@@ -57,9 +57,9 @@
     <entity class="feedback.web.data.SiteRingAttachment"/>
     <entity class="feedback.web.data.InstagramMedia"/>
     <entity class="feedback.web.data.PersistedOAuth2AccessToken"/>
-    <entity class="feedback.web.data.FreeReservation"/>
+    <entity class="feedback.register.free.data.FreeReservation"/>
 
-    <entity class="feedback.web.data.WhoisRecord" />
-    <entity class="feedback.web.data.DiskCache" />
+    <entity class="feedback.register.free.data.WhoisRecord" />
+    <entity class="feedback.register.free.data.DiskCache" />
 
 </entity-mappings>

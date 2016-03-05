@@ -1,0 +1,5 @@
+$if(reservation.pendingPolicyApproval)$
+Your request for $reservation.destinationFullDomainName$ is being reviewed
+$else$
+You've just registered $reservation.destinationFullDomainName$ for 1 year!
+$endif$

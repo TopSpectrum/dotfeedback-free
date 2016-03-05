@@ -12,13 +12,39 @@
         <import resource="classpath:common-applicationContext.xml"/>
         <import resource="applicationContext-persistence.xml"/>
 
+        <!-- We are overriding this bean. It is normally imported from common-applicationContext.xml -> common-mail.xml -->
+        <!--
+         My goal is to override only the defaultFromAddress. Rather than go into the common-mail.xml file and change it (and then
+         take the hour change) I'll just do this.
+        -->
+        <bean id="mailService" class="com.topspectrum.mail.DefaultMailService">
+            <property name="defaultFromAddress" value="${feedback.free.externalCompanyEmail}"/>
+            <property name="javaMailSender">
+                <bean class="org.springframework.mail.javamail.JavaMailSenderImpl">
+                    <property name="host" value="email-smtp.us-west-2.amazonaws.com"/>
+                    <property name="port" value="587"/>
+                    <property name="username" value="AKIAJ4ATOGMGDPKH5PZQ"/>
+                    <property name="password" value="AkkQMxRrbZ0uCcQIrOrn7r4ulqvQpDdFNmYeRH6tTVHc"/>
+                    <property name="javaMailProperties">
+                        <props>
+                            <prop key="email.transport.protocol">smtp</prop>
+                            <prop key="email.smtp.auth">true</prop>
+                            <prop key="email.smtp.starttls.enable">true</prop>
+                            <prop key="email.debug">true</prop>
+                        </props>
+                    </property>
+                </bean>
+            </property>
+        </bean>
+
+
         <bean class="feedback.services.DefaultVerificationService"/>
 
         <bean id="currentIPServletFilter" class="feedback.peoplestats.CurrentIPServletFilter"/>
 
-        <bean id="whoisConnection" class="feedback.register.web.controllers.whois.IanaWhoisConnection">
+        <bean id="whoisConnection" class="feedback.register.free.whois.IanaWhoisConnection">
             <property name="cacheService">
-                <bean class="feedback.register.web.controllers.whois.DiskCacheService"/>
+                <bean class="feedback.register.free.cache.DiskCacheService"/>
             </property>
         </bean>
 

@@ -63,7 +63,8 @@ export default Ember.Route.extend({
 
         alert('There was an unknown server error. Please try again.');
 
-        Ember.set(model, 'sourceFullDomainNameRecord', null);
+        Ember.set(model, 'sourceFullDomainNameRecord', new Ember.Object());
+        Ember.set(model, 'sourceFullDomainNameRecord.failedToResolve', true);
         Ember.set(model, 'fetchingSourceFullDomainNameRecord', false);
       });
   },

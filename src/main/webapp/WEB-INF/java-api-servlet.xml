@@ -41,7 +41,7 @@
 
     <bean class="com.topspectrum.controllers.VersionController"/>
 
-    <bean class="feedback.register.web.controllers.RootController"/>
+    <bean class="feedback.register.free.web.controllers.RootController"/>
 
     <bean class="com.topspectrum.services.GoogleDocService"/>
 

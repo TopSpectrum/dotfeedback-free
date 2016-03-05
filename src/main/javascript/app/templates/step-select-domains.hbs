@@ -1,4 +1,4 @@
-<table class="table">
+<table class="table hidden">
     <thead>
     <tr>
         <td>
@@ -89,11 +89,14 @@
         <td>model.fetchingDestinationAvailabilityRecord</td>
         <td>{{model.fetchingDestinationAvailabilityRecord}}</td>
     </tr>
+    <tr>
+        <td>isFailedToResolveSourceWhois</td>
+        <td>{{isFailedToResolveSourceWhois}}</td>
+    </tr>
     </tbody>
 </table>
 
 {{#unless isEditingSource}}
-
   {{#if hasDestinationAvailabilityRecord}}
       <div class="{{model.destinationAvailabilityRecord.status}}">
           <span class="availability-status" data-value="true">{{model.destinationFullDomainName}} is available</span>
@@ -112,7 +115,7 @@
 
             {{#unless isEditingDestination}}
               {{#ladda-button class="btn-add btn btn-primary ladda-button" data-style="slide-left" tabindex="1" action='next' disabled=nextIsDisabled spinning=isFetchingSomething}}
-                  Finish
+                  Next
               {{/ladda-button}}
             {{/unless}}
 
@@ -123,7 +126,7 @@
             {{/if}}
           </div>
       </div>
-  {{/validated-input}}con
+  {{/validated-input}}
 {{/unless}}
 
 <div class="hidden">{{showModelingBar}}</div>
@@ -144,6 +147,10 @@
 {{#if shouldShowWhoisTable }}
     <div id="whois" class="section col-sm-12">
         <h3>Whois to be used on {{ model.destinationFullDomainName }}</h3>
+      {{#if isFailedToResolveSourceWhois }}
+        <small class="code">We weren't able to resolve the source whois information. Please fill out this form completely.</small>
+      {{/if}}
+
       {{#if model.fetchingSourceFullDomainNameRecord}}
           Loading...
       {{else}}

@@ -1,0 +1,5 @@
+$if(reservation.pendingPolicyApproval)$
+A customer is waiting for confirmation of $reservation.destinationFullDomainName$
+$else$
+$reservation.destinationWhoisRecord.adminName$ has just registered $reservation.destinationFullDomainName$ for 1 year free
+$endif$

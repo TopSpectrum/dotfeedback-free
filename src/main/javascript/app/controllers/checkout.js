@@ -3,6 +3,8 @@ import EmberValidations from 'ember-validations';
 
 export default Ember.Controller.extend(EmberValidations, {
 
+  store: Ember.inject.service(),
+
   validations: {
     'model.acceptsTos': {
       acceptance: true,
@@ -16,10 +18,19 @@ export default Ember.Controller.extend(EmberValidations, {
 
       let scope = this;
 
+      //var reservations = this.store.peekAll('reservation');
+      //var reservation = reservations.objectAt(0);
+      //var json = reservation.toJSON({
+      //  includeId: true
+      //});
+
       Ember.RSVP.Promise.cast(
         Ember.$.ajax({
           url: '/api/v1/checkout',
-          method: 'POST'
+          method: 'POST',
+          //data: {
+          //  reservation: json
+          //}
         }))
         .then(function () {
           scope.set('model.spinning', false);

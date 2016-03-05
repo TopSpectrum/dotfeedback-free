@@ -39,7 +39,7 @@
         <jpa:repositories base-package="feedback.web.data.repositories" transaction-manager-ref="transactionManager" />
         <jpa:repositories base-package="com.topspectrum.data.dao" transaction-manager-ref="transactionManager" />
         <!--<jpa:repositories base-package="feedback.register.web.controllers.whois.data" transaction-manager-ref="transactionManager" />-->
-        <jpa:repositories base-package="feedback.register.web.controllers.whois" transaction-manager-ref="transactionManager" />
+        <jpa:repositories base-package="feedback.register.free.data" transaction-manager-ref="transactionManager" />
 
         <jpa:auditing auditor-aware-ref="springSecurityAuditorAwareBean" modify-on-creation="true" set-dates="true"/>
 

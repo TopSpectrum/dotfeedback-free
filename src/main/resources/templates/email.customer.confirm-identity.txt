@@ -1,0 +1,3 @@
+Thanks for your interest in $reservation.destinationFullDomainName$!
+
+To confirm that you're interested in this domain, please click this link: $url$

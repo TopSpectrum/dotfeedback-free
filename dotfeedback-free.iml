@@ -12,10 +12,10 @@
         </webroots>
         <sourceRoots>
           <root url="file://$MODULE_DIR$/src/main/java" />
-          <root url="file://$MODULE_DIR$/src/main/js-src/app" />
-          <root url="file://$MODULE_DIR$/src/main/js-src/config" />
-          <root url="file://$MODULE_DIR$/src/main/js-src/public" />
-          <root url="file://$MODULE_DIR$/src/main/js-src/vendor" />
+          <root url="file://$MODULE_DIR$/src/main/javascript/app" />
+          <root url="file://$MODULE_DIR$/src/main/javascript/config" />
+          <root url="file://$MODULE_DIR$/src/main/javascript/public" />
+          <root url="file://$MODULE_DIR$/src/main/javascript/vendor" />
           <root url="file://$MODULE_DIR$/src/main/resources" />
         </sourceRoots>
       </configuration>
@@ -67,13 +67,6 @@
     <orderEntry type="library" name="Maven: com.newrelic.agent.java:newrelic-java:3.19.2" level="project" />
     <orderEntry type="library" name="Maven: com.newrelic.agent.java:newrelic-api:3.19.2" level="project" />
     <orderEntry type="module" module-name="dotfeedback-lib" />
-    <orderEntry type="library" name="Maven: org.pegdown:pegdown:1.6.0" level="project" />
-    <orderEntry type="library" name="Maven: org.parboiled:parboiled-java:1.1.7" level="project" />
-    <orderEntry type="library" name="Maven: org.parboiled:parboiled-core:1.1.7" level="project" />
-    <orderEntry type="library" name="Maven: org.ow2.asm:asm:5.0.3" level="project" />
-    <orderEntry type="library" name="Maven: org.ow2.asm:asm-tree:5.0.3" level="project" />
-    <orderEntry type="library" name="Maven: org.ow2.asm:asm-analysis:5.0.3" level="project" />
-    <orderEntry type="library" name="Maven: org.ow2.asm:asm-util:5.0.3" level="project" />
     <orderEntry type="library" name="Maven: org.markdownj:markdownj-core:0.4" level="project" />
     <orderEntry type="library" name="Maven: net.coobird:thumbnailator:0.4.8" level="project" />
     <orderEntry type="library" name="Maven: com.amazonaws:aws-java-sdk:1.10.10" level="project" />
@@ -212,6 +205,13 @@
     <orderEntry type="library" name="Maven: org.codehaus.jackson:jackson-mapper-asl:1.9.13" level="project" />
     <orderEntry type="library" name="Maven: org.codehaus.jackson:jackson-core-asl:1.9.13" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.security.oauth:spring-security-oauth:2.0.7.RELEASE" level="project" />
+    <orderEntry type="library" name="Maven: org.pegdown:pegdown:1.6.0" level="project" />
+    <orderEntry type="library" name="Maven: org.parboiled:parboiled-java:1.1.7" level="project" />
+    <orderEntry type="library" name="Maven: org.parboiled:parboiled-core:1.1.7" level="project" />
+    <orderEntry type="library" name="Maven: org.ow2.asm:asm:5.0.3" level="project" />
+    <orderEntry type="library" name="Maven: org.ow2.asm:asm-tree:5.0.3" level="project" />
+    <orderEntry type="library" name="Maven: org.ow2.asm:asm-analysis:5.0.3" level="project" />
+    <orderEntry type="library" name="Maven: org.ow2.asm:asm-util:5.0.3" level="project" />
     <orderEntry type="library" name="Maven: com.zipwhip:zipwhip-common-util:1.63.17-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: commons-pool:commons-pool:1.5.4" level="project" />
     <orderEntry type="library" name="Maven: com.googlecode.libphonenumber:libphonenumber:6.0" level="project" />

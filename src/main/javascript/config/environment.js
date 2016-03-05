@@ -2,7 +2,7 @@
 
 module.exports = function(environment) {
   var ENV = {
-    modulePrefix: 'js-src',
+    modulePrefix: 'javascript',
     environment: environment,
     baseURL: '/',
     locationType: 'auto',

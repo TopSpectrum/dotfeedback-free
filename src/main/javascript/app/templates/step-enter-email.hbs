@@ -1,7 +1,6 @@
 <div>
 {{#validated-input type="email" label="Enter your email address" data-minlength="3" id="domainName" tabindex="0" autocomplete="off" placeholder="" value=model.email enter='next'}}
       <div class="pull-out" style="position: relative;">
-
         <div class="btn-add-controls hidden-xxs">
             {{#ladda-button class="btn-add btn btn-primary ladda-button" data-style="slide-left" tabindex="1" action='next' disabled=isInvalid }}
               Next
@@ -11,7 +10,7 @@
 {{/validated-input}}
 </div>
 
-<div class="pull-right visible-xxs-block">
+<div class="pull-right visible-xxs-block" style="margin-right: 15px; margin-top: -15px;">
   {{#ladda-button class="btn-add btn btn-primary ladda-button" data-style="slide-left" tabindex="1" action='next' disabled=isInvalid }}
       Next
   {{/ladda-button}}

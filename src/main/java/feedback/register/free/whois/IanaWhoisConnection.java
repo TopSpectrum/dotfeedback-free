@@ -2,7 +2,7 @@ package feedback.register.free.whois;
 
 import com.topspectrum.util.DomainNameUtils;
 import com.topspectrum.util.StringUtils;
-import feedback.register.free.cache.CacheService;
+import com.topspectrum.cache.CacheService;
 import feedback.register.free.cache.NullCacheService;
 import org.apache.commons.net.whois.WhoisClient;
 import org.joda.time.Duration;

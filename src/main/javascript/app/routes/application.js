@@ -36,9 +36,7 @@ export default Ember.Route.extend({
 
     if (accepted || !required) {
       // They have accepted, or are not required to.
-      if ('index' === transition.targetName) {
-        return this.transitionTo('step-enter-email');
-      }
+      return this.transitionTo('step-enter-email');
     } else {
       // They have not accepted, but are required to.
       if ('index' !== transition.targetName) {
@@ -82,6 +80,10 @@ export default Ember.Route.extend({
                 return true;
               }
             }, scope));
+
+          if (model.referralCodeState.required && (Ember.isEmpty(model.referralCodeState.options))) {
+            model.referralCodeState.required = false;
+          }
 
           return resolve(model);
         })

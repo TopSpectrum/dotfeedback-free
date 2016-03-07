@@ -60,6 +60,6 @@
     <entity class="feedback.register.free.data.FreeReservation"/>
 
     <entity class="feedback.register.free.data.WhoisRecord" />
-    <entity class="feedback.register.free.data.DiskCache" />
+    <entity class="com.topspectrum.cache.DiskCache" />
 
 </entity-mappings>

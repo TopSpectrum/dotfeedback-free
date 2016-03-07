@@ -1,5 +1,6 @@
 package feedback.register.free.cache;
 
+import com.topspectrum.cache.CacheService;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 

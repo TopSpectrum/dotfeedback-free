@@ -167,7 +167,7 @@ public class WhoisRecordBuilder {
     }
 
     public WhoisRecordBuilder fullDomainName(String fullDomainName) {
-        ParsedDomainParts parts = DomainNameUtils.parse(fullDomainName);
+        ParsedDomainParts parts = ParsedDomainParts.fromFullDomainNameWithSlug(fullDomainName);
 
         template.setFullDomainName(fullDomainName);
         template.setDomainName(parts.getCustomerDomainName());

@@ -1,8 +1,8 @@
 package feedback.register.free.whois;
 
+import com.topspectrum.cache.CacheService;
 import com.topspectrum.util.DomainNameUtils;
 import com.topspectrum.util.StringUtils;
-import com.topspectrum.cache.CacheService;
 import feedback.register.free.cache.NullCacheService;
 import org.apache.commons.net.whois.WhoisClient;
 import org.joda.time.Duration;
@@ -125,7 +125,6 @@ public class IanaWhoisConnection extends WhoisConnectionBase {
         }
     }
 
-
     /**
      * The WHOIS results contain bullshit comments after the >>> characters.
      *
@@ -155,8 +154,8 @@ public class IanaWhoisConnection extends WhoisConnectionBase {
 
     public void setHost(InetAddress host) {
         this.host = host;
-    }
 
+    }
     public CacheService getCacheService() {
         return cacheService;
     }

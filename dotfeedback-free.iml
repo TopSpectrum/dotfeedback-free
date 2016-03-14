@@ -12,6 +12,7 @@
         </webroots>
         <sourceRoots>
           <root url="file://$MODULE_DIR$/src/main/java" />
+          <root url="file://$MODULE_DIR$/src/main/javascript/addon" />
           <root url="file://$MODULE_DIR$/src/main/javascript/app" />
           <root url="file://$MODULE_DIR$/src/main/javascript/config" />
           <root url="file://$MODULE_DIR$/src/main/javascript/public" />
@@ -56,6 +57,9 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/javascript/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/javascript/public" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/javascript/vendor" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/javascript/addon" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/javascript/tests/unit" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/javascript/tests/integration" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/src/main/javascript/dist" />
       <excludeFolder url="file://$MODULE_DIR$/src/main/javascript/tmp" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
@@ -63,7 +67,8 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Maven: com.topspectrum:dotfeedback-lib:1.20-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="Maven: com.topspectrum:topspectrum-common-webmvc:1.20-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="bower_components javascript" level="project" />
+    <orderEntry type="library" name="node_modules javascript" level="project" />
     <orderEntry type="library" name="Maven: com.newrelic.agent.java:newrelic-java:3.19.2" level="project" />
     <orderEntry type="library" name="Maven: com.newrelic.agent.java:newrelic-api:3.19.2" level="project" />
     <orderEntry type="module" module-name="dotfeedback-lib" />

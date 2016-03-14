@@ -2,7 +2,6 @@ package feedback.register.free.whois;
 
 import com.google.common.util.concurrent.RateLimiter;
 import com.topspectrum.registry.ParsedDomainParts;
-import com.topspectrum.util.DomainNameUtils;
 import feedback.register.free.data.WhoisRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,7 +96,7 @@ public abstract class WhoisConnectionBase implements WhoisConnection {
             record.setFailed(false);
 
             record.setFullDomainName(fullDomainName);
-            ParsedDomainParts parts = DomainNameUtils.parse(fullDomainName);
+            ParsedDomainParts parts = ParsedDomainParts.fromFullDomainNameWithSlug(fullDomainName);
             record.setSourceLabel(parts.getCustomerDomainName());
             record.setSourceSuffix(parts.getTopLevelDomainName());
         }

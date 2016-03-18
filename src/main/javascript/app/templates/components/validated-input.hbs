@@ -5,14 +5,14 @@
 {{/if}}
 
 {{#if isTextarea}}
-  {{textarea value=value focus-out='showErrors' type=type class="form-control" placeholder=placeholder autocomplete=autocomplete enter='enter' readonly=readonly disabled=disabled}}
+  {{textarea value=value focus-in='focused' focus-out='blurred' type=type class=inputClass placeholder=placeholder autocomplete=autocomplete enter='enter' readonly=readonly disabled=disabled}}
 {{else}}
   {{#if inputWidthClasses}}
       <div class="{{ inputWidthClasses }}">
-        {{input value=value focus-out='showErrors' type=type class="form-control" placeholder=placeholder autocomplete=autocomplete enter='enter' readonly=readonly disabled=disabled mask=mask}}
+        {{input value=value focus-in='focused' focus-out='blurred' type=type class=inputClass placeholder=placeholder autocomplete=autocomplete enter='enter' readonly=readonly disabled=disabled mask=mask}}
       </div>
   {{else}}
-    {{input value=value focus-out='showErrors' type=type class="form-control" placeholder=placeholder autocomplete=autocomplete enter='enter' readonly=readonly disabled=disabled mask=mask}}
+    {{input value=value focus-in='focused' focus-out='blurred' type=type class=inputClass placeholder=placeholder autocomplete=autocomplete enter='enter' readonly=readonly disabled=disabled mask=mask}}
   {{/if}}
 {{/if}}
 
@@ -25,12 +25,12 @@
     <span class="glyphicon glyphicon-warning-sign form-control-feedback form-control-feedback-only-error"></span>
 {{/if}}
 
-{{yield}}
-
+{{#if hasErrors}}
 <div class="help-block with-errors">
-  {{#if hasErrors}}
     {{#each errors as |error|}}
         <div>{{error}}</div>
     {{/each}}
-  {{/if}}
 </div>
+{{/if}}
+
+{{yield}}

@@ -21,7 +21,7 @@ module.exports = function(environment) {
     contentSecurityPolicy: {
       'default-src': "'none'",
       'script-src': "'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://www.google.com *",
-      'font-src': "'self' data: fonts.gstatic.com localhost",
+      'font-src': "'self' data: fonts.gstatic.com localhost cdn.feedback",
       'connect-src': "* *.intercom.io wss://*.intercom.io ws://*.free.feedback ws://dev.free.feedback",
       //'connect-src': "'self' *.intercom.io wss://*.intercom.io ws://*.free.feedback ws://dev.free.feedback",
       'media-src': "'self' *.intercom.io *.intercomcdn.com",

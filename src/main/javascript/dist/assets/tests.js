@@ -40,7 +40,7 @@ define('javascript/tests/components/validated-input.jshint', ['exports'], functi
   QUnit.module('JSHint - components/validated-input.js');
   QUnit.test('should pass jshint', function (assert) {
     assert.expect(1);
-    assert.ok(false, 'components/validated-input.js should pass jshint.\ncomponents/validated-input.js: line 1, col 1, Use the function form of "use strict".\n\n1 error');
+    assert.ok(false, 'components/validated-input.js should pass jshint.\ncomponents/validated-input.js: line 1, col 1, Use the function form of "use strict".\ncomponents/validated-input.js: line 115, col 39, \'e\' is defined but never used.\n\n2 errors');
   });
 });
 define('javascript/tests/components/validated-input2.jshint', ['exports'], function (exports) {
@@ -94,7 +94,7 @@ define('javascript/tests/controllers/step-select-domains.jshint', ['exports'], f
   QUnit.module('JSHint - controllers/step-select-domains.js');
   QUnit.test('should pass jshint', function (assert) {
     assert.expect(1);
-    assert.ok(false, 'controllers/step-select-domains.js should pass jshint.\ncontrollers/step-select-domains.js: line 274, col 17, \'err\' is defined but never used.\ncontrollers/step-select-domains.js: line 38, col 10, \'sanitizeCustomerDomainName\' is defined but never used.\n\n2 errors');
+    assert.ok(false, 'controllers/step-select-domains.js should pass jshint.\ncontrollers/step-select-domains.js: line 307, col 25, \'err\' is defined but never used.\ncontrollers/step-select-domains.js: line 3, col 28, \'validator\' is defined but never used.\ncontrollers/step-select-domains.js: line 38, col 10, \'sanitizeCustomerDomainName\' is defined but never used.\n\n3 errors');
   });
 });
 define('javascript/tests/controllers/step-select-registrar.jshint', ['exports'], function (exports) {
@@ -325,7 +325,7 @@ define('javascript/tests/integration/components/ladda-button-test', ['exports', 
             'name': 'missing-wrapper',
             'problems': ['wrong-type']
           },
-          'revision': 'Ember@2.4.1',
+          'revision': 'Ember@2.4.3',
           'loc': {
             'source': null,
             'start': {
@@ -369,7 +369,7 @@ define('javascript/tests/integration/components/ladda-button-test', ['exports', 
         return {
           meta: {
             'fragmentReason': false,
-            'revision': 'Ember@2.4.1',
+            'revision': 'Ember@2.4.3',
             'loc': {
               'source': null,
               'start': {
@@ -407,7 +407,7 @@ define('javascript/tests/integration/components/ladda-button-test', ['exports', 
             'name': 'missing-wrapper',
             'problems': ['wrong-type']
           },
-          'revision': 'Ember@2.4.1',
+          'revision': 'Ember@2.4.3',
           'loc': {
             'source': null,
             'start': {
@@ -474,7 +474,7 @@ define('javascript/tests/integration/components/registrar-list-test', ['exports'
             'name': 'missing-wrapper',
             'problems': ['wrong-type']
           },
-          'revision': 'Ember@2.4.1',
+          'revision': 'Ember@2.4.3',
           'loc': {
             'source': null,
             'start': {
@@ -518,7 +518,7 @@ define('javascript/tests/integration/components/registrar-list-test', ['exports'
         return {
           meta: {
             'fragmentReason': false,
-            'revision': 'Ember@2.4.1',
+            'revision': 'Ember@2.4.3',
             'loc': {
               'source': null,
               'start': {
@@ -556,7 +556,7 @@ define('javascript/tests/integration/components/registrar-list-test', ['exports'
             'name': 'missing-wrapper',
             'problems': ['wrong-type']
           },
-          'revision': 'Ember@2.4.1',
+          'revision': 'Ember@2.4.3',
           'loc': {
             'source': null,
             'start': {
@@ -623,7 +623,7 @@ define('javascript/tests/integration/components/validated-input-test', ['exports
             'name': 'missing-wrapper',
             'problems': ['wrong-type']
           },
-          'revision': 'Ember@2.4.1',
+          'revision': 'Ember@2.4.3',
           'loc': {
             'source': null,
             'start': {
@@ -667,7 +667,7 @@ define('javascript/tests/integration/components/validated-input-test', ['exports
         return {
           meta: {
             'fragmentReason': false,
-            'revision': 'Ember@2.4.1',
+            'revision': 'Ember@2.4.3',
             'loc': {
               'source': null,
               'start': {
@@ -705,7 +705,7 @@ define('javascript/tests/integration/components/validated-input-test', ['exports
             'name': 'missing-wrapper',
             'problems': ['wrong-type']
           },
-          'revision': 'Ember@2.4.1',
+          'revision': 'Ember@2.4.3',
           'loc': {
             'source': null,
             'start': {
@@ -772,7 +772,7 @@ define('javascript/tests/integration/components/whois-table-test', ['exports', '
             'name': 'missing-wrapper',
             'problems': ['wrong-type']
           },
-          'revision': 'Ember@2.4.1',
+          'revision': 'Ember@2.4.3',
           'loc': {
             'source': null,
             'start': {
@@ -816,7 +816,7 @@ define('javascript/tests/integration/components/whois-table-test', ['exports', '
         return {
           meta: {
             'fragmentReason': false,
-            'revision': 'Ember@2.4.1',
+            'revision': 'Ember@2.4.3',
             'loc': {
               'source': null,
               'start': {
@@ -854,7 +854,7 @@ define('javascript/tests/integration/components/whois-table-test', ['exports', '
             'name': 'missing-wrapper',
             'problems': ['wrong-type']
           },
-          'revision': 'Ember@2.4.1',
+          'revision': 'Ember@2.4.3',
           'loc': {
             'source': null,
             'start': {
@@ -902,6 +902,15 @@ define('javascript/tests/integration/components/whois-table-test.jshint', ['expo
   QUnit.test('should pass jshint', function (assert) {
     assert.expect(1);
     assert.ok(true, 'integration/components/whois-table-test.js should pass jshint.');
+  });
+});
+define('javascript/tests/mixins/wizard-step-mixin.jshint', ['exports'], function (exports) {
+  'use strict';
+
+  QUnit.module('JSHint - mixins/wizard-step-mixin.js');
+  QUnit.test('should pass jshint', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'mixins/wizard-step-mixin.js should pass jshint.');
   });
 });
 define('javascript/tests/models/availability.jshint', ['exports'], function (exports) {
@@ -964,7 +973,7 @@ define('javascript/tests/routes/application.jshint', ['exports'], function (expo
   QUnit.module('JSHint - routes/application.js');
   QUnit.test('should pass jshint', function (assert) {
     assert.expect(1);
-    assert.ok(false, 'routes/application.js should pass jshint.\nroutes/application.js: line 52, col 9, \'store\' is defined but never used.\nroutes/application.js: line 3, col 5, \'REFERRAL_CODE_OPTIONS_KEY\' is defined but never used.\n\n2 errors');
+    assert.ok(true, 'routes/application.js should pass jshint.');
   });
 });
 define('javascript/tests/routes/checkout.jshint', ['exports'], function (exports) {
@@ -1018,7 +1027,7 @@ define('javascript/tests/routes/step-select-domains.jshint', ['exports'], functi
   QUnit.module('JSHint - routes/step-select-domains.js');
   QUnit.test('should pass jshint', function (assert) {
     assert.expect(1);
-    assert.ok(false, 'routes/step-select-domains.js should pass jshint.\nroutes/step-select-domains.js: line 19, col 21, \'transition\' is defined but never used.\nroutes/step-select-domains.js: line 59, col 24, \'err\' is defined but never used.\n\n2 errors');
+    assert.ok(false, 'routes/step-select-domains.js should pass jshint.\nroutes/step-select-domains.js: line 20, col 23, \'transition\' is defined but never used.\nroutes/step-select-domains.js: line 63, col 30, \'err\' is defined but never used.\n\n2 errors');
   });
 });
 define('javascript/tests/routes/step-select-registrar.jshint', ['exports'], function (exports) {
@@ -1046,6 +1055,15 @@ define('javascript/tests/serializers/application.jshint', ['exports'], function 
   QUnit.test('should pass jshint', function (assert) {
     assert.expect(1);
     assert.ok(true, 'serializers/application.js should pass jshint.');
+  });
+});
+define('javascript/tests/services/context.jshint', ['exports'], function (exports) {
+  'use strict';
+
+  QUnit.module('JSHint - services/context.js');
+  QUnit.test('should pass jshint', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'services/context.js should pass jshint.');
   });
 });
 define('javascript/tests/test-helper', ['exports', 'javascript/tests/helpers/resolver', 'ember-qunit'], function (exports, _javascriptTestsHelpersResolver, _emberQunit) {
@@ -1277,6 +1295,46 @@ define('javascript/tests/unit/instance-initializers/referral-code-test.jshint', 
   QUnit.test('should pass jshint', function (assert) {
     assert.expect(1);
     assert.ok(true, 'unit/instance-initializers/referral-code-test.js should pass jshint.');
+  });
+});
+define('javascript/tests/unit/mixins/wizard-step-mixin-test', ['exports', 'ember', 'javascript/mixins/wizard-step-mixin', 'qunit'], function (exports, _ember, _javascriptMixinsWizardStepMixin, _qunit) {
+
+  (0, _qunit.module)('Unit | Mixin | wizard step mixin');
+
+  // Replace this with your real tests.
+  (0, _qunit.test)('it works', function (assert) {
+    var WizardStepMixinObject = _ember['default'].Object.extend(_javascriptMixinsWizardStepMixin['default']);
+    var subject = WizardStepMixinObject.create();
+    assert.ok(subject);
+  });
+});
+define('javascript/tests/unit/mixins/wizard-step-mixin-test.jshint', ['exports'], function (exports) {
+  'use strict';
+
+  QUnit.module('JSHint - unit/mixins/wizard-step-mixin-test.js');
+  QUnit.test('should pass jshint', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'unit/mixins/wizard-step-mixin-test.js should pass jshint.');
+  });
+});
+define('javascript/tests/unit/mixins/wizard-step-route-test', ['exports', 'ember', 'javascript/mixins/wizard-step-route', 'qunit'], function (exports, _ember, _javascriptMixinsWizardStepRoute, _qunit) {
+
+  (0, _qunit.module)('Unit | Mixin | wizard step route');
+
+  // Replace this with your real tests.
+  (0, _qunit.test)('it works', function (assert) {
+    var WizardStepRouteObject = _ember['default'].Object.extend(_javascriptMixinsWizardStepRoute['default']);
+    var subject = WizardStepRouteObject.create();
+    assert.ok(subject);
+  });
+});
+define('javascript/tests/unit/mixins/wizard-step-route-test.jshint', ['exports'], function (exports) {
+  'use strict';
+
+  QUnit.module('JSHint - unit/mixins/wizard-step-route-test.js');
+  QUnit.test('should pass jshint', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'unit/mixins/wizard-step-route-test.js should pass jshint.');
   });
 });
 define('javascript/tests/unit/models/availability-test', ['exports', 'ember-qunit'], function (exports, _emberQunit) {
@@ -1596,6 +1654,28 @@ define('javascript/tests/unit/routes/whois-test.jshint', ['exports'], function (
   QUnit.test('should pass jshint', function (assert) {
     assert.expect(1);
     assert.ok(true, 'unit/routes/whois-test.js should pass jshint.');
+  });
+});
+define('javascript/tests/unit/services/context-test', ['exports', 'ember-qunit'], function (exports, _emberQunit) {
+
+  (0, _emberQunit.moduleFor)('service:context', 'Unit | Service | context', {
+    // Specify the other units that are required for this test.
+    // needs: ['service:foo']
+  });
+
+  // Replace this with your real tests.
+  (0, _emberQunit.test)('it exists', function (assert) {
+    var service = this.subject();
+    assert.ok(service);
+  });
+});
+define('javascript/tests/unit/services/context-test.jshint', ['exports'], function (exports) {
+  'use strict';
+
+  QUnit.module('JSHint - unit/services/context-test.js');
+  QUnit.test('should pass jshint', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'unit/services/context-test.js should pass jshint.');
   });
 });
 define('javascript/tests/unit/utils/test-utility-test', ['exports', 'javascript/utils/test-utility', 'qunit'], function (exports, _javascriptUtilsTestUtility, _qunit) {

@@ -9444,7 +9444,7 @@ return jQuery;
  *            Portions Copyright 2008-2011 Apple Inc. All rights reserved.
  * @license   Licensed under MIT license
  *            See https://raw.github.com/emberjs/ember.js/master/LICENSE
- * @version   2.4.1
+ * @version   2.4.3
  */
 
 var enifed, requireModule, require, requirejs, Ember;
@@ -14497,7 +14497,8 @@ enifed('ember-application/system/application', ['exports', 'ember-metal', 'ember
         });
       }
       ```
-       @method visit
+       @public
+      @method visit
       @param url {String} The initial URL to navigate to
       @param options {Ember.ApplicationInstance.BootOptions}
       @return {Promise<Ember.ApplicationInstance, Error>}
@@ -18524,11 +18525,11 @@ enifed('ember-htmlbars/hooks/link-render-node', ['exports', 'ember-htmlbars/util
       var isTruthyVal = _emberMetalStreamsUtils.read(isTruthy);
 
       if (_emberRuntimeUtils.isArray(predicateVal)) {
-        return lengthVal > 0 ? predicateVal : false;
+        return lengthVal > 0 ? coercer(predicateVal) : false;
       }
 
       if (typeof isTruthyVal === 'boolean') {
-        return isTruthyVal;
+        return isTruthyVal ? coercer(predicateVal) : false;
       }
 
       return coercer(predicateVal);
@@ -19957,7 +19958,7 @@ enifed('ember-htmlbars/keywords/outlet', ['exports', 'ember-metal/debug', 'ember
 
   'use strict';
 
-  _emberHtmlbarsTemplatesTopLevelView.default.meta.revision = 'Ember@2.4.1';
+  _emberHtmlbarsTemplatesTopLevelView.default.meta.revision = 'Ember@2.4.3';
 
   /**
     The `{{outlet}}` helper lets you specify where a child routes will render in
@@ -21900,7 +21901,10 @@ enifed('ember-htmlbars/system/lookup-helper', ['exports', 'ember-metal/debug', '
       var owner = env.owner;
       if (validateLazyHelperName(name, owner, env.hooks.keywords)) {
         var helperName = 'helper:' + name;
-        if (owner.hasRegistration(helperName, options)) {
+        // See https://github.com/emberjs/ember.js/issues/13071
+        // See https://bugs.chromium.org/p/v8/issues/detail?id=4839
+        var registered = owner.hasRegistration(helperName, options);
+        if (registered) {
           helper = owner._lookupFactory(helperName, options);
           _emberMetalDebug.assert('Expected to find an Ember.Helper with the name ' + helperName + ', but found an object of type ' + typeof helper + ' instead.', helper.isHelperFactory || helper.isHelperInstance);
         }
@@ -25626,7 +25630,7 @@ enifed('ember-metal/core', ['exports', 'require'], function (exports, _require) 
   
     @class Ember
     @static
-    @version 2.4.1
+    @version 2.4.3
     @public
   */
 
@@ -25668,11 +25672,11 @@ enifed('ember-metal/core', ['exports', 'require'], function (exports, _require) 
   
     @property VERSION
     @type String
-    @default '2.4.1'
+    @default '2.4.3'
     @static
     @public
   */
-  Ember.VERSION = '2.4.1';
+  Ember.VERSION = '2.4.3';
 
   /**
     The hash of environment variables used to control various configuration
@@ -37358,9 +37362,9 @@ enifed('ember-routing/system/router', ['exports', 'ember-metal/logger', 'ember-m
          didTransition: function() {
           this._super(...arguments);
            return ga('send', 'pageview', {
-              'page': this.get('url'),
-              'title': this.get('url')
-            });
+            'page': this.get('url'),
+            'title': this.get('url')
+          });
         }
       });
       ```
@@ -39738,7 +39742,7 @@ enifed('ember-routing-views/components/link-to', ['exports', 'ember-metal/logger
 
   'use strict';
 
-  _emberHtmlbarsTemplatesLinkTo.default.meta.revision = 'Ember@2.4.1';
+  _emberHtmlbarsTemplatesLinkTo.default.meta.revision = 'Ember@2.4.3';
 
   /**
     `Ember.LinkComponent` renders an element whose `click` event triggers a
@@ -40241,7 +40245,7 @@ enifed('ember-routing-views/views/outlet', ['exports', 'ember-views/views/view',
 
   'use strict';
 
-  _emberHtmlbarsTemplatesTopLevelView.default.meta.revision = 'Ember@2.4.1';
+  _emberHtmlbarsTemplatesTopLevelView.default.meta.revision = 'Ember@2.4.3';
 
   var CoreOutletView = _emberViewsViewsView.default.extend({
     defaultTemplate: _emberHtmlbarsTemplatesTopLevelView.default,
@@ -46267,7 +46271,7 @@ enifed('ember-runtime/system/core_object', ['exports', 'ember-metal/debug', 'emb
             if (mergedProperties && mergedProperties.length && mergedProperties.indexOf(keyName) >= 0) {
               var originalValue = this[keyName];
 
-              value = _emberMetalAssign.default(originalValue, value);
+              value = _emberMetalAssign.default({}, originalValue, value);
             }
 
             if (desc) {
@@ -49260,7 +49264,7 @@ enifed('ember-template-compiler/system/compile_options', ['exports', 'ember-meta
     options.buildMeta = function buildMeta(program) {
       return {
         fragmentReason: fragmentReason(program),
-        revision: 'Ember@2.4.1',
+        revision: 'Ember@2.4.3',
         loc: program.loc,
         moduleName: options.moduleName
       };
@@ -54600,7 +54604,7 @@ enifed('ember-views/views/collection_view', ['exports', 'ember-metal/core', 'emb
 enifed('ember-views/views/container_view', ['exports', 'ember-metal/core', 'ember-metal/debug', 'ember-runtime/mixins/mutable_array', 'ember-runtime/system/native_array', 'ember-views/views/view', 'ember-metal/property_get', 'ember-metal/property_set', 'ember-metal/mixin', 'ember-metal/events', 'ember-htmlbars/templates/container-view'], function (exports, _emberMetalCore, _emberMetalDebug, _emberRuntimeMixinsMutable_array, _emberRuntimeSystemNative_array, _emberViewsViewsView, _emberMetalProperty_get, _emberMetalProperty_set, _emberMetalMixin, _emberMetalEvents, _emberHtmlbarsTemplatesContainerView) {
   'use strict';
 
-  _emberHtmlbarsTemplatesContainerView.default.meta.revision = 'Ember@2.4.1';
+  _emberHtmlbarsTemplatesContainerView.default.meta.revision = 'Ember@2.4.3';
 
   /**
   @module ember
@@ -65951,7 +65955,7 @@ function createDeprecatedModule(moduleId) {
 createDeprecatedModule('ember/resolver');
 createDeprecatedModule('resolver');
 
-;Ember.libraries.register('Ember Simple Auth', '1.1.0-beta.3');
+;Ember.libraries.register('Ember Simple Auth', '1.0.0');
 
 ;/*!
  * Bootstrap v3.3.6 (http://getbootstrap.com)
@@ -69081,7 +69085,7 @@ define("ember-cli-app-version/templates/app-version", ["exports"], function (exp
           "name": "missing-wrapper",
           "problems": ["wrong-type"]
         },
-        "revision": "Ember@2.4.1",
+        "revision": "Ember@2.4.3",
         "loc": {
           "source": null,
           "start": {
@@ -70248,7 +70252,7 @@ define('ember-data/-private/system/is-array-like', ['exports', 'ember'], functio
     return false;
   }
 });
-define("ember-data/-private/system/many-array", ["exports", "ember", "ember-data/-private/debug", "ember-data/-private/system/promise-proxies"], function (exports, _ember, _emberDataPrivateDebug, _emberDataPrivateSystemPromiseProxies) {
+define("ember-data/-private/system/many-array", ["exports", "ember", "ember-data/-private/debug", "ember-data/-private/system/promise-proxies", "ember-data/-private/system/store/common"], function (exports, _ember, _emberDataPrivateDebug, _emberDataPrivateSystemPromiseProxies, _emberDataPrivateSystemStoreCommon) {
   /**
     @module ember-data
   */
@@ -70330,12 +70334,15 @@ define("ember-data/-private/system/many-array", ["exports", "ember", "ember-data
       //a hack for not removing new records
       //TODO remove once we have proper diffing
       var newRecords = this.currentState.filter(function (internalModel) {
-        return internalModel.isNew();
+        return internalModel.isNew() && toSet.indexOf(internalModel) === -1;
       });
       toSet = toSet.concat(newRecords);
       var oldLength = this.length;
       this.arrayContentWillChange(0, this.length, toSet.length);
-      this.set('length', toSet.length);
+      // It’s possible the parent side of the relationship may have been unloaded by this point
+      if ((0, _emberDataPrivateSystemStoreCommon._objectIsAlive)(this)) {
+        this.set('length', toSet.length);
+      }
       this.currentState = toSet;
       this.arrayContentDidChange(0, oldLength, this.length);
       //TODO Figure out to notify only on additions and maybe only if unloaded
@@ -81230,13 +81237,15 @@ define('ember-data/adapters/rest', ['exports', 'ember', 'ember-data/adapter', 'e
     },
 
     buildQuery: function buildQuery(snapshot) {
-      var include = snapshot.include;
-
       var query = {};
 
       if ((0, _emberDataPrivateFeatures['default'])('ds-finder-include')) {
-        if (include) {
-          query.include = include;
+        if (snapshot) {
+          var include = snapshot.include;
+
+          if (include) {
+            query.include = include;
+          }
         }
       }
 
@@ -84727,7 +84736,7 @@ define('ember-data/transform', ['exports', 'ember'], function (exports, _ember) 
 define("ember-data/version", ["exports"], function (exports) {
   "use strict";
 
-  exports["default"] = "2.4.0+9f8c40927a";
+  exports["default"] = "2.4.1+4260f5771d";
 });
 define('ember-form-master-2000/components/fm-checkbox', ['exports', 'ember', 'ember-form-master-2000/templates/components/ember-form-master-2000/fm-checkbox'], function (exports, _ember, _emberFormMaster2000TemplatesComponentsEmberFormMaster2000FmCheckbox) {
   'use strict';
@@ -85178,7 +85187,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-ch
       return {
         meta: {
           "fragmentReason": false,
-          "revision": "Ember@2.4.1",
+          "revision": "Ember@2.4.3",
           "loc": {
             "source": null,
             "start": {
@@ -85221,7 +85230,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-ch
         "fragmentReason": {
           "name": "triple-curlies"
         },
-        "revision": "Ember@2.4.1",
+        "revision": "Ember@2.4.3",
         "loc": {
           "source": null,
           "start": {
@@ -85293,7 +85302,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-er
           "name": "missing-wrapper",
           "problems": ["wrong-type"]
         },
-        "revision": "Ember@2.4.1",
+        "revision": "Ember@2.4.3",
         "loc": {
           "source": null,
           "start": {
@@ -85340,7 +85349,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-fi
           "fragmentReason": {
             "name": "triple-curlies"
           },
-          "revision": "Ember@2.4.1",
+          "revision": "Ember@2.4.3",
           "loc": {
             "source": null,
             "start": {
@@ -85387,7 +85396,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-fi
       return {
         meta: {
           "fragmentReason": false,
-          "revision": "Ember@2.4.1",
+          "revision": "Ember@2.4.3",
           "loc": {
             "source": null,
             "start": {
@@ -85429,7 +85438,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-fi
       return {
         meta: {
           "fragmentReason": false,
-          "revision": "Ember@2.4.1",
+          "revision": "Ember@2.4.3",
           "loc": {
             "source": null,
             "start": {
@@ -85471,7 +85480,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-fi
       return {
         meta: {
           "fragmentReason": false,
-          "revision": "Ember@2.4.1",
+          "revision": "Ember@2.4.3",
           "loc": {
             "source": null,
             "start": {
@@ -85513,7 +85522,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-fi
       return {
         meta: {
           "fragmentReason": false,
-          "revision": "Ember@2.4.1",
+          "revision": "Ember@2.4.3",
           "loc": {
             "source": null,
             "start": {
@@ -85555,7 +85564,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-fi
       return {
         meta: {
           "fragmentReason": false,
-          "revision": "Ember@2.4.1",
+          "revision": "Ember@2.4.3",
           "loc": {
             "source": null,
             "start": {
@@ -85599,7 +85608,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-fi
           "name": "missing-wrapper",
           "problems": ["wrong-type", "multiple-nodes"]
         },
-        "revision": "Ember@2.4.1",
+        "revision": "Ember@2.4.3",
         "loc": {
           "source": null,
           "start": {
@@ -85671,7 +85680,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-he
           "name": "missing-wrapper",
           "problems": ["wrong-type"]
         },
-        "revision": "Ember@2.4.1",
+        "revision": "Ember@2.4.3",
         "loc": {
           "source": null,
           "start": {
@@ -85718,7 +85727,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-ra
           "fragmentReason": {
             "name": "triple-curlies"
           },
-          "revision": "Ember@2.4.1",
+          "revision": "Ember@2.4.3",
           "loc": {
             "source": null,
             "start": {
@@ -85764,7 +85773,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-ra
       return {
         meta: {
           "fragmentReason": false,
-          "revision": "Ember@2.4.1",
+          "revision": "Ember@2.4.3",
           "loc": {
             "source": null,
             "start": {
@@ -85806,7 +85815,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-ra
       return {
         meta: {
           "fragmentReason": false,
-          "revision": "Ember@2.4.1",
+          "revision": "Ember@2.4.3",
           "loc": {
             "source": null,
             "start": {
@@ -85850,7 +85859,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-ra
           "name": "missing-wrapper",
           "problems": ["wrong-type", "multiple-nodes"]
         },
-        "revision": "Ember@2.4.1",
+        "revision": "Ember@2.4.3",
         "loc": {
           "source": null,
           "start": {
@@ -85904,7 +85913,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-ra
     return {
       meta: {
         "fragmentReason": false,
-        "revision": "Ember@2.4.1",
+        "revision": "Ember@2.4.3",
         "loc": {
           "source": null,
           "start": {
@@ -85975,7 +85984,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-se
           "fragmentReason": {
             "name": "triple-curlies"
           },
-          "revision": "Ember@2.4.1",
+          "revision": "Ember@2.4.3",
           "loc": {
             "source": null,
             "start": {
@@ -86026,7 +86035,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-se
       return {
         meta: {
           "fragmentReason": false,
-          "revision": "Ember@2.4.1",
+          "revision": "Ember@2.4.3",
           "loc": {
             "source": null,
             "start": {
@@ -86079,7 +86088,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-se
           "name": "missing-wrapper",
           "problems": ["wrong-type", "multiple-nodes"]
         },
-        "revision": "Ember@2.4.1",
+        "revision": "Ember@2.4.3",
         "loc": {
           "source": null,
           "start": {
@@ -86129,7 +86138,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-su
       return {
         meta: {
           "fragmentReason": false,
-          "revision": "Ember@2.4.1",
+          "revision": "Ember@2.4.3",
           "loc": {
             "source": null,
             "start": {
@@ -86172,7 +86181,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-su
         "fragmentReason": {
           "name": "triple-curlies"
         },
-        "revision": "Ember@2.4.1",
+        "revision": "Ember@2.4.3",
         "loc": {
           "source": null,
           "start": {
@@ -86235,7 +86244,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-te
           "fragmentReason": {
             "name": "triple-curlies"
           },
-          "revision": "Ember@2.4.1",
+          "revision": "Ember@2.4.3",
           "loc": {
             "source": null,
             "start": {
@@ -86281,7 +86290,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-te
       return {
         meta: {
           "fragmentReason": false,
-          "revision": "Ember@2.4.1",
+          "revision": "Ember@2.4.3",
           "loc": {
             "source": null,
             "start": {
@@ -86323,7 +86332,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-te
       return {
         meta: {
           "fragmentReason": false,
-          "revision": "Ember@2.4.1",
+          "revision": "Ember@2.4.3",
           "loc": {
             "source": null,
             "start": {
@@ -86359,7 +86368,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-te
       return {
         meta: {
           "fragmentReason": false,
-          "revision": "Ember@2.4.1",
+          "revision": "Ember@2.4.3",
           "loc": {
             "source": null,
             "start": {
@@ -86401,7 +86410,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-te
       return {
         meta: {
           "fragmentReason": false,
-          "revision": "Ember@2.4.1",
+          "revision": "Ember@2.4.3",
           "loc": {
             "source": null,
             "start": {
@@ -86443,7 +86452,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-te
       return {
         meta: {
           "fragmentReason": false,
-          "revision": "Ember@2.4.1",
+          "revision": "Ember@2.4.3",
           "loc": {
             "source": null,
             "start": {
@@ -86487,7 +86496,7 @@ define("ember-form-master-2000/templates/components/ember-form-master-2000/fm-te
           "name": "missing-wrapper",
           "problems": ["wrong-type", "multiple-nodes"]
         },
-        "revision": "Ember@2.4.1",
+        "revision": "Ember@2.4.3",
         "loc": {
           "source": null,
           "start": {
@@ -88084,11 +88093,10 @@ define('ember-simple-auth/authenticators/base', ['exports', 'ember'], function (
 define('ember-simple-auth/authenticators/devise', ['exports', 'ember', 'ember-simple-auth/authenticators/base'], function (exports, _ember, _emberSimpleAuthAuthenticatorsBase) {
   'use strict';
 
-  var Promise = _ember['default'].RSVP.Promise;
+  var RSVP = _ember['default'].RSVP;
   var isEmpty = _ember['default'].isEmpty;
   var run = _ember['default'].run;
   var get = _ember['default'].get;
-  var $ = _ember['default'].$;
 
   /**
     Authenticator that works with the Ruby gem
@@ -88163,12 +88171,13 @@ define('ember-simple-auth/authenticators/devise', ['exports', 'ember', 'ember-si
 
       var tokenAttribute = get(data, tokenAttributeName);
       var identificationAttribute = get(data, identificationAttributeName);
-
-      if (!isEmpty(tokenAttribute) && !isEmpty(identificationAttribute)) {
-        return Promise.resolve(data);
-      } else {
-        return Promise.reject();
-      }
+      return new RSVP.Promise(function (resolve, reject) {
+        if (!isEmpty(tokenAttribute) && !isEmpty(identificationAttribute)) {
+          resolve(data);
+        } else {
+          reject();
+        }
+      });
     },
 
     /**
@@ -88191,7 +88200,7 @@ define('ember-simple-auth/authenticators/devise', ['exports', 'ember', 'ember-si
     authenticate: function authenticate(identification, password) {
       var _this = this;
 
-      return new Promise(function (resolve, reject) {
+      return new RSVP.Promise(function (resolve, reject) {
         var _getProperties2 = _this.getProperties('resourceName', 'identificationAttributeName');
 
         var resourceName = _getProperties2.resourceName;
@@ -88201,10 +88210,10 @@ define('ember-simple-auth/authenticators/devise', ['exports', 'ember', 'ember-si
         data[resourceName] = { password: password };
         data[resourceName][identificationAttributeName] = identification;
 
-        return _this.makeRequest(data).then(function (response) {
-          return run(null, resolve, response);
+        _this.makeRequest(data).then(function (response) {
+          run(null, resolve, response);
         }, function (xhr) {
-          return run(null, reject, xhr.responseJSON || xhr.responseText);
+          run(null, reject, xhr.responseJSON || xhr.responseText);
         });
       });
     },
@@ -88216,20 +88225,19 @@ define('ember-simple-auth/authenticators/devise', ['exports', 'ember', 'ember-si
       @public
     */
     invalidate: function invalidate() {
-      return Promise.resolve();
+      return RSVP.resolve();
     },
 
     /**
       Makes a request to the devise server.
        @method makeRequest
       @param {Object} data The request data
-      @param {Object} options Ajax configuration object merged into argument of `$.ajax`
       @return {jQuery.Deferred} A promise like jQuery.Deferred as returned by `$.ajax`
       @protected
     */
-    makeRequest: function makeRequest(data, options) {
+    makeRequest: function makeRequest(data) {
       var serverTokenEndpoint = this.get('serverTokenEndpoint');
-      var requestOptions = $.extend({}, {
+      return _ember['default'].$.ajax({
         url: serverTokenEndpoint,
         type: 'POST',
         dataType: 'json',
@@ -88237,9 +88245,7 @@ define('ember-simple-auth/authenticators/devise', ['exports', 'ember', 'ember-si
         beforeSend: function beforeSend(xhr, settings) {
           xhr.setRequestHeader('Accept', settings.accepts.json);
         }
-      }, options || {});
-
-      return $.ajax(requestOptions);
+      });
     }
   });
 });
@@ -88250,7 +88256,6 @@ define('ember-simple-auth/authenticators/oauth2-password-grant', ['exports', 'em
   var RSVP = _ember['default'].RSVP;
   var isEmpty = _ember['default'].isEmpty;
   var run = _ember['default'].run;
-  var computed = _ember['default'].computed;
 
   /**
     Authenticator that conforms to OAuth 2
@@ -88323,26 +88328,16 @@ define('ember-simple-auth/authenticators/oauth2-password-grant', ['exports', 'em
 
     _refreshTokenTimeout: null,
 
-    _clientIdHeader: computed('clientId', function () {
-      var clientId = this.get('clientId');
-
-      if (!isEmpty(clientId)) {
-        var base64ClientId = window.btoa(clientId.concat(':'));
-        return { Authorization: 'Basic ' + base64ClientId };
-      }
-    }),
-
     /**
       Restores the session from a session data object; __will return a resolving
       promise when there is a non-empty `access_token` in the session data__ and
       a rejecting promise otherwise.
-       If the server issues
-      [expiring access tokens](https://tools.ietf.org/html/rfc6749#section-5.1)
-      and there is an expired access token in the session data along with a
-      refresh token, the authenticator will try to refresh the access token and
-      return a promise that resolves with the new access token if the refresh was
-      successful. If there is no refresh token or the token refresh is not
-      successful, a rejecting promise will be returned.
+       If the server issues expiring access tokens and there is an expired access
+      token in the session data along with a refresh token, the authenticator
+      will try to refresh the access token and return a promise that resolves
+      with the new access token if the refresh was successful. If there is no
+      refresh token or the token refresh is not successful, a rejecting promise
+      will be returned.
        @method restore
       @param {Object} data The data to restore the session from
       @return {Ember.RSVP.Promise} A promise that when it resolves results in the session becoming or remaining authenticated
@@ -88381,10 +88376,8 @@ define('ember-simple-auth/authenticators/oauth2-password-grant', ['exports', 'em
       granted) and thus authentication succeeds, a promise that resolves with the
       server's response is returned__, otherwise a promise that rejects with the
       error as returned by the server is returned.
-       __If the
-      [server supports it](https://tools.ietf.org/html/rfc6749#section-5.1), this
-      method also schedules refresh requests for the access token before it
-      expires.__
+       __If the server supports it, this method also schedules refresh requests
+      for the access token before it expires.__
        @method authenticate
       @param {String} identification The resource owner username
       @param {String} password The resource owner password
@@ -88421,7 +88414,7 @@ define('ember-simple-auth/authenticators/oauth2-password-grant', ['exports', 'em
 
     /**
       If token revocation is enabled, this will revoke the access token (and the
-      refresh token if present). If token revocation succeeds, this method
+      refresh token if present). If token revocation succedds, this method
       returns a resolving promise, otherwise it will return a rejecting promise,
       thus intercepting session invalidation.
        If token revocation is not enabled this method simply returns a resolving
@@ -88479,10 +88472,15 @@ define('ember-simple-auth/authenticators/oauth2-password-grant', ['exports', 'em
         dataType: 'json',
         contentType: 'application/x-www-form-urlencoded'
       };
+      var clientId = this.get('clientId');
 
-      var clientIdHeader = this.get('_clientIdHeader');
-      if (!isEmpty(clientIdHeader)) {
-        options.headers = clientIdHeader;
+      if (!isEmpty(clientId)) {
+        var base64ClientId = window.btoa(clientId.concat(':'));
+        _ember['default'].merge(options, {
+          headers: {
+            Authorization: 'Basic ' + base64ClientId
+          }
+        });
       }
 
       return _ember['default'].$.ajax(options);
@@ -88592,7 +88590,7 @@ define('ember-simple-auth/authenticators/torii', ['exports', 'ember', 'ember-sim
        __Many torii providers do not implement the `fetch` method__. If the
       provider in use does not implement the method simply add it as follows:
        ```js
-      // app/torii-providers/facebook.js
+      // app/providers/facebook.js
       import FacebookOauth2Provider from 'torii/providers/facebook-oauth2';
        export default FacebookOauth2Provider.extend({
         fetch(data) {
@@ -88611,34 +88609,30 @@ define('ember-simple-auth/authenticators/torii', ['exports', 'ember', 'ember-sim
       this._assertToriiIsPresent();
 
       data = data || {};
-      if (!isEmpty(data.provider)) {
-        var _ret = (function () {
-          var _data = data;
-          var provider = _data.provider;
+      return new RSVP.Promise(function (resolve, reject) {
+        if (!isEmpty(data.provider)) {
+          (function () {
+            var _data = data;
+            var provider = _data.provider;
 
-          return {
-            v: _this.get('torii').fetch(data.provider, data).then(function (data) {
-              _this._authenticateWithProvider(provider, data);
-              return data;
+            _this.get('torii').fetch(data.provider, data).then(function (data) {
+              _this._resolveWith(provider, data, resolve);
             }, function () {
-              return delete _this._provider;
-            })
-          };
-        })();
-
-        if (typeof _ret === 'object') return _ret.v;
-      } else {
-        delete this._provider;
-        return RSVP.reject();
-      }
+              delete _this._provider;
+              reject();
+            });
+          })();
+        } else {
+          delete _this._provider;
+          reject();
+        }
+      });
     },
 
     /**
-      Authenticates the session by opening the specified torii provider. For more
-      documentation on torii and its providers abstraction, see the
-      [project's README](https://github.com/Vestorly/torii#readme), specifically
-      the
-      [section on providers](https://github.com/Vestorly/torii#configuring-a-torii-provider).
+      Authenticates the session by opening the torii provider. For more
+      documentation on torii, see the
+      [project's README](https://github.com/Vestorly/torii#readme).
        @method authenticate
       @param {String} provider The torii provider to authenticate the session with
       @param {Object} options The options to pass to the torii provider
@@ -88650,9 +88644,10 @@ define('ember-simple-auth/authenticators/torii', ['exports', 'ember', 'ember-sim
 
       this._assertToriiIsPresent();
 
-      return this.get('torii').open(provider, options || {}).then(function (data) {
-        _this2._authenticateWithProvider(provider, data);
-        return data;
+      return new RSVP.Promise(function (resolve, reject) {
+        _this2.get('torii').open(provider, options || {}).then(function (data) {
+          _this2._resolveWith(provider, data, resolve);
+        }, reject);
       });
     },
 
@@ -88664,17 +88659,21 @@ define('ember-simple-auth/authenticators/torii', ['exports', 'ember', 'ember-sim
       @return {Ember.RSVP.Promise} A promise that when it resolves results in the session being invalidated
       @public
     */
-    invalidate: function invalidate(data) {
+    invalidate: function invalidate() {
       var _this3 = this;
 
-      return this.get('torii').close(this._provider, data).then(function () {
-        delete _this3._provider;
+      return new RSVP.Promise(function (resolve, reject) {
+        _this3.get('torii').close(_this3._provider).then(function () {
+          delete _this3._provider;
+          resolve();
+        }, reject);
       });
     },
 
-    _authenticateWithProvider: function _authenticateWithProvider(provider, data) {
+    _resolveWith: function _resolveWith(provider, data, resolve) {
       data.provider = provider;
       this._provider = data.provider;
+      resolve(data);
     },
 
     _assertToriiIsPresent: function _assertToriiIsPresent() {
@@ -88786,7 +88785,6 @@ define('ember-simple-auth/authorizers/devise', ['exports', 'ember', 'ember-simpl
 
       var userToken = data[tokenAttributeName];
       var userIdentification = data[identificationAttributeName];
-
       if (!isEmpty(userToken) && !isEmpty(userIdentification)) {
         var authData = tokenAttributeName + '="' + userToken + '", ' + identificationAttributeName + '="' + userIdentification + '"';
         block('Authorization', 'Token ' + authData);
@@ -88830,7 +88828,6 @@ define('ember-simple-auth/authorizers/oauth2-bearer', ['exports', 'ember', 'embe
     */
     authorize: function authorize(data, block) {
       var accessToken = data['access_token'];
-
       if (!isEmpty(accessToken)) {
         block('Authorization', 'Bearer ' + accessToken);
       }
@@ -88840,10 +88837,7 @@ define('ember-simple-auth/authorizers/oauth2-bearer', ['exports', 'ember', 'embe
 define('ember-simple-auth/configuration', ['exports', 'ember'], function (exports, _ember) {
   'use strict';
 
-  var getWithDefault = _ember['default'].getWithDefault;
-
   var DEFAULTS = {
-    baseURL: '',
     authenticationRoute: 'login',
     routeAfterAuthentication: 'index',
     routeIfAlreadyAuthenticated: 'index'
@@ -88874,10 +88868,10 @@ define('ember-simple-auth/configuration', ['exports', 'ember'], function (export
       @readOnly
       @static
       @type String
-      @default ''
+      @default '/'
       @public
     */
-    baseURL: DEFAULTS.baseURL,
+    baseURL: null,
 
     /**
       The route to transition to for authentication. The
@@ -88918,9 +88912,10 @@ define('ember-simple-auth/configuration', ['exports', 'ember'], function (export
     routeIfAlreadyAuthenticated: DEFAULTS.routeIfAlreadyAuthenticated,
 
     load: function load(config) {
+      var wrappedConfig = _ember['default'].Object.create(config);
       for (var property in this) {
         if (this.hasOwnProperty(property) && _ember['default'].typeOf(this[property]) !== 'function') {
-          this[property] = getWithDefault(config, property, DEFAULTS[property]);
+          this[property] = wrappedConfig.getWithDefault(property, DEFAULTS[property]);
         }
       }
     }
@@ -88976,44 +88971,35 @@ define('ember-simple-auth/instance-initializers/setup-session-restoration', ['ex
     });
   }
 });
-define('ember-simple-auth/internal-session', ['exports', 'ember', 'ember-getowner-polyfill'], function (exports, _ember, _emberGetownerPolyfill) {
+define('ember-simple-auth/internal-session', ['exports', 'ember'], function (exports, _ember) {
   'use strict';
 
-  var RSVP = _ember['default'].RSVP;
-  var isNone = _ember['default'].isNone;
-  var isEmpty = _ember['default'].isEmpty;
+  var on = _ember['default'].on;
 
   exports['default'] = _ember['default'].ObjectProxy.extend(_ember['default'].Evented, {
     authenticator: null,
     store: null,
+    container: null,
     isAuthenticated: false,
     attemptedTransition: null,
+    content: { authenticated: {} },
 
-    init: function init() {
-      this._super.apply(this, arguments);
-      this.set('content', { authenticated: {} });
-      this._bindToStoreEvents();
-    },
-
-    authenticate: function authenticate(authenticatorFactory) {
+    authenticate: function authenticate() {
       var _this = this;
 
-      _ember['default'].assert('Session#authenticate requires the authenticator to be specified, was "' + authenticatorFactory + '"!', !isEmpty(authenticatorFactory));
-      var authenticator = this._lookupAuthenticator(authenticatorFactory);
-      _ember['default'].assert('No authenticator for factory "' + authenticatorFactory + '" could be found!', !isNone(authenticator));
-
-      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-        args[_key - 1] = arguments[_key];
-      }
-
-      return authenticator.authenticate.apply(authenticator, args).then(function (content) {
-        return _this._setup(authenticatorFactory, content, true);
-      }, function (error) {
-        var rejectWithError = function rejectWithError() {
-          return RSVP.Promise.reject(error);
-        };
-
-        return _this._clear().then(rejectWithError, rejectWithError);
+      var args = Array.prototype.slice.call(arguments);
+      var authenticator = args.shift();
+      _ember['default'].assert('Session#authenticate requires the authenticator to be specified, was "' + authenticator + '"!', !_ember['default'].isEmpty(authenticator));
+      var theAuthenticator = this.container.lookup(authenticator);
+      _ember['default'].assert('No authenticator for factory "' + authenticator + '" could be found!', !_ember['default'].isNone(theAuthenticator));
+      return new _ember['default'].RSVP.Promise(function (resolve, reject) {
+        theAuthenticator.authenticate.apply(theAuthenticator, args).then(function (content) {
+          _this._setup(authenticator, content, true);
+          resolve();
+        }, function (error) {
+          _this._clear();
+          reject(error);
+        });
       });
     },
 
@@ -89021,101 +89007,67 @@ define('ember-simple-auth/internal-session', ['exports', 'ember', 'ember-getowne
       var _this2 = this;
 
       _ember['default'].assert('Session#invalidate requires the session to be authenticated!', this.get('isAuthenticated'));
-
-      var authenticator = this._lookupAuthenticator(this.authenticator);
-      return authenticator.invalidate(this.content.authenticated).then(function () {
-        authenticator.off('sessionDataUpdated');
-        return _this2._clear(true);
-      }, function (error) {
-        _this2.trigger('sessionInvalidationFailed', error);
-        return RSVP.Promise.reject(error);
+      return new _ember['default'].RSVP.Promise(function (resolve, reject) {
+        var authenticator = _this2.container.lookup(_this2.authenticator);
+        authenticator.invalidate(_this2.content.authenticated).then(function () {
+          authenticator.off('sessionDataUpdated');
+          _this2._clear(true);
+          resolve();
+        }, function (error) {
+          _this2.trigger('sessionInvalidationFailed', error);
+          reject(error);
+        });
       });
     },
 
     restore: function restore() {
       var _this3 = this;
 
-      var reject = function reject() {
-        return RSVP.Promise.reject();
-      };
+      return new _ember['default'].RSVP.Promise(function (resolve, reject) {
+        var restoredContent = _this3.store.restore();
 
-      return this._callStoreAsync('restore').then(function (restoredContent) {
         var _ref = restoredContent.authenticated || {};
 
-        var authenticatorFactory = _ref.authenticator;
+        var authenticator = _ref.authenticator;
 
-        if (!!authenticatorFactory) {
+        if (!!authenticator) {
           delete restoredContent.authenticated.authenticator;
-          var authenticator = _this3._lookupAuthenticator(authenticatorFactory);
-          return authenticator.restore(restoredContent.authenticated).then(function (content) {
+          _this3.container.lookup(authenticator).restore(restoredContent.authenticated).then(function (content) {
             _this3.set('content', restoredContent);
-            return _this3._setup(authenticatorFactory, content);
-          }, function (err) {
-            _ember['default'].Logger.debug('The authenticator "' + authenticatorFactory + '" rejected to restore the session - invalidating…');
-            if (err) {
-              _ember['default'].Logger.debug(err);
-            }
-            return _this3._clearWithContent(restoredContent).then(reject, reject);
+            _this3._setup(authenticator, content);
+            resolve();
+          }, function () {
+            _ember['default'].Logger.debug('The authenticator "' + authenticator + '" rejected to restore the session - invalidating…');
+            _this3.set('content', restoredContent);
+            _this3._clear();
+            reject();
           });
         } else {
           delete (restoredContent || {}).authenticated;
-          return _this3._clearWithContent(restoredContent).then(reject, reject);
+          _this3.set('content', restoredContent);
+          _this3._clear();
+          reject();
         }
-      }, function () {
-        return _this3._clear().then(reject, reject);
       });
     },
 
-    _callStoreAsync: function _callStoreAsync(method) {
-      var _store;
-
-      for (var _len2 = arguments.length, params = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-        params[_key2 - 1] = arguments[_key2];
-      }
-
-      var result = (_store = this.store)[method].apply(_store, params);
-
-      if (typeof result === 'undefined' || typeof result.then === 'undefined') {
-        _ember['default'].deprecate('Ember Simple Auth: Synchronous stores have been deprecated. Make sure your custom store\'s ' + method + ' method returns a promise.', false, {
-          id: 'ember-simple-auth.session-store.synchronous-' + method,
-          until: '2.0.0'
-        });
-        return RSVP.Promise.resolve(result);
-      } else {
-        return result;
-      }
-    },
-
-    _setup: function _setup(authenticator, authenticatedContent, trigger) {
-      var _this4 = this;
-
+    _setup: function _setup(authenticator, authenticatedContend, trigger) {
       trigger = !!trigger && !this.get('isAuthenticated');
       this.beginPropertyChanges();
       this.setProperties({
         isAuthenticated: true,
         authenticator: authenticator
       });
-      _ember['default'].set(this.content, 'authenticated', authenticatedContent);
+      _ember['default'].set(this.content, 'authenticated', authenticatedContend);
       this._bindToAuthenticatorEvents();
-
-      return this._updateStore().then(function () {
-        _this4.endPropertyChanges();
-        if (trigger) {
-          _this4.trigger('authenticationSucceeded');
-        }
-      }, function () {
-        _this4.setProperties({
-          isAuthenticated: false,
-          authenticator: null
-        });
-        _ember['default'].set(_this4.content, 'authenticated', {});
-        _this4.endPropertyChanges();
-      });
+      this._updateStore();
+      this.endPropertyChanges();
+      if (trigger) {
+        this.trigger('authenticationSucceeded');
+      }
     },
 
     _clear: function _clear(trigger) {
-      var _this5 = this;
-
       trigger = !!trigger && this.get('isAuthenticated');
       this.beginPropertyChanges();
       this.setProperties({
@@ -89123,20 +89075,11 @@ define('ember-simple-auth/internal-session', ['exports', 'ember', 'ember-getowne
         authenticator: null
       });
       _ember['default'].set(this.content, 'authenticated', {});
-
-      return this._updateStore().then(function () {
-        _this5.endPropertyChanges();
-        if (trigger) {
-          _this5.trigger('invalidationSucceeded');
-        }
-      }, function () {
-        return _this5.endPropertyChanges();
-      });
-    },
-
-    _clearWithContent: function _clearWithContent(content, trigger) {
-      this.set('content', content);
-      return this._clear(trigger);
+      this._updateStore();
+      this.endPropertyChanges();
+      if (trigger) {
+        this.trigger('invalidationSucceeded');
+      }
     },
 
     setUnknownProperty: function setUnknownProperty(key, value) {
@@ -89151,53 +89094,47 @@ define('ember-simple-auth/internal-session', ['exports', 'ember', 'ember-getowne
       if (!_ember['default'].isEmpty(this.authenticator)) {
         _ember['default'].set(data, 'authenticated', _ember['default'].merge({ authenticator: this.authenticator }, data.authenticated || {}));
       }
-      return this._callStoreAsync('persist', data);
+      this.store.persist(data);
     },
 
     _bindToAuthenticatorEvents: function _bindToAuthenticatorEvents() {
-      var _this6 = this;
+      var _this4 = this;
 
-      var authenticator = this._lookupAuthenticator(this.authenticator);
+      var authenticator = this.container.lookup(this.authenticator);
       authenticator.off('sessionDataUpdated');
       authenticator.off('sessionDataInvalidated');
       authenticator.on('sessionDataUpdated', function (content) {
-        _this6._setup(_this6.authenticator, content);
+        _this4._setup(_this4.authenticator, content);
       });
       authenticator.on('sessionDataInvalidated', function () {
-        _this6._clear(true);
+        _this4._clear(true);
       });
     },
 
-    _bindToStoreEvents: function _bindToStoreEvents() {
-      var _this7 = this;
+    _bindToStoreEvents: on('init', function () {
+      var _this5 = this;
 
       this.store.on('sessionDataUpdated', function (content) {
         var _ref2 = content.authenticated || {};
 
-        var authenticatorFactory = _ref2.authenticator;
+        var authenticator = _ref2.authenticator;
 
-        if (!!authenticatorFactory) {
+        if (!!authenticator) {
           delete content.authenticated.authenticator;
-          var authenticator = _this7._lookupAuthenticator(authenticatorFactory);
-          authenticator.restore(content.authenticated).then(function (authenticatedContent) {
-            _this7.set('content', content);
-            _this7._setup(authenticatorFactory, authenticatedContent, true);
-          }, function (err) {
-            _ember['default'].Logger.debug('The authenticator "' + authenticatorFactory + '" rejected to restore the session - invalidating…');
-            if (err) {
-              _ember['default'].Logger.debug(err);
-            }
-            _this7._clearWithContent(content, true);
+          _this5.container.lookup(authenticator).restore(content.authenticated).then(function (authenticatedContent) {
+            _this5.set('content', content);
+            _this5._setup(authenticator, authenticatedContent, true);
+          }, function () {
+            _ember['default'].Logger.debug('The authenticator "' + authenticator + '" rejected to restore the session - invalidating…');
+            _this5.set('content', content);
+            _this5._clear(true);
           });
         } else {
-          _this7._clearWithContent(content, true);
+          _this5.set('content', content);
+          _this5._clear(true);
         }
       });
-    },
-
-    _lookupAuthenticator: function _lookupAuthenticator(authenticator) {
-      return (0, _emberGetownerPolyfill['default'])(this).lookup(authenticator);
-    }
+    })
   });
 });
 define('ember-simple-auth/mixins/application-route-mixin', ['exports', 'ember', 'ember-simple-auth/configuration'], function (exports, _ember, _emberSimpleAuthConfiguration) {
@@ -89230,6 +89167,7 @@ define('ember-simple-auth/mixins/application-route-mixin', ['exports', 'ember', 
   })();
 
   var inject = _ember['default'].inject;
+  var on = _ember['default'].on;
 
   /**
     The mixin for the application route; __defines methods that are called when
@@ -89238,27 +89176,25 @@ define('ember-simple-auth/mixins/application-route-mixin', ['exports', 'ember', 
     or invalidated__ (see
     {{#crossLink "SessionService/invalidationSucceeded:event"}}{{/crossLink}}).
   
-    __Using this mixin is optional.__ The session events can also be handled
+    Using this mixin is optional. The session events can also be handled
     manually, e.g. in an instance initializer:
   
     ```js
     // app/instance-initializers/session-events.js
-    export function initialize(instance) {
-      const applicationRoute = instance.container.lookup('route:application');
-      const session          = instance.container.lookup('service:session');
-      session.on('authenticationSucceeded', function() {
-        applicationRoute.transitionTo('index');
-      });
-      session.on('invalidationSucceeded', function() {
-        window.location.reload();
-      });
-    };
-  
-    export default {
-      initialize,
-      name:  'session-events',
-      after: 'ember-simple-auth'
-    };
+    Ember.Application.initializer({
+      name:       'session-events',
+      after:      'ember-simple-auth',
+      initialize: function(container, application) {
+        var applicationRoute = container.lookup('route:application');
+        var session          = container.lookup('service:session');
+        session.on('authenticationSucceeded', function() {
+          applicationRoute.transitionTo('index');
+        });
+        session.on('invalidationSucceeded', function() {
+          window.location.reload();
+        });
+      }
+    });
     ```
   
     __When using the `ApplicationRouteMixin` you need to specify
@@ -89279,12 +89215,7 @@ define('ember-simple-auth/mixins/application-route-mixin', ['exports', 'ember', 
     */
     session: inject.service('session'),
 
-    init: function init() {
-      this._super.apply(this, arguments);
-      this._subscribeToSessionEvents();
-    },
-
-    _subscribeToSessionEvents: function _subscribeToSessionEvents() {
+    _subscribeToSessionEvents: on('init', function () {
       var _this = this,
           _arguments = arguments;
 
@@ -89298,7 +89229,7 @@ define('ember-simple-auth/mixins/application-route-mixin', ['exports', 'ember', 
           _this[method].apply(_this, _arguments);
         }));
       });
-    },
+    }),
 
     /**
       This method handles the session's
@@ -89313,7 +89244,6 @@ define('ember-simple-auth/mixins/application-route-mixin', ['exports', 'ember', 
     */
     sessionAuthenticated: function sessionAuthenticated() {
       var attemptedTransition = this.get('session.attemptedTransition');
-
       if (attemptedTransition) {
         attemptedTransition.retry();
         this.set('session.attemptedTransition', null);
@@ -89395,10 +89325,9 @@ define('ember-simple-auth/mixins/authenticated-route-mixin', ['exports', 'ember'
     */
     beforeModel: function beforeModel(transition) {
       if (!this.get('session.isAuthenticated')) {
-        _ember['default'].assert('The route configured as Configuration.authenticationRoute cannot implement the AuthenticatedRouteMixin mixin as that leads to an infinite transitioning loop!', this.get('routeName') !== _emberSimpleAuthConfiguration['default'].authenticationRoute);
-
         transition.abort();
-        this.set('session.attemptedTransition', transition);
+        this.get('session').set('attemptedTransition', transition);
+        _ember['default'].assert('The route configured as Configuration.authenticationRoute cannot implement the AuthenticatedRouteMixin mixin as that leads to an infinite transitioning loop!', this.get('routeName') !== _emberSimpleAuthConfiguration['default'].authenticationRoute);
         this.transitionTo(_emberSimpleAuthConfiguration['default'].authenticationRoute);
       } else {
         return this._super.apply(this, arguments);
@@ -89430,8 +89359,6 @@ define('ember-simple-auth/mixins/data-adapter-mixin', ['exports', 'ember'], func
       authorizer: 'authorizer:application'
     });
     ```
-  
-    __The `DataAdapterMixin` requires Ember Data 1.13 or later.__
   
     @class DataAdapterMixin
     @module ember-simple-auth/mixins/data-adapter-mixin
@@ -89570,7 +89497,7 @@ define('ember-simple-auth/mixins/unauthenticated-route-mixin', ['exports', 'embe
     }
   });
 });
-define('ember-simple-auth/services/session', ['exports', 'ember', 'ember-getowner-polyfill'], function (exports, _ember, _emberGetownerPolyfill) {
+define('ember-simple-auth/services/session', ['exports', 'ember'], function (exports, _ember) {
   'use strict';
 
   var _slice = Array.prototype.slice;
@@ -89578,6 +89505,7 @@ define('ember-simple-auth/services/session', ['exports', 'ember', 'ember-getowne
   var SESSION_DATA_KEY_PREFIX = /^data\./;
 
   var computed = _ember['default'].computed;
+  var on = _ember['default'].on;
 
   /**
     __The session service provides access to the current session as well as
@@ -89680,11 +89608,6 @@ define('ember-simple-auth/services/session', ['exports', 'ember', 'ember-getowne
     */
     attemptedTransition: computed.alias('session.attemptedTransition'),
 
-    init: function init() {
-      this._super.apply(this, arguments);
-      this._forwardSessionEvents();
-    },
-
     set: function set(key, value) {
       var setsSessionData = SESSION_DATA_KEY_PREFIX.test(key);
       if (setsSessionData) {
@@ -89695,20 +89618,20 @@ define('ember-simple-auth/services/session', ['exports', 'ember', 'ember-getowne
       }
     },
 
-    _forwardSessionEvents: function _forwardSessionEvents() {
+    _forwardSessionEvents: on('init', function () {
       var _this = this,
           _arguments = arguments;
 
       _ember['default'].A(['authenticationSucceeded', 'invalidationSucceeded']).forEach(function (event) {
-        var session = _this.get('session');
         // the internal session won't be available in route unit tests
+        var session = _this.get('session');
         if (session) {
           session.on(event, function () {
             _this.trigger.apply(_this, [event].concat(_slice.call(_arguments)));
           });
         }
       });
-    },
+    }),
 
     /**
       __Authenticates the session with an `authenticator`__ and appropriate
@@ -89738,7 +89661,6 @@ define('ember-simple-auth/services/session', ['exports', 'ember', 'ember-getowne
     */
     authenticate: function authenticate() {
       var session = this.get('session');
-
       return session.authenticate.apply(session, arguments);
     },
 
@@ -89763,7 +89685,6 @@ define('ember-simple-auth/services/session', ['exports', 'ember', 'ember-getowne
     */
     invalidate: function invalidate() {
       var session = this.get('session');
-
       return session.invalidate.apply(session, arguments);
     },
 
@@ -89784,7 +89705,7 @@ define('ember-simple-auth/services/session', ['exports', 'ember', 'ember-getowne
     */
     authorize: function authorize(authorizerFactory, block) {
       if (this.get('isAuthenticated')) {
-        var authorizer = (0, _emberGetownerPolyfill['default'])(this).lookup(authorizerFactory);
+        var authorizer = this.container.lookup(authorizerFactory);
         var sessionData = this.get('data.authenticated');
         authorizer.authorize(sessionData, block);
       }
@@ -89796,6 +89717,7 @@ define('ember-simple-auth/session-stores/adaptive', ['exports', 'ember', 'ember-
   'use strict';
 
   var computed = _ember['default'].computed;
+  var on = _ember['default'].on;
 
   var LOCAL_STORAGE_TEST_KEY = '_ember_simple_auth_test_key';
 
@@ -89865,9 +89787,17 @@ define('ember-simple-auth/session-stores/adaptive', ['exports', 'ember', 'ember-
       }
     }),
 
-    init: function init() {
-      this._super.apply(this, arguments);
+    _createStore: function _createStore(storeType, options) {
+      var _this = this;
 
+      var store = storeType.create(options);
+      store.on('sessionDataUpdated', function (data) {
+        _this.trigger('sessionDataUpdated', data);
+      });
+      return store;
+    },
+
+    _setupStore: on('init', function () {
       var store = undefined;
       if (this.get('_isLocalStorageAvailable')) {
         var options = { key: this.get('localStorageKey') };
@@ -89877,38 +89807,26 @@ define('ember-simple-auth/session-stores/adaptive', ['exports', 'ember', 'ember-
         store = this._createStore(_emberSimpleAuthSessionStoresCookie['default'], options);
       }
       this.set('_store', store);
-    },
-
-    _createStore: function _createStore(storeType, options) {
-      var _this = this;
-
-      var store = storeType.create(options);
-
-      store.on('sessionDataUpdated', function (data) {
-        _this.trigger('sessionDataUpdated', data);
-      });
-      return store;
-    },
+    }),
 
     /**
       Persists the `data` in the `localStorage` if it is available or in a cookie
       if it is not.
        @method persist
       @param {Object} data The data to persist
-      @return {Ember.RSVP.Promise} A promise that resolves when the data has successfully been persisted and rejects otherwise.
       @public
     */
     persist: function persist() {
       var _get;
 
-      return (_get = this.get('_store')).persist.apply(_get, arguments);
+      (_get = this.get('_store')).persist.apply(_get, arguments);
     },
 
     /**
       Returns all data currently stored in the `localStorage` if that is
       available - or if it is not, in the cookie - as a plain object.
        @method restore
-      @return {Ember.RSVP.Promise} A promise that resolves with the data currently persisted in the store when the data has been restored successfully and rejects otherwise.
+      @return {Object} The data currently persisted in the `localStorage`.
       @public
     */
     restore: function restore() {
@@ -89920,18 +89838,15 @@ define('ember-simple-auth/session-stores/adaptive', ['exports', 'ember', 'ember-
       {{#crossLink "LocalStorageStore/key:property"}}{{/crossLink}} from
       `localStorage` if that is available or by deleting the cookie if it is not.
        @method clear
-      @return {Ember.RSVP.Promise} A promise that resolves when the store has been cleared successfully and rejects otherwise.
       @public
     */
     clear: function clear() {
-      return this.get('_store').clear();
+      this.get('_store').clear();
     }
   });
 });
 define('ember-simple-auth/session-stores/base', ['exports', 'ember'], function (exports, _ember) {
   'use strict';
-
-  var RSVP = _ember['default'].RSVP;
 
   /**
     The base class for all session stores. __This serves as a starting point for
@@ -89960,48 +89875,41 @@ define('ember-simple-auth/session-stores/base', ['exports', 'ember'], function (
 
     /**
       Persists the `data`. This replaces all currently stored data.
-       `BaseStores`'s implementation always returns a rejecting promise. __This
-      method must be overridden in subclasses__.
+       `BaseStores`'s implementation does nothing. __This method must be
+      overridden in subclasses__.
        @method persist
       @param {Object} data The data to persist
-      @return {Ember.RSVP.Promise} A promise that resolves when the data has successfully been persisted and rejects otherwise.
       @public
     */
-    persist: function persist() {
-      return RSVP.reject();
-    },
+    persist: function persist() {},
 
     /**
       Returns all data currently stored as a plain object.
-       `BaseStores`'s implementation always returns a rejecting promise. __This
-      method must be overridden in subclasses__.
+       `BaseStores`'s implementation returns an empty object. __This method must
+      be overridden in subclasses__.
        @method restore
-      @return {Ember.RSVP.Promise} A promise that resolves with the data currently persisted in the store when the data has been restored successfully and rejects otherwise.
+      @return {Object} The data currently persisted in the store.
       @public
     */
     restore: function restore() {
-      return RSVP.reject();
+      return {};
     },
 
     /**
       Clears the store.
-       `BaseStores`'s implementation always returns a rejecting promise. __This
-      method must be overridden in subclasses__.
+       `BaseStores`'s implementation does nothing. __This method must be
+      overridden in subclasses__.
        @method clear
-      @return {Ember.RSVP.Promise} A promise that resolves when the store has been cleared successfully and rejects otherwise.
       @public
     */
-    clear: function clear() {
-      return RSVP.reject();
-    }
+    clear: function clear() {}
   });
 });
 define('ember-simple-auth/session-stores/cookie', ['exports', 'ember', 'ember-simple-auth/session-stores/base', 'ember-simple-auth/utils/objects-are-equal'], function (exports, _ember, _emberSimpleAuthSessionStoresBase, _emberSimpleAuthUtilsObjectsAreEqual) {
   'use strict';
 
-  var RSVP = _ember['default'].RSVP;
   var computed = _ember['default'].computed;
-  var next = _ember['default'].run.next;
+  var on = _ember['default'].on;
 
   /**
     Session store that persists data in a cookie.
@@ -90083,58 +89991,47 @@ define('ember-simple-auth/session-stores/cookie', ['exports', 'ember', 'ember-si
       return visibilityState === 'visible';
     }).volatile(),
 
-    init: function init() {
-      var _this = this;
-
-      this._super.apply(this, arguments);
-
-      next(function () {
-        _this._syncData().then(function () {
-          _this._renewExpiration();
-        });
-      });
-    },
+    _setup: on('init', function () {
+      this._syncData();
+      this._renewExpiration();
+    }),
 
     /**
       Persists the `data` in the cookie.
        @method persist
       @param {Object} data The data to persist
-      @return {Ember.RSVP.Promise} A promise that resolves when the data has successfully been persisted and rejects otherwise.
       @public
     */
     persist: function persist(data) {
-      this._lastData = data;
       data = JSON.stringify(data || {});
       var expiration = this._calculateExpirationTime();
       this._write(data, expiration);
-      return RSVP.resolve();
+      this._lastData = this.restore();
     },
 
     /**
       Returns all data currently stored in the cookie as a plain object.
        @method restore
-      @return {Ember.RSVP.Promise} A promise that resolves with the data currently persisted in the store when the data has been restored successfully and rejects otherwise.
+      @return {Object} The data currently persisted in the cookie.
       @public
     */
     restore: function restore() {
       var data = this._read(this.cookieName);
       if (_ember['default'].isEmpty(data)) {
-        return RSVP.resolve({});
+        return {};
       } else {
-        return RSVP.resolve(JSON.parse(data));
+        return JSON.parse(data);
       }
     },
 
     /**
       Clears the store by deleting the cookie.
        @method clear
-      @return {Ember.RSVP.Promise} A promise that resolves when the store has been cleared successfully and rejects otherwise.
       @public
     */
     clear: function clear() {
       this._write(null, 0);
       this._lastData = {};
-      return RSVP.resolve();
     },
 
     _read: function _read(name) {
@@ -90161,41 +90058,33 @@ define('ember-simple-auth/session-stores/cookie', ['exports', 'ember', 'ember-si
     },
 
     _syncData: function _syncData() {
-      var _this2 = this;
-
-      return this.restore().then(function (data) {
-        if (!(0, _emberSimpleAuthUtilsObjectsAreEqual['default'])(data, _this2._lastData)) {
-          _this2._lastData = data;
-          _this2.trigger('sessionDataUpdated', data);
-        }
-        if (!_ember['default'].testing) {
-          _ember['default'].run.cancel(_this2._syncDataTimeout);
-          _this2._syncDataTimeout = _ember['default'].run.later(_this2, _this2._syncData, 500);
-        }
-      });
+      var data = this.restore();
+      if (!(0, _emberSimpleAuthUtilsObjectsAreEqual['default'])(data, this._lastData)) {
+        this._lastData = data;
+        this.trigger('sessionDataUpdated', data);
+      }
+      if (!_ember['default'].testing) {
+        _ember['default'].run.cancel(this._syncDataTimeout);
+        this._syncDataTimeout = _ember['default'].run.later(this, this._syncData, 500);
+      }
     },
 
     _renew: function _renew() {
-      var _this3 = this;
-
-      return this.restore().then(function (data) {
-        if (!_ember['default'].isEmpty(data) && data !== {}) {
-          data = _ember['default'].typeOf(data) === 'string' ? data : JSON.stringify(data || {});
-          var expiration = _this3._calculateExpirationTime();
-          _this3._write(data, expiration);
-        }
-      });
+      var data = this.restore();
+      if (!_ember['default'].isEmpty(data) && data !== {}) {
+        data = _ember['default'].typeOf(data) === 'string' ? data : JSON.stringify(data || {});
+        var expiration = this._calculateExpirationTime();
+        this._write(data, expiration);
+      }
     },
 
     _renewExpiration: function _renewExpiration() {
+      if (this.get('_isPageVisible')) {
+        this._renew();
+      }
       if (!_ember['default'].testing) {
         _ember['default'].run.cancel(this._renewExpirationTimeout);
         this._renewExpirationTimeout = _ember['default'].run.later(this, this._renewExpiration, 60000);
-      }
-      if (this.get('_isPageVisible')) {
-        return this._renew();
-      } else {
-        return RSVP.resolve();
       }
     }
   });
@@ -90203,7 +90092,7 @@ define('ember-simple-auth/session-stores/cookie', ['exports', 'ember', 'ember-si
 define('ember-simple-auth/session-stores/ephemeral', ['exports', 'ember', 'ember-simple-auth/session-stores/base'], function (exports, _ember, _emberSimpleAuthSessionStoresBase) {
   'use strict';
 
-  var RSVP = _ember['default'].RSVP;
+  var on = _ember['default'].on;
 
   /**
     Session store that __persists data in memory and thus is not actually
@@ -90217,47 +90106,38 @@ define('ember-simple-auth/session-stores/ephemeral', ['exports', 'ember', 'ember
     @public
   */
   exports['default'] = _emberSimpleAuthSessionStoresBase['default'].extend({
-    init: function init() {
-      this._super.apply(this, arguments);
+    _setup: on('init', function () {
       this.clear();
-    },
+    }),
 
     /**
       Persists the `data`. This replaces all currently stored data.
        @method persist
       @param {Object} data The data to persist
-      @return {Ember.RSVP.Promise} A promise that resolves when the data has successfully been persisted and rejects otherwise.
       @public
     */
     persist: function persist(data) {
       this._data = JSON.stringify(data || {});
-
-      return RSVP.resolve();
     },
 
     /**
       Returns all data currently stored as a plain object.
        @method restore
-      @return {Ember.RSVP.Promise} A promise that resolves with the data currently persisted in the store when the data has been restored successfully and rejects otherwise.
+      @return {Object} The data currently persisted in the store.
       @public
     */
     restore: function restore() {
-      var data = JSON.parse(this._data) || {};
-
-      return RSVP.resolve(data);
+      return JSON.parse(this._data) || {};
     },
 
     /**
       Clears the store.
        @method clear
-      @return {Ember.RSVP.Promise} A promise that resolves when the store has been cleared successfully and rejects otherwise.
       @public
     */
     clear: function clear() {
       delete this._data;
       this._data = '{}';
-
-      return RSVP.resolve();
     }
   });
 });
@@ -90265,7 +90145,7 @@ define('ember-simple-auth/session-stores/local-storage', ['exports', 'ember', 'e
   /* global localStorage */
   'use strict';
 
-  var RSVP = _ember['default'].RSVP;
+  var on = _ember['default'].on;
 
   /**
     Session store that persists data in the browser's `localStorage`.
@@ -90291,37 +90171,31 @@ define('ember-simple-auth/session-stores/local-storage', ['exports', 'ember', 'e
     */
     key: 'ember_simple_auth:session',
 
-    init: function init() {
-      this._super.apply(this, arguments);
-
+    _setup: on('init', function () {
       this._bindToStorageEvents();
-    },
+    }),
 
     /**
       Persists the `data` in the `localStorage`.
        @method persist
       @param {Object} data The data to persist
-      @return {Ember.RSVP.Promise} A promise that resolves when the data has successfully been persisted and rejects otherwise.
       @public
     */
     persist: function persist(data) {
-      this._lastData = data;
       data = JSON.stringify(data || {});
       localStorage.setItem(this.key, data);
-
-      return RSVP.resolve();
+      this._lastData = this.restore();
     },
 
     /**
       Returns all data currently stored in the `localStorage` as a plain object.
        @method restore
-      @return {Ember.RSVP.Promise} A promise that resolves with the data currently persisted in the store when the data has been restored successfully and rejects otherwise.
+      @return {Object} The data currently persisted in the `localStorage`.
       @public
     */
     restore: function restore() {
       var data = localStorage.getItem(this.key);
-
-      return RSVP.resolve(JSON.parse(data) || {});
+      return JSON.parse(data) || {};
     },
 
     /**
@@ -90329,26 +90203,22 @@ define('ember-simple-auth/session-stores/local-storage', ['exports', 'ember', 'e
       {{#crossLink "LocalStorageStore/key:property"}}{{/crossLink}} from
       `localStorage`.
        @method clear
-      @return {Ember.RSVP.Promise} A promise that resolves when the store has been cleared successfully and rejects otherwise.
       @public
     */
     clear: function clear() {
       localStorage.removeItem(this.key);
       this._lastData = {};
-
-      return RSVP.resolve();
     },
 
     _bindToStorageEvents: function _bindToStorageEvents() {
       var _this = this;
 
       _ember['default'].$(window).bind('storage', function () {
-        _this.restore().then(function (data) {
-          if (!(0, _emberSimpleAuthUtilsObjectsAreEqual['default'])(data, _this._lastData)) {
-            _this._lastData = data;
-            _this.trigger('sessionDataUpdated', data);
-          }
-        });
+        var data = _this.restore();
+        if (!(0, _emberSimpleAuthUtilsObjectsAreEqual['default'])(data, _this._lastData)) {
+          _this._lastData = data;
+          _this.trigger('sessionDataUpdated', data);
+        }
       });
     }
   });

@@ -1,11 +1,8 @@
 <beans xmlns:jpa="http://www.springframework.org/schema/data/jpa"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:jdbc="http://www.springframework.org/schema/jdbc"
        xmlns:tx="http://www.springframework.org/schema/tx" xmlns="http://www.springframework.org/schema/beans"
 
-       xsi:schemaLocation="http://www.springframework.org/schema/jdbc
-        http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
-        http://www.springframework.org/schema/beans
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/data/jpa
         http://www.springframework.org/schema/data/jpa/spring-jpa.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
@@ -30,16 +27,17 @@
             <!--<property templateName="databasePlatform" value="org.hibernate.dialect.HSQLDialect"/>-->
             <property name="database" value="MYSQL"/>
             <property name="databasePlatform" value="org.hibernate.dialect.MySQL57InnoDBDialect"/>
-            <property name="showSql" value="true" />
+            <property name="showSql" value="true"/>
         </bean>
     </beans>
 
     <beans>
-        <jpa:repositories base-package="com.topspectrum.feedback.register.data.repositories" transaction-manager-ref="transactionManager" />
-        <jpa:repositories base-package="feedback.web.data.repositories" transaction-manager-ref="transactionManager" />
-        <jpa:repositories base-package="com.topspectrum.data.dao" transaction-manager-ref="transactionManager" />
+        <jpa:repositories base-package="com.topspectrum.feedback.register.data.repositories" transaction-manager-ref="transactionManager"/>
+        <jpa:repositories base-package="feedback.web.data.repositories" transaction-manager-ref="transactionManager"/>
+        <jpa:repositories base-package="com.topspectrum.data.dao" transaction-manager-ref="transactionManager"/>
         <!--<jpa:repositories base-package="feedback.register.web.controllers.whois.data" transaction-manager-ref="transactionManager" />-->
-        <jpa:repositories base-package="feedback.register.free.data" transaction-manager-ref="transactionManager" />
+        <jpa:repositories base-package="feedback.register.free.data" transaction-manager-ref="transactionManager"/>
+        <jpa:repositories base-package="com.topspectrum.cache" transaction-manager-ref="transactionManager"/>
 
         <jpa:auditing auditor-aware-ref="springSecurityAuditorAwareBean" modify-on-creation="true" set-dates="true"/>
 
@@ -56,17 +54,17 @@
 
         <bean id="springSecurityAuditorAwareBean" class="feedback.web.data.SpringSecurityAuditorAwareBean"/>
 
-        <bean id="jpaDialect" class="org.springframework.orm.jpa.vendor.HibernateJpaDialect" />
+        <bean id="jpaDialect" class="org.springframework.orm.jpa.vendor.HibernateJpaDialect"/>
 
-        <tx:annotation-driven transaction-manager="transactionManager" />
+        <tx:annotation-driven transaction-manager="transactionManager"/>
 
         <bean id="entityManagerFactory"
               class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
-            <property name="persistenceXmlLocation" value="classpath:META-INF/persistence.xml" />
-            <property name="persistenceUnitName" value="default" />
-            <property name="dataSource" ref="dataSource" />
-            <property name="jpaVendorAdapter" ref="jpaAdapter" />
-            <property name="jpaDialect" ref="jpaDialect" />
+            <property name="persistenceXmlLocation" value="classpath:META-INF/persistence.xml"/>
+            <property name="persistenceUnitName" value="default"/>
+            <property name="dataSource" ref="dataSource"/>
+            <property name="jpaVendorAdapter" ref="jpaAdapter"/>
+            <property name="jpaDialect" ref="jpaDialect"/>
             <property name="validationMode" value="NONE"/>
         </bean>
 
@@ -76,8 +74,8 @@
         -->
         <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
             <property name="dataSource" ref="dataSource"/>
-            <property name="entityManagerFactory" ref="entityManagerFactory" />
-            <property name="jpaDialect" ref="jpaDialect" />
+            <property name="entityManagerFactory" ref="entityManagerFactory"/>
+            <property name="jpaDialect" ref="jpaDialect"/>
         </bean>
 
         <!-- Enables annotation-driven transaction management. -->

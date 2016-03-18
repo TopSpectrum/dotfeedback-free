@@ -5,125 +5,157 @@ import InboundActions from 'ember-component-inbound-actions/inbound-actions';
 
 export default Ember.Component.extend(InboundActions, {
 
-  classNames: ['form-group'],
-  classNameBindings: ['hasError', 'hasFeedback'],
+    classNames: ['form-group'],
+    classNameBindings: ['hasError', 'hasFeedback', 'focusedClassBinding'],
 
-  muteInitialErrors: true,
-  muteErrors: false,
+    muteInitialErrors: true,
+    muteErrors: false,
 
-  disabled: false,
+    focused_value: false,
 
-  feedback: false,
-  errors: null,
+    disabled: false,
 
-  initializeObservers: function () {
-    this.set('muteErrors', this.get('muteInitialErrors'));
-    this.get('errors');
-  }.on('init'),
+    feedback: false,
+    errors: null,
 
-  hasLabel: Ember.computed('label', function () {
-    return !Ember.isNone(this.get('label'));
-  }),
+    inputClass: Ember.computed('focused_value', function() {
+        var focused = this.get('focused_value');
 
-  hasSubtext: Ember.computed('subtext', function () {
-    return !Ember.isNone(this.get('subtext'));
-  }),
+        return 'form-control ' + (focused ? 'focused' : '');
+    }),
 
-  hasFeedback: Ember.computed('muteErrors', 'hasErrors', 'feedback', 'errors', 'errors.[]', function () {
-    let feedback = this.get('feedback');
+    focusedClassBinding: Ember.computed('focused', function() {
+        var focused = this.get('focused');
 
-    if (false === feedback) {
-      return false;
-    } else if (true === feedback) {
-      return true;
-    } else if ('auto' === feedback) {
-      let muteErrors = this.get('muteErrors');
-      let errors = this.get('errors') || [];
-      let hasErrors = (errors.length > 0);
-      let decision = !((hasErrors && muteErrors));
+        if (focused) {
+            return 'focused';
+        } else {
+            return '';
+        }
+    }),
 
-      return decision;
-    }
-  }),
+    initializeObservers: function () {
+        this.set('muteErrors', this.get('muteInitialErrors'));
+        this.get('errors');
+    }.on('init'),
 
-  isTextarea: Ember.computed('type', function () {
-    return this.get('type') === 'textarea';
-  }),
+    hasLabel: Ember.computed('label', function () {
+        return !Ember.isNone(this.get('label'));
+    }),
 
-  hasErrors: Ember.computed('muteErrors', 'errors', 'errors.[]', function () {
-    if (this.get('muteErrors')) {
-      return false;
-    }
+    hasSubtext: Ember.computed('subtext', function () {
+        return !Ember.isNone(this.get('subtext'));
+    }),
 
-    let errors = this.get('errors');
+    hasFeedback: Ember.computed('muteErrors', 'hasErrors', 'feedback', 'errors', 'errors.[]', function () {
+        let feedback = this.get('feedback');
 
-    if (errors) {
-      return (errors.length > 0);
-    } else {
-      return false;
-    }
-  }),
+        if (false === feedback) {
+            return false;
+        } else if (true === feedback) {
+            return true;
+        } else if ('auto' === feedback) {
+            let muteErrors = this.get('muteErrors');
+            let errors = this.get('errors') || [];
+            let hasErrors = (errors.length > 0);
+            let decision = !((hasErrors && muteErrors));
 
-  initializeMask: function () {
-    var mask = this.get('mask');
+            return decision;
+        }
+    }),
 
-    Ember.Logger.debug('initializeMask', mask);
+    isTextarea: Ember.computed('type', function () {
+        return this.get('type') === 'textarea';
+    }),
 
-    if (!mask) {
-      Ember.Logger.debug('no mask');
-      return;
-    }
-
-    if (Ember.typeOf(mask) !== 'string') {
-      Ember.Logger.debug('no mask: not string');
-      return;
-    }
-
-    let regex = new RegExp(mask);
-
-    mask = function (input) {
-      if (Ember.typeOf(input) !== 'string') {
-        return false;
-      }
-
-      return regex.test(input);
-    };
-
-    var $el = this.$().find('input');
-
-    Ember.run.later(this, function () {
-      var previouslyValidValue = '';
-
-      $el.on('input', function (e) {
-        var $el = Ember.$(e.currentTarget);
-        var value = $el.val();
-
-        if (!mask(value)) {
-          $el.val(previouslyValidValue);
-
-          Ember.Logger.debug('Did not validate! ' + value + ":" + previouslyValidValue);
-          return;
+    hasErrors: Ember.computed('muteErrors', 'errors', 'errors.[]', function () {
+        if (this.get('muteErrors')) {
+            return false;
         }
 
-        previouslyValidValue = value;
-      });
-    });
+        let errors = this.get('errors');
 
-  }.on('didInsertElement'),
+        if (errors) {
+            return (errors.length > 0);
+        } else {
+            return false;
+        }
+    }),
 
-  actions: {
-    enter() {
-      this.sendAction('enter');
-    },
+    initializeMask: function () {
+        var mask = this.get('mask');
 
-    showErrors() {
-      this.set('muteErrors', false);
-    },
-    focus() {
-      var $el = this.$().find('input');
+        Ember.Logger.debug('initializeMask', mask);
 
-      $el.focus().select();
+        if (!mask) {
+            Ember.Logger.debug('no mask');
+            return;
+        }
+
+        if (Ember.typeOf(mask) !== 'string') {
+            Ember.Logger.debug('no mask: not string');
+            return;
+        }
+
+        let regex = new RegExp(mask);
+
+        mask = function (input) {
+            if (Ember.typeOf(input) !== 'string') {
+                return false;
+            }
+
+            return regex.test(input);
+        };
+
+        var $el = this.$().find('input');
+
+        Ember.run.later(this, function () {
+            let previouslyValidValue = $el.val();
+
+            $el.on('input', function (e) {
+                let value = $el.val();
+
+                if (null === previouslyValidValue) {
+                    previouslyValidValue = value;
+                }
+
+                if (!mask(value)) {
+                    $el.val(previouslyValidValue);
+
+                    Ember.Logger.debug('Did not validate! ' + value + ":" + previouslyValidValue);
+                    return;
+                }
+
+                previouslyValidValue = value;
+            });
+        });
+
+    }.on('didInsertElement'),
+
+    actions: {
+        focused() {
+            this.set('focused_value', true);
+            this.set('muteErrors', false);
+
+            this.sendAction('focused');
+        },
+
+        blurred() {
+            this.set('focused_value', false);
+
+            this.sendAction('blurred');
+        },
+
+        enter() {
+            this.sendAction('enter');
+        },
+
+        focus() {
+            this.$()
+                .find('input')
+                .focus()
+                .select();
+        }
     }
-  }
 
 });

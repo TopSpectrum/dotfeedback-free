@@ -17,7 +17,7 @@ This file contains overrides that are used for unit tests.
 
         <context:annotation-config/>
 
-        <bean class="com.topspectrum.cache.DefaultDependencyCacheService"/>
+        <!--<bean class="com.topspectrum.cache.DefaultDependencyCacheService"/>-->
         <bean class="com.topspectrum.cache.MemoryCachedDependencyManager"/>
         <bean class="org.springframework.cache.guava.GuavaCacheManager"/>
 

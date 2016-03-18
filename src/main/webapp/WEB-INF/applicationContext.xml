@@ -37,7 +37,6 @@
             </property>
         </bean>
 
-
         <bean class="feedback.services.DefaultVerificationService"/>
 
         <bean id="currentIPServletFilter" class="feedback.peoplestats.CurrentIPServletFilter"/>

@@ -19,6 +19,6 @@ export default DS.Model.extend({
   'faxExt': DS.attr(),
   'fingerprint': DS.attr(),
   'referralCode': DS.attr(),
-  'registrar': DS.attr()
+  'registrar': DS.attr('string')
 
 });

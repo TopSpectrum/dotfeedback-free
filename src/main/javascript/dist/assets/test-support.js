@@ -12,7 +12,7 @@
  *            Portions Copyright 2008-2011 Apple Inc. All rights reserved.
  * @license   Licensed under MIT license
  *            See https://raw.github.com/emberjs/ember.js/master/LICENSE
- * @version   2.4.1
+ * @version   2.4.3
  */
 
 var enifed, requireModule, require, requirejs, Ember;
@@ -1855,6 +1855,10 @@ enifed('ember-testing/test', ['exports', 'ember-metal/run_loop', 'ember-runtime/
 requireModule("ember-testing");
 
 }());
+
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"./browserify_stubs.js":[function(require,module,exports){
+
+},{}]},{},["./browserify_stubs.js"]);
 
 /*!
  * QUnit 1.22.0

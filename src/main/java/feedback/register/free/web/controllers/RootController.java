@@ -273,7 +273,7 @@ public class RootController {
     ) throws Exception {
         RestExceptions.checkBadRequest(fullDomainName, DomainNameUtils::isValidDotFeedbackFullDomainName);
 
-        Thread.sleep(3000);
+//        Thread.sleep(3000);
 
         Map<String, Object> result = new HashMap<>();
 
@@ -440,18 +440,18 @@ public class RootController {
     public String availability(@NotNull final String dotfeedbackFullDomainName) throws Exception {
         RestExceptions.checkBadRequest(dotfeedbackFullDomainName, DomainNameUtils::isValidDotFeedbackFullDomainName);
 
-//        WhoisRecord record = findAndSaveMostRecentWhoisRecord(dotfeedbackFullDomainName);
-//
-//        if (record.isNotFound()) {
-//            return "available";
-//        } else if (record.isFailed()) {
-//            return "unknown";
-//        } else if (record.isReserved()) {
-//            return "reserved";
-//        }
-//
-//        return "unavailable";
-        return "available";
+        WhoisRecord record = findAndSaveMostRecentWhoisRecord(dotfeedbackFullDomainName);
+
+        if (record.isNotFound()) {
+            return "available";
+        } else if (record.isFailed()) {
+            return "unknown";
+        } else if (record.isReserved()) {
+            return "reserved";
+        }
+
+        return "unavailable";
+//        return "available";
     }
 
     @NotNull

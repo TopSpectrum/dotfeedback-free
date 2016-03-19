@@ -157,11 +157,11 @@ export default Ember.Controller.extend(EmberValidations, {
 
     shouldShowWhoisTable: Ember.computed('isEditingSource', 'isFetchingWhois', 'hasSourceRecord', 'isAvailable', function () {
         var hasSourceRecord = this.get('hasSourceRecord');
-        //var isFetchingWhois = this.get('isFetchingWhois');
+        // var isFetchingWhois = this.get('isFetchingWhois');
         var isEditingSource = this.get('isEditingSource');
         //var isAvailable = this.get('isAvailable');
 
-        return !isEditingSource && hasSourceRecord; //&& !isFetching && isAvailable;
+        return !isEditingSource;// && hasSourceRecord; //&& !isFetching && isAvailable;
     }),
 
     copyIsDisabled: Ember.computed('isFetchingSomething', 'hasInvalidNewSourceFullDomainName', 'model.sourceFullDomainName', 'model.newSourceFullDomainName', function() {
@@ -278,6 +278,10 @@ export default Ember.Controller.extend(EmberValidations, {
         //}
 
         var valueBeforeQuery = this.get('model.destinationFullDomainName');
+
+        if (Ember.isBlank(valueBeforeQuery)) {
+            return;
+        }
 
         var scope = this;
         var model = this.get('model');

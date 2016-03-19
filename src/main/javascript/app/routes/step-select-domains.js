@@ -1,14 +1,16 @@
-import Ember from 'ember';
-import WizardStepMixin from '../mixins/wizard-step-mixin';
+"use strict";
+
+import Ember from "ember";
+import WizardStepMixin from "../mixins/wizard-step-mixin";
 
 export default Ember.Route.extend(WizardStepMixin, {
 
     beforeModel() {
-        var model = this.modelFor('application');
-        var sourceFullDomainName = Ember.get(model, 'sourceFullDomainName');
+        let model = this.modelFor('application');
+        let sourceFullDomainName = Ember.get(model, 'email');
 
         if (!sourceFullDomainName) {
-            Ember.Logger.warn('Could not determine the \'sourceFullDomainName\', so returning to the index route.');
+            Ember.Logger.warn('Could not determine the \'email\', so returning to the index route.');
             this.transitionTo('index');
         }
     },
@@ -18,14 +20,19 @@ export default Ember.Route.extend(WizardStepMixin, {
     },
 
     afterModel(model, transition) {
-        this.query(model)
-            .then(function() {
-                Ember.set(model, 'newSourceFullDomainName', Ember.get(model, 'sourceFullDomainName'));
-            });
+        let sourceFullDomainName = Ember.get(model, 'sourceFullDomainName');
+
+        if (!Ember.isBlank(sourceFullDomainName)) {
+            this.query(model)
+                .then(function () {
+                    Ember.set(model, 'newSourceFullDomainName', Ember.get(model, 'sourceFullDomainName'));
+                });
+        }
     },
 
     peekAndFind(recordType, recordId) {
         var scope = this;
+
 
         return Ember.RSVP.Promise
             .resolve(this.store.peekRecord(recordType, recordId))
@@ -42,6 +49,11 @@ export default Ember.Route.extend(WizardStepMixin, {
         if (Ember.isBlank(sourceFullDomainName)) {
             sourceFullDomainName = Ember.get(model, 'sourceFullDomainName');
         }
+
+        if (Ember.isBlank(sourceFullDomainName)) {
+            return Ember.RSVP.Promise.resolve();
+        }
+
 
         var scope = this;
         var destinationFullDomainName = Ember.get(model, 'destinationFullDomainName');

@@ -21,12 +21,12 @@ module.exports = function(environment) {
     contentSecurityPolicy: {
       'default-src': "'none'",
       'script-src': "'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://www.google.com *",
-      'font-src': "'self' data: assets.fonts.gstatic.com localhost cdn.feedback",
+      'font-src': "'self' data: *",
       'connect-src': "* *.intercom.io wss://*.intercom.io ws://*.free.feedback ws://dev.free.feedback",
       //'connect-src': "'self' *.intercom.io wss://*.intercom.io ws://*.free.feedback ws://dev.free.feedback",
       'media-src': "'self' *.intercom.io *.intercomcdn.com",
       'img-src': "'self' data: *",
-      'style-src': "'self' 'unsafe-inline' assets.fonts.googleapis.com ",
+      'style-src': "'self' 'unsafe-inline' assets/fonts.googleapis.com ",
       'frame-src': "s-static.ak.facebook.com static.ak.facebook.com www.facebook.com www.google.com"
     }
   };
@@ -39,7 +39,7 @@ module.exports = function(environment) {
   //  // Allow scripts from https://cdn.mxpnl.com
   //  'script-src': ["'self'", "https://cdn.mxpnl.com"],
   //
-  //  // Allow assets.fonts to be loaded from http://fonts.gstatic.com
+  //  // Allow assets/fonts to be loaded from http://fonts.gstatic.com
   //  'font-src': ["'self'", "http://fonts.gstatic.com"],
   //
   //  // Allow data (ajax/websocket) from api.mixpanel.com and custom-api.local

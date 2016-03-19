@@ -7,7 +7,7 @@ module.exports = function(defaults) {
     // Add options here
   });
 
-  //app.import('styles/bootstrap/bootstrap.less');
+  // app.import('styles/bootstrap/bootstrap.less');
   app.import('bower_components/bootstrap/dist/js/bootstrap.js');
   app.import('bower_components/ladda/dist/spin.min.js');
   app.import('bower_components/ladda/dist/ladda.min.js');

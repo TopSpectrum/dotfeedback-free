@@ -29,6 +29,7 @@ public class FreeReservationToken implements Serializable {
     private String fax;
     private String faxExt;
     private String email;
+    private String registrar;
 
     public FreeReservationToken() {
 
@@ -51,6 +52,11 @@ public class FreeReservationToken implements Serializable {
         this.fax = reservation.getDestinationWhoisRecord().getAdminFax();
         this.faxExt = reservation.getDestinationWhoisRecord().getAdminFaxExt();
         this.email = reservation.getDestinationWhoisRecord().getAdminEmail();
+        this.registrar = reservation.getDestinationWhoisRecord().getRegistrar();
+    }
+
+    public String getRegistrar() {
+        return registrar;
     }
 
     public String getRemoteHost() {

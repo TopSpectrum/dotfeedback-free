@@ -116,8 +116,8 @@ body > .ember-view {
  * @license: MIT License
  */
 
-    @unchecked-color: rgba(51, 51, 51, .7);
-    @checked-color: #333333;
+    @unchecked-color: rgba(51, 51, 51, .9);
+    @checked-color: rgb(51, 51, 51);
 
     /* Prevent text and blocks selection */
     input.labelauty + label ::selection { background-color: rgba(255, 255, 255, 0); }
@@ -249,17 +249,37 @@ body > .ember-view {
         opacity: 0.5;
     }
 
-    /* Add a background to (un)checked images */
+    /* Add a background to (un)checked assets.images */
     input.labelauty + label > span.labelauty-unchecked-image
     {
-        //background-image: url( /images/input-unchecked.png );
+        //background-image: url( /assets.images/input-unchecked.png );
 
         height: 100%;
 
         &:before {
-            content: ' \25CF';
-            font-size: 20px;
-            line-height: 0;
+            //content: ' \25CF';
+            //font-size: 40px;
+            //line-height: 0;
+            font-family: fontAwesome;
+            font-weight: normal;
+            font-size: 1px;
+            color: #fff;
+            content: "\2022";
+            background-color: #FAFAFA;
+            border: 1px solid #CCC;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            border-radius: 32px;
+            //font-size: 36px;
+
+            display: inline-block;
+            text-align: center;
+            vertical-align: middle;
+            //height: 13px;
+            //line-height: 13px;
+            height: 13px;
+            min-width: 13px;
+            margin-right: 1px;
+            margin-top: -5px;
 
             //background: #f00;
             //width: 10px;
@@ -271,7 +291,7 @@ body > .ember-view {
 
     input.labelauty + label > span.labelauty-checked-image
     {
-        background-image: url( /images/input-checked.png );
+        background-image: url(/assets/images/input-checked.png);
         margin-top: -3px;
 
     }

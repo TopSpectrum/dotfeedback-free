@@ -369,7 +369,7 @@ export default Ember.Controller.extend(EmberValidations, {
 
             this.set('model.sourceFullDomainName', value);
             this.send('changeSourceFullDomainName', this.get('model'), value);
-            this.set('model.newSourceFullDomainName', '');
+            // this.set('model.newSourceFullDomainName', '');
 
             return false;
         },

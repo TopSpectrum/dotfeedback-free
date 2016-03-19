@@ -362,6 +362,7 @@ public class RootController {
         Parameters parameters = new Parameters();
 
         parameters.put("baseUrl", baseUrl);
+        parameters.put("topLevelDomainName", "feedback");
 
         return parameters;
     }
@@ -433,6 +434,7 @@ public class RootController {
                 .fullDomainName(token.getDestinationFullDomainName())
                 .phone(token.getPhone(), token.getPhoneExt())
                 .fax(token.getFax(), token.getFaxExt())
+                .registrar(token.getRegistrar())
                 .build();
     }
 

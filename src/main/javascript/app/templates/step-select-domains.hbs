@@ -1,4 +1,4 @@
-<table class="table">
+<table class="table hidden">
     <thead>
     <tr>
         <td>
@@ -166,13 +166,13 @@
                     <!-- I am using the whois-table wrap because I'm lazy. -->
                     <div class="form-group col-sm-12">
                         <div class="row">
-                            <label class="col-sm-3 control-label {{ labelWidthClasses }}">Copy from</label>
+                            <label class="col-sm-3 control-label {{ labelWidthClasses }}">Import whois</label>
                             <div class="col-sm-9">
-                                {{input class="form-control" type="text" placeholder="example: oracle.com" disabled=isFetchingWhois value=model.newSourceFullDomainName mask='^[\w-]*$'}}
+                                {{input class="form-control" type="text" placeholder="example: oracle.com" disabled=isFetchingWhois value=model.newSourceFullDomainName mask='^[\w-]*$' enter='selectModelFromDomainName'}}
 
                                 <div class="btn-copy-controls">
                                     {{#ladda-button class="btn-add btn btn-primary ladda-button" data-style="slide-left" tabindex="1" action='selectModelFromDomainName' disabled=copyIsDisabled spinning=isFetchingWhois}}
-                                        Copy
+                                        Import
                                     {{/ladda-button}}
                                 </div>
                             </div>

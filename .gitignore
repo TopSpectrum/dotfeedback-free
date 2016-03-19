@@ -4,5 +4,5 @@ src/main/javascript/node_modules/
 src/main/javascript/bower_components/
 src/main/javascript/dist/
 src/main/javascript/tmp/
+src/main/webapp/static/assets/
 .idea/
-

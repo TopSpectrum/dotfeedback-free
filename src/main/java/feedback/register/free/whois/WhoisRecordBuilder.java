@@ -14,7 +14,6 @@ import com.topspectrum.registry.ParsedDomainParts;
 import com.topspectrum.registry.PropertyField;
 import com.topspectrum.registry.PropertyLoader;
 import com.topspectrum.util.CollectionUtils;
-import com.topspectrum.util.DomainNameUtils;
 import com.topspectrum.util.PropertyUtils;
 import feedback.register.free.data.WhoisRecord;
 import org.apache.commons.lang3.StringUtils;
@@ -43,6 +42,7 @@ public class WhoisRecordBuilder {
 
     private WhoisRecord template = new WhoisRecord();
     private boolean touched;
+
 
 //    public WhoisRecordBuilder nameServer(String value) {
 //        template.setName_server(value);
@@ -97,6 +97,12 @@ public class WhoisRecordBuilder {
         return this.touched(true);
     }
 
+    public WhoisRecordBuilder registrar(String registrar) {
+        template.setRegistrar(registrar);
+
+        return touched();
+    }
+
 //    public static Map<String, String> parts(@NotNull final String content) {
 //        final Map<String, String> map = new HashMap<>();
 //        final String[] parts = content.split("\n");
@@ -131,8 +137,6 @@ public class WhoisRecordBuilder {
 
         return touched();
     }
-
-
 
     public WhoisRecordBuilder phone(String phone) {
         set(CommonPart.phone, phone);

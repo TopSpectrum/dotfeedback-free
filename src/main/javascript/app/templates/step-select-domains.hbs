@@ -16,8 +16,8 @@
     </tr>
 
     <tr>
-        <td>muteInitialWhoisErrors / muteWhoisErrors</td>
-        <td>{{muteInitialWhoisErrors}} / {{muteWhoisErrors}}</td>
+        <td>muteInitialWhoisErrors / muteWhoisErrors / shouldWarnAboutBelowErrors</td>
+        <td>{{muteInitialWhoisErrors}} / {{muteWhoisErrors}} / {{shouldWarnAboutBelowErrors}}</td>
     </tr>
 
     <tr>
@@ -91,8 +91,8 @@
     </tr>
 
     <tr>
-        <td>model.fetchingDestinationAvailabilityRecord</td>
-        <td>{{model.fetchingDestinationAvailabilityRecord}}</td>
+        <td>isFetchingSomething / model.fetchingDestinationAvailabilityRecord</td>
+        <td>{{isFetchingSomething}} / {{model.fetchingDestinationAvailabilityRecord}}</td>
     </tr>
     <tr>
         <td>isFailedToResolveSourceWhois</td>
@@ -113,8 +113,8 @@
     </tr>
 
     <tr>
-        <td>isAvailable</td>
-        <td>{{isAvailable}}</td>
+        <td>isAvailable / isAvailableAndSettled</td>
+        <td>{{isAvailable}} / {{isAvailableAndSettled}}</td>
     </tr>
 
     </tbody>
@@ -131,6 +131,10 @@
                 <div class="" style="color: #a94442; font-weight: bold;">That domain is unavailable.</div>
             {{/unless}}
         {{/unless}}
+
+        {{#if shouldWarnAboutBelowErrors}}
+            <div class="" style="color: #a94442; font-weight: bold;">The whois fields below need attention.</div>
+        {{/if}}
     {{/unless}}
 
     {{#validated-input type="text" data-minlength="3" tabindex="0" autocomplete="off" placeholder="" value=model.newDestinationCustomerDomainName errors=errors.model.domainName enter='enterWasHitOnDestinationDomainName'

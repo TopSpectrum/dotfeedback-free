@@ -4,7 +4,6 @@ import Ember from 'ember';
 import domainParser from 'javascript/utils/utility-domain-parser';
 import EmberValidations, { validator } from 'ember-validations';
 
-
 //region Global Utilities
 var customerDomainNameRegex = /^[\w-]+$/;
 
@@ -137,6 +136,14 @@ export default Ember.Controller.extend(EmberValidations, {
     //endregion
 
     //region Computed Properties that Decide
+    shouldWarnAboutBelowErrors: Ember.computed('muteInitialWhoisErrors', 'isValid', 'isAvailable', function() {
+        var isAvailable = this.get('isAvailable');
+        var muteInitialWhoisErrors = this.get('muteInitialWhoisErrors');
+        var isValid = this.get('isValid');
+
+        return !isValid && !muteInitialWhoisErrors && isAvailable;
+    }),
+
     muteInitialWhoisErrors: Ember.computed('nextIsDisabled', 'hasDestinationRecord', 'isAvailable', function() {
         var nextIsDisabled = this.get('nextIsDisabled');
         var isAvailable = this.get('isAvailable');
@@ -146,7 +153,7 @@ export default Ember.Controller.extend(EmberValidations, {
             return true;
         }
 
-        return nextIsDisabled && isAvailable;
+        return !(nextIsDisabled && isAvailable);
     }),
 
     muteWhoisErrors: Ember.computed('nextIsDisabled', 'hasDestinationRecord', 'isAvailable', function() {

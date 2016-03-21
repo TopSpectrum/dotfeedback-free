@@ -60,6 +60,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/javascript/addon" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/javascript/tests/unit" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/javascript/tests/integration" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/javascript/public" type="java-resource" />
       <excludeFolder url="file://$MODULE_DIR$/src/main/javascript/dist" />
       <excludeFolder url="file://$MODULE_DIR$/src/main/javascript/tmp" />
       <excludeFolder url="file://$MODULE_DIR$/target" />

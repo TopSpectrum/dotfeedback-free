@@ -16,6 +16,11 @@
     </tr>
 
     <tr>
+        <td>muteInitialWhoisErrors / muteWhoisErrors</td>
+        <td>{{muteInitialWhoisErrors}} / {{muteWhoisErrors}}</td>
+    </tr>
+
+    <tr>
         <td>newDestinationCustomerDomainName</td>
         <td>{{newDestinationCustomerDomainName}}</td>
     </tr>
@@ -56,8 +61,8 @@
     </tr>
 
     <tr>
-        <td>hasSourceRecord</td>
-        <td>{{hasSourceRecord}}</td>
+        <td>hasSourceRecord / hasDestinationRecord</td>
+        <td>{{hasSourceRecord}} / {{ hasDestinationRecord }}</td>
     </tr>
 
     <tr>
@@ -129,7 +134,7 @@
     {{/unless}}
 
     {{#validated-input type="text" data-minlength="3" tabindex="0" autocomplete="off" placeholder="" value=model.newDestinationCustomerDomainName errors=errors.model.domainName enter='enterWasHitOnDestinationDomainName'
-    disabled=model.loading mask='^[\w-]*$' disabled=isFetchingSomething blurred='blurredMainInputBox' focused='focusedMainInputBox' hasFeedback=false class=inputBoxClass}}
+    disabled=model.loading mask='^[\w-]*$' disabled=isFetchingSomething blurred='blurredMainInputBox' focused='focusedMainInputBox' hasFeedback=false class=inputBoxClass dot='destinationCustomerDomainNameDotted'}}
         {{#unless isEditingDestination}}
             {{#if isAvailable}}
                 <span class="glyphicon glyphicon-ok form-control-feedback form-control-feedback-success"></span>
@@ -182,16 +187,6 @@
                     </div>
                 </div>
             </div>
-
-            <!--<div class="alert alert-success clearfix">-->
-            <!--<h4>Modeling-->
-            <!--<strong>{{ model.sourceFullDomainName }}</strong> whois-->
-
-            <!--<a href="#" {{action 'chooseDifferentSourceFullDomainName'}} class="" style="text-decoration: underline;">change source</a>-->
-            <!--</h4>-->
-
-            <!--We will use the whois record for {{ model.sourceFullDomainName }} listed below. Please choose a different model domain to clone a whois record for your registration or edit the record.-->
-            <!--</div>-->
         {{/if}}
 
         {{#if isFailedToResolveSourceWhois }}
@@ -201,20 +196,14 @@
         {{#if model.fetchingSourceFullDomainNameRecord}}
             Loading...
         {{else}}
-            {{whois-table model=model.sourceFullDomainNameRecord email=model.email errors=errors}}
+            {{whois-table model=model.sourceFullDomainNameRecord email=model.email errors=errors muteInitialErrors=muteInitialWhoisErrors muteErrors=muteWhoisErrors}}
+
+        <div class="btn-additional-next-for-mobile visible-xxs-inline-block">
+                {{#ladda-button class="btn-add btn btn-primary ladda-button" data-style="slide-left" tabindex="1" action='next' disabled=nextIsDisabled spinning=isFetchingSomething}}
+                    Next
+                {{/ladda-button}}
+        </div>
+
         {{/if}}
     </div>
-{{else}}
-    {{#if isEditingSource}}
-        {{#validated-input type="text" label="Enter a domain name to model the whois information after" data-minlength="3" tabindex="0" autocomplete="off" placeholder="" value=model.newSourceFullDomainName enter='selectModelFromDomainName' actionReceiver=selectModelFromDomainNameInput}}
-            <div class="pull-out" style="position: relative;">
-
-                <div class="btn-add-controls">
-                    {{#ladda-button class="btn-add btn btn-primary ladda-button" data-style="slide-left" tabindex="1" action='selectModelFromDomainName' disabled=hasInvalidNewSourceFullDomainName spinning=model.loading}}
-                        Update
-                    {{/ladda-button}}
-                </div>
-            </div>
-        {{/validated-input}}
-    {{/if}}
 {{/if}}

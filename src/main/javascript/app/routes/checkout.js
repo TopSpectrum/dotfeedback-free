@@ -1,3 +1,5 @@
+"use strict";
+
 import Ember from 'ember';
 import EmberValidations from 'ember-validations';
 
@@ -11,6 +13,6 @@ export default Ember.Route.extend(EmberValidations, {
       record: this.store
         .findAll('Reservation')
         .then((reservations) => reservations.objectAt(0))
-    })
+    });
   }
 });

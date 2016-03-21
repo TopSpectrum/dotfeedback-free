@@ -1,3 +1,5 @@
+"use strict";
+
 import Ember from 'ember';
 import domainParser from 'javascript/utils/utility-domain-parser';
 import EmberValidations, { validator } from 'ember-validations';
@@ -14,6 +16,22 @@ function isValidFullDomainName(test) {
 
 function isValidCustomerDomainName(test) {
     return customerDomainNameRegex.test(test);
+}
+
+function getCustomerDomainName(fullDomainName) {
+    if (Ember.isEmpty(fullDomainName)) {
+        return null;
+    } else if (-1 === fullDomainName.indexOf('.')) {
+        return fullDomainName;
+    }
+
+    let parsedObject = domainParser(fullDomainName);
+
+    if (!parsedObject) {
+        return null;
+    }
+
+    return parsedObject.customerDomainName;
 }
 
 /**
@@ -115,13 +133,30 @@ export default Ember.Controller.extend(EmberValidations, {
         }
 
         return 'has-feedback has-error';
-
     }),
-
-
     //endregion
 
     //region Computed Properties that Decide
+    muteInitialWhoisErrors: Ember.computed('nextIsDisabled', 'hasDestinationRecord', 'isAvailable', function() {
+        var nextIsDisabled = this.get('nextIsDisabled');
+        var isAvailable = this.get('isAvailable');
+        var hasDestinationRecord = this.get('hasDestinationRecord');
+
+        if (!hasDestinationRecord) {
+            return true;
+        }
+
+        return nextIsDisabled && isAvailable;
+    }),
+
+    muteWhoisErrors: Ember.computed('nextIsDisabled', 'hasDestinationRecord', 'isAvailable', function() {
+        var nextIsDisabled = this.get('nextIsDisabled');
+        var isAvailable = this.get('isAvailable');
+        var hasDestinationRecord = this.get('hasDestinationRecord');
+
+        return !hasDestinationRecord;
+    }),
+
     isFetchingWhois: Ember.computed('model.fetchingSourceFullDomainNameRecord', function () {
         return this.get('model.fetchingSourceFullDomainNameRecord');
     }),
@@ -196,8 +231,8 @@ export default Ember.Controller.extend(EmberValidations, {
         return !Ember.isNone(this.get('model.sourceFullDomainNameRecord'));
     }),
 
-    hasDestinationRecord: Ember.computed('model.destinationFullDomainNameRecord', function () {
-        return !Ember.isNone(this.get('model.destinationFullDomainNameRecord'));
+    hasDestinationRecord: Ember.computed('hasDestinationAvailabilityRecord', function () {
+        return this.get('hasDestinationAvailabilityRecord');
     }),
 
     hasInvalidNewDestinationCustomerDomainName: Ember.computed('hasValidNewDestinationCustomerDomainName', function () {
@@ -339,6 +374,11 @@ export default Ember.Controller.extend(EmberValidations, {
             this.set('model.newDestinationCustomerDomainName', this.get('newDestinationCustomerDomainName') + '.feedback');
         },
 
+        destinationCustomerDomainNameDotted(){
+            // trigger
+            this.send('enterWasHitOnDestinationDomainName');
+        },
+
         enterWasHitOnDestinationDomainName() {
             // We need to decide what to do.
             var isEditingDestination = this.get('isEditingDestination');
@@ -358,7 +398,19 @@ export default Ember.Controller.extend(EmberValidations, {
             }
 
             // TODO: Should we update more stuff?
-            this.set('model.destinationCustomerDomainName', this.get('newDestinationCustomerDomainName'));
+            let destinationCustomerDomainName = this.get('newDestinationCustomerDomainName');
+
+            this.set('model.destinationCustomerDomainName', destinationCustomerDomainName);
+
+            let sourceFullDomainName = this.get('model.sourceFullDomainName');
+
+            if (Ember.isEmpty(sourceFullDomainName)) {
+                if (!Ember.isBlank(destinationCustomerDomainName)) {
+                    this.set('model.newSourceFullDomainName', destinationCustomerDomainName + '.com');
+
+                    this.send('selectModelFromDomainName');
+                }
+            }
         },
 
         selectModelFromDomainName() {

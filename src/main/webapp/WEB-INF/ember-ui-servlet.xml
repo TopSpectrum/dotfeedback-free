@@ -16,7 +16,7 @@
     </mvc:resources>
 
     <mvc:resources mapping="/static/index.html" location="/" order="1">
-        <mvc:cache-control cache-public="true" must-revalidate="false" max-age="86400" />
+        <mvc:cache-control must-revalidate="true" no-cache="true" />
     </mvc:resources>
 
     <bean class="feedback.register.free.web.controllers.EmberHandlerMapping"/>

@@ -6,7 +6,7 @@ import InboundActions from 'ember-component-inbound-actions/inbound-actions';
 export default Ember.Component.extend(InboundActions, {
 
     classNames: ['form-group'],
-    classNameBindings: ['hasError', 'hasFeedback', 'focusedClassBinding'],
+    classNameBindings: ['hasErrors:has-error', 'hasFeedback', 'focusedClassBinding'],
 
     muteInitialErrors: true,
     muteErrors: false,
@@ -68,11 +68,15 @@ export default Ember.Component.extend(InboundActions, {
         return this.get('type') === 'textarea';
     }),
 
-    hasErrors: Ember.computed('muteErrors', 'errors', 'errors.[]', function () {
+    hasErrors: Ember.computed('muteErrors', 'touched', 'muteInitialErrors', 'errors', 'errors.[]', function () {
         if (this.get('muteErrors')) {
             return false;
         }
 
+        if (this.get('muteInitialErrors') && !this.get('touched')) {
+            return false;
+        }
+        
         let errors = this.get('errors');
 
         if (errors) {
@@ -110,9 +114,19 @@ export default Ember.Component.extend(InboundActions, {
         var $el = this.$().find('input');
 
         Ember.run.later(this, function () {
+            let scope = this;
             let previouslyValidValue = $el.val();
 
+            $el.on('keypress', function(e) {
+                var key = (e.keyCode || e.charCode);
+
+                if (key === 46) {
+                    scope.sendAction('dot');
+                }
+            });
+
             $el.on('input', function (e) {
+
                 let value = $el.val();
 
                 if (null === previouslyValidValue) {
@@ -135,7 +149,7 @@ export default Ember.Component.extend(InboundActions, {
     actions: {
         focused() {
             this.set('focused_value', true);
-            this.set('muteErrors', false);
+            this.set('touched', true);
 
             this.sendAction('focused');
         },

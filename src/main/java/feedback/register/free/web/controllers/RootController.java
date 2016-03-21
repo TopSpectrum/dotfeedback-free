@@ -112,7 +112,16 @@ public class RootController {
     @RequestMapping("/checkout_terms")
     @ResponseBody
     public String load_terms() throws InterruptedException, ExecutionException, IOException {
+        //throw new RuntimeException("fuck");
         // TODO: cache this.
+        return googleDocService.getByDocumentId("1uvUkiVj0nnsONfHaT98uIljQ7CGKTuWBmOrM2pwVBzM");
+    }
+
+    @RequestMapping("/privacy")
+    @ResponseBody
+    public String load_privacy() throws InterruptedException, ExecutionException, IOException {
+        // TODO: cache this.
+        // TODO: find the right documentId
         return googleDocService.getByDocumentId("1uvUkiVj0nnsONfHaT98uIljQ7CGKTuWBmOrM2pwVBzM");
     }
 

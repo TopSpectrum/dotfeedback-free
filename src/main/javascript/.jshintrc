@@ -26,6 +26,7 @@
   "undef": true,
   "sub": true,
   "strict": true,
+  "globalstrict": true,
   "white": false,
   "eqnull": true,
   "esnext": true,

@@ -77,7 +77,7 @@ export default Ember.Controller.extend(EmberValidations, {
 
     focused: false,
     name: Ember.computed.alias('model.sourceFullDomainNameRecord.name'),
-    email: Ember.computed.alias('model.sourceFullDomainNameRecord.email'),
+    email: Ember.computed.alias('model.email'),
     street: Ember.computed.alias('model.sourceFullDomainNameRecord.street'),
     city: Ember.computed.alias('model.sourceFullDomainNameRecord.city'),
     state: Ember.computed.alias('model.sourceFullDomainNameRecord.state'),

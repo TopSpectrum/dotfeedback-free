@@ -1,14 +1,19 @@
-<h1 class="label-free-domain-name">
-    My Email Address:
-</h1>
+<div class="steps col-xs-12 col-sm-8 col-sm-offset-2 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3">
+    <div class="step active">
+        <h1 class="label-free-domain-name">
+            My Email Address:
+        </h1>
 
-{{#validated-input type="email" data-minlength="3" id="domainName" tabindex="0" autocomplete="off" placeholder="" value=model.email enter='next'}}
+        {{#validated-input type="email" data-minlength="3" id="domainName" tabindex="0" autocomplete="off" placeholder="" value=model.email enter='next'}}
 
-    <div class="pull-out" style="position: relative;">
-        <div class="btn-add-controls">
-            {{#ladda-button class="btn-add btn btn-primary ladda-button" data-style="slide-left" tabindex="1" action='next' disabled=isInvalid }}
-                Next
-            {{/ladda-button}}
-        </div>
+            <div class="pull-out" style="position: relative;">
+                <div class="btn-add-controls">
+                    {{#ladda-button class="btn-add btn btn-primary ladda-button" data-style="slide-left" tabindex="1" action='next' disabled=isInvalid }}
+                        Next
+                    {{/ladda-button}}
+                </div>
+            </div>
+        {{/validated-input}}
     </div>
-{{/validated-input}}
+</div>
+

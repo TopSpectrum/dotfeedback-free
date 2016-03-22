@@ -1,6 +1,7 @@
 "use strict";
 
 import Ember from 'ember';
+import AbstractStepController from 'javascript/app/controllers/abstract-step-controller';
 import domainParser from 'javascript/utils/utility-domain-parser';
 import EmberValidations /*, { validator }*/ from 'ember-validations';
 
@@ -59,7 +60,7 @@ function sanitizeCustomerDomainName(customerDomainName) {
 }
 //endregion
 
-export default Ember.Controller.extend(EmberValidations, {
+export default AbstractStepController.extend(EmberValidations, {
 
     store: Ember.inject.service(),
 

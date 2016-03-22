@@ -8,7 +8,7 @@ export default Ember.Route.extend(EmberValidations, {
   model() {
     return Ember.RSVP.hash({
       terms: Ember.RSVP.Promise.cast(Ember.$.ajax({
-        url: '/api/v1/checkout_terms'
+        url: '/api/v1/terms'
       })),
       record: this.store
         .findAll('Reservation')

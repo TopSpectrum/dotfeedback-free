@@ -7,8 +7,6 @@ import com.topspectrum.mail.TemplatedMailService;
 import com.topspectrum.services.GoogleDocService;
 import com.topspectrum.template.EmailTemplateService;
 import com.topspectrum.template.Parameters;
-import com.topspectrum.template.STStringTemplate;
-import com.topspectrum.template.Template;
 import com.topspectrum.util.ConversionUtils;
 import com.topspectrum.util.DomainNameUtils;
 import com.topspectrum.util.MorePreconditions;
@@ -109,7 +107,7 @@ public class RootController {
         return "api/v1";
     }
 
-    @RequestMapping("/checkout_terms")
+    @RequestMapping("terms")
     @ResponseBody
     public String load_terms() throws InterruptedException, ExecutionException, IOException {
         //throw new RuntimeException("fuck");
@@ -122,7 +120,7 @@ public class RootController {
     public String load_privacy() throws InterruptedException, ExecutionException, IOException {
         // TODO: cache this.
         // TODO: find the right documentId
-        return googleDocService.getByDocumentId("1uvUkiVj0nnsONfHaT98uIljQ7CGKTuWBmOrM2pwVBzM");
+        return googleDocService.getByDocumentId("1sI_2D2AlYgsZPU5YU1DPNR4lk2nQ21moER9ml-_Mnn0");
     }
 
     @Transactional

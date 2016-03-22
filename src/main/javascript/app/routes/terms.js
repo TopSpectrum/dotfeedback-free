@@ -7,7 +7,7 @@ export default Ember.Route.extend({
     model() {
         return Ember.RSVP.Promise.cast(
             Ember.$.ajax({
-                url: '/api/v1/checkout_terms'
+                url: '/api/v1/terms'
             }));
     }
 

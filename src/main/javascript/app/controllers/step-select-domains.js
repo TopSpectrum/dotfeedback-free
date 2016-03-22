@@ -2,7 +2,7 @@
 
 import Ember from 'ember';
 import domainParser from 'javascript/utils/utility-domain-parser';
-import EmberValidations, { validator } from 'ember-validations';
+import EmberValidations /*, { validator }*/ from 'ember-validations';
 
 //region Global Utilities
 var customerDomainNameRegex = /^[\w-]+$/;
@@ -17,21 +17,21 @@ function isValidCustomerDomainName(test) {
     return customerDomainNameRegex.test(test);
 }
 
-function getCustomerDomainName(fullDomainName) {
-    if (Ember.isEmpty(fullDomainName)) {
-        return null;
-    } else if (-1 === fullDomainName.indexOf('.')) {
-        return fullDomainName;
-    }
-
-    let parsedObject = domainParser(fullDomainName);
-
-    if (!parsedObject) {
-        return null;
-    }
-
-    return parsedObject.customerDomainName;
-}
+// function getCustomerDomainName(fullDomainName) {
+//     if (Ember.isEmpty(fullDomainName)) {
+//         return null;
+//     } else if (-1 === fullDomainName.indexOf('.')) {
+//         return fullDomainName;
+//     }
+//
+//     let parsedObject = domainParser(fullDomainName);
+//
+//     if (!parsedObject) {
+//         return null;
+//     }
+//
+//     return parsedObject.customerDomainName;
+// }
 
 /**
  *
@@ -157,8 +157,8 @@ export default Ember.Controller.extend(EmberValidations, {
     }),
 
     muteWhoisErrors: Ember.computed('nextIsDisabled', 'hasDestinationRecord', 'isAvailable', function() {
-        var nextIsDisabled = this.get('nextIsDisabled');
-        var isAvailable = this.get('isAvailable');
+        /*var nextIsDisabled = this.get('nextIsDisabled');*/
+        /*var isAvailable = this.get('isAvailable');*/
         var hasDestinationRecord = this.get('hasDestinationRecord');
 
         return !hasDestinationRecord;
@@ -198,7 +198,7 @@ export default Ember.Controller.extend(EmberValidations, {
     }),
 
     shouldShowWhoisTable: Ember.computed('isEditingSource', 'isFetchingWhois', 'hasSourceRecord', 'isAvailable', function () {
-        var hasSourceRecord = this.get('hasSourceRecord');
+        /*var hasSourceRecord = this.get('hasSourceRecord');*/
         // var isFetchingWhois = this.get('isFetchingWhois');
         var isEditingSource = this.get('isEditingSource');
         //var isAvailable = this.get('isAvailable');
@@ -350,7 +350,7 @@ export default Ember.Controller.extend(EmberValidations, {
                     scope.set('model.destinationAvailabilityRecord', record);
                     model.decrementProperty('fetchingDestinationAvailabilityRecord');
                 })
-                .catch((err) => {
+                .catch((/*err*/) => {
                     model.decrementProperty('fetchingDestinationAvailabilityRecord');
                 });
         }, 50);

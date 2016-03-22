@@ -9,7 +9,7 @@ export default function utilityDomainParser(domainName) {
     }
 
     var parts = domainName.split('.');
-    if (!parts || !parts.length > 2) {
+    if (!parts || parts.length < 2) {
         return null;
     }
 

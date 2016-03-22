@@ -19,7 +19,7 @@ export default Ember.Route.extend(WizardStepMixin, {
         return this.modelFor('application');
     },
 
-    afterModel(model, transition) {
+    afterModel(model, /*transition*/) {
         let sourceFullDomainName = Ember.get(model, 'sourceFullDomainName');
 
         if (!Ember.isBlank(sourceFullDomainName)) {
@@ -72,7 +72,7 @@ export default Ember.Route.extend(WizardStepMixin, {
                         Ember.set(model, 'destinationAvailabilityRecord', availabilityRecord);
                     });
             })
-            .catch(function (err) {
+            .catch(function (/*err*/) {
                 //if (console) {
                 //  console.log(err);
                 //}

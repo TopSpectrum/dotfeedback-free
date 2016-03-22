@@ -1,3 +1,5 @@
+"use strict";
+
 import Ember from "ember";
 import TLDs from "javascript/utils/utility-domain-json";
 

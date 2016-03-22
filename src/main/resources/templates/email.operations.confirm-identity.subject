@@ -1,0 +1,1 @@
+$reservation.destinationWhoisRecord.adminName$ ($reservation.email$) wants to reserve $reservation.destinationFullDomainName$.

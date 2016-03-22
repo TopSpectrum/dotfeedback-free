@@ -212,6 +212,7 @@ public class RootController {
         final FreeReservation reservation = parseAndSaveReservationOrFail(wrapper);
 
         sendCustomerVerificationEmail(reservation);
+        sendAdminAwarenessPreorderEmail(reservation);
 
         // This will start everything over from scratch
         request.getSession().invalidate();
@@ -221,6 +222,18 @@ public class RootController {
         wrapper.getReservation().setId(reservation.getId());
 
         return wrapper;
+    }
+
+    public void sendAdminAwarenessPreorderEmail(FreeReservation reservation) throws IOException, MessagingException {
+        EmailTemplate template = emailTemplateService.getTemplateByName("email.operations.confirm-identity");
+
+        Parameters parameters = parameters(reservation);
+
+        {
+            parameters.put("", "");
+        }
+
+        templatedMailService.send(getCustomerEmail(reservation), template, parameters);
     }
 
     public void sendCustomerVerificationEmail(FreeReservation reservation) throws MessagingException, IOException {
@@ -376,22 +389,6 @@ public class RootController {
         return parameters;
     }
 
-    public void sendPendingPolicyApprovalEmail(FreeReservation reservation) throws MessagingException {
-        Template template = new STStringTemplate("$email$ is trying to reserve $fullDomainName$ and requires approval. Please click $approvalUrl$");
-        EmailTemplate requiresPolicyApprovalEmailTemplate = new EmailTemplate(new STStringTemplate("$email$ - requires approval for $fullDomainName$"), template, template);
-
-        // We need to email ops.
-        Map<String, Object> parameters = new HashMap<>();
-
-        {
-            parameters.put("fullDomainName", reservation.getDestinationFullDomainName());
-            parameters.put("email", reservation.getEmail());
-            parameters.put("approvalUrl", "http://" + baseUrl + "/api/v1/approvals?" + reservation.getEmail());
-        }
-
-        templatedMailService.send(internalCompanyEmail, requiresPolicyApprovalEmailTemplate, parameters);
-    }
-
     public boolean hasExistingReservationsForThisEmail(@NotNull final String email) {
         RestExceptions.checkBadRequest(email, StringUtils::isNotBlank);
 
@@ -482,7 +479,7 @@ public class RootController {
     public WhoisRecord findMostRecentWhoisRecord(@NotNull final String fullDomainName) {
         DateTime createdDate = DateTime.now().minusDays(30);
 
-        return PageUtils.first(whoisRecordRepository.findByFullDomainNameAndCreatedDateAfter(fullDomainName, createdDate, PageUtils.newest()));
+        return PageUtils.first(whoisRecordRepository.findByFullDomainNameAndSourceStrategyAndCreatedDateAfter(fullDomainName, "IanaWhoisConnection", createdDate, PageUtils.newest()));
     }
 
     protected Parameters parameters(FreeReservation reservation) {

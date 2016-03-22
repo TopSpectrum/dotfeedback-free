@@ -1,4 +1,4 @@
-/* jshint node: true */
+"use strict";
 
 module.exports = function(environment) {
   var ENV = {
@@ -77,7 +77,7 @@ module.exports = function(environment) {
   }
 
   if (environment === 'production') {
-
+      
   }
 
   return ENV;

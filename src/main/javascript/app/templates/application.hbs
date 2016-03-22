@@ -59,13 +59,13 @@
         <div class="row">
             <div class="col-sm-12">
                 <span class="pull-left">
-                    <a href="/" data-intent="clear_all_cookies">Clear all cookies</a>
+                    <a href="/" {{action 'clearCookies'}}>Clear all cookies</a>
                 </span>
 
                 <span class="pull-right">
                     <a class="ml" href="/terms" tabindex="-1">Terms</a>
                     <a class="ml" href="/privacy" tabindex="-1">Privacy</a>
-                    <!--<a class="ml" href="/feedback" tabindex="-1">Feedback</a>-->
+                    <span class="ml" href="/" tabindex="-1">{{app-version}}</span>
                 </span>
             </div>
         </div>

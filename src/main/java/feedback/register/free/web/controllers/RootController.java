@@ -233,7 +233,9 @@ public class RootController {
             parameters.put("", "");
         }
 
-        templatedMailService.send(getCustomerEmail(reservation), template, parameters);
+        Preconditions.checkState(StringUtils.isValidEmail(internalCompanyEmail), "must be valid email: " + internalCompanyEmail);
+
+        templatedMailService.send(internalCompanyEmail, template, parameters);
     }
 
     public void sendCustomerVerificationEmail(FreeReservation reservation) throws MessagingException, IOException {
@@ -360,7 +362,9 @@ public class RootController {
             params.put("reservation", reservation);
         }
 
-        templatedMailService.send(getCustomerEmail(reservation), template, params);
+        Preconditions.checkState(StringUtils.isValidEmail(internalCompanyEmail), "must be valid email: " + internalCompanyEmail);
+
+        templatedMailService.send(internalCompanyEmail, template, params);
     }
 
     public void sendCustomerConfirmationEmail(FreeReservation reservation) throws MessagingException, IOException {

@@ -8,28 +8,34 @@ const Router = Ember.Router.extend({
 });
 
 Router.map(function () {
-    this.route('step-enter-email', {path: '/email'});
-
-    this.route('step-select-domains', {path: '/domains'}, function () {
-        this.route('whois', {
-            resetNamespace: true
-        });
+    this.route('step-welcome', {
+        path: '/'
     });
 
-    this.route('step-select-registrar', {path: '/registrar'});
+    this.route('step-reservation', {
+        path: '/reservation'
+    });
 
-    this.route('step-check-email');
+    this.route('step-select-registrar', {
+        path: '/registrar'
+    });
 
-    this.route('step-checkout', {path: '/checkout'});
+    this.route('step-checkout', {
+        path: '/checkout'
+    });
 
-    this.route('checkout');
-    this.route('complete');
-    this.route('step-submitting');
-    
-    this.route('terms');
-
-    this.route('privacy');
-
+    // this.route('checkout');
+    // this.route('complete');
+    // this.route('step-submitting');
+    //
+    // this.route('terms');
+    //
+    // this.route('privacy');
+    //
+    // this.route('step-welcome');
+    // this.route('step-whois');
+    // this.route('abstract-route');
+    // this.route('wizard-step');
 });
 
 export default Router;

@@ -1,19 +1,12 @@
+"use strict";
+
 import Ember from 'ember';
+import WizardStepRoute from './wizard-step';
 
-export default Ember.Route.extend({
-
-    // beforeModel() {
-    //     var model = this.modelFor('application');
-    //     var sourceFullDomainName = Ember.get(model, 'sourceFullDomainName');
-    //
-    //     if (!sourceFullDomainName) {
-    //         Ember.Logger.warn('Could not determine the \'sourceFullDomainName\', so returning to the index route.');
-    //         this.transitionTo('index');
-    //     }
-    // },
-
-    model() {
-        return this.modelFor('application');
-    }
+/**
+ * @class StepSelectRegistrarWizardStepRoute
+ * @extends WizardStepRoute
+ */
+export default WizardStepRoute.extend({
 
 });

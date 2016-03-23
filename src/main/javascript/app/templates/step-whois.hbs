@@ -1,4 +1,4 @@
-<table class="table hidden">
+<table class="table xhidden">
     <thead>
     <tr>
         <td>
@@ -9,6 +9,7 @@
         </td>
     </tr>
     </thead>
+
     <tbody>
     <tr>
         <td>destinationCustomerDomainName</td>
@@ -116,7 +117,6 @@
         <td>isAvailable</td>
         <td>{{isAvailable}}</td>
     </tr>
-
     </tbody>
 </table>
 
@@ -198,11 +198,11 @@
         {{else}}
             {{whois-table model=model.sourceFullDomainNameRecord email=model.email errors=errors muteInitialErrors=muteInitialWhoisErrors muteErrors=muteWhoisErrors}}
 
-        <div class="btn-additional-next-for-mobile visible-xxs-inline-block">
+            <div class="btn-additional-next-for-mobile visible-xxs-inline-block">
                 {{#ladda-button class="btn-add btn btn-primary ladda-button" data-style="slide-left" tabindex="1" action='next' disabled=nextIsDisabled spinning=isFetchingSomething}}
                     Next
                 {{/ladda-button}}
-        </div>
+            </div>
 
         {{/if}}
     </div>

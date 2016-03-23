@@ -1,0 +1,33 @@
+<div>
+    <div class="row">
+        <div class="col-sm-12">
+            {{#validated-input label='Please enter your referral code' value=referralCode spinning=spinning enter='next'}}
+                <div class="pull-out" style="position: relative;">
+                    <div class="btn-add-controls hidden-xxs">
+                        {{#ladda-button class="btn-add btn btn-primary ladda-button" data-style="slide-left" tabindex="1" action='next' disabled=isInvalid }}
+                            Next
+                        {{/ladda-button}}
+                    </div>
+                </div>
+            {{/validated-input}}
+        </div>
+    </div>
+
+    <div class="pull-right visible-xxs-block" style="margin-right: 15px; margin-top: -15px;">
+        {{#ladda-button class="btn-add btn btn-primary ladda-button" data-style="slide-left" tabindex="1" action='next' disabled=isInvalid }}
+            Next
+        {{/ladda-button}}
+    </div>
+
+    <div class="hidden">
+        <div>errors : {{errors}}</div>
+        <div>isInvalid : {{isInvalid}}</div>
+        <div>isValid : {{isValid}}</div>
+        <div>hasValidReferralCode: {{hasValidReferralCode}}</div>
+
+        <div>model.referralCodeState.accepted: {{model.referralCodeState.accepted}}</div>
+        <div>model.referralCodeState.code: {{model.referralCodeState.code}}</div>
+        <div>model.referralCodeState.options: {{model.referralCodeState.options}}</div>
+        <div>model.referralCodeState.required: {{model.referralCodeState.required}}</div>
+    </div>
+</div>

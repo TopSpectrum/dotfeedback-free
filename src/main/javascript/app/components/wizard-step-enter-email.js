@@ -6,7 +6,7 @@ import domainParser from "javascript/utils/utility-domain-parser";
 
 var EMAIL_PATTERN = /^[-a-z0-9~!$%^&*_=+}{\'?]+(\.[-a-z0-9~!$%^&*_=+}{\'?]+)*@([a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*\.([a-z]{2,10}))$/;
 
-export default Ember.Controller.extend(EmberValidations, {
+export default Ember.Component.extend(EmberValidations, {
 
     validations: {
         'model.email': {
@@ -37,8 +37,7 @@ export default Ember.Controller.extend(EmberValidations, {
     },
 
     actions: {
-        next()
-        {
+        next() {
             if (!this.get('isValid')) {
                 Ember.Logger.warn("NotValid for transition");
 
@@ -52,7 +51,7 @@ export default Ember.Controller.extend(EmberValidations, {
 
             if (!parsedObject) {
                 Ember.Logger.warn('The domain name was not parsable.');
-                return;
+                return false;
             }
 
             // is this a public one?
@@ -63,8 +62,10 @@ export default Ember.Controller.extend(EmberValidations, {
                 this.set('model.destinationFullDomainName', parsedObject.customerDomainName + '.feedback');
             }
 
-            Ember.Logger.debug('transitioning to step-select-domains');
-            this.transitionToRoute('step-select-domains');
+            Ember.Logger.debug('transitioning to next step');
+
+            // Send the default unnamed action. 
+            this.sendAction();
         }
     }
 });

@@ -1,27 +1,48 @@
-import Ember from 'ember';
+"use strict";
+
+import Ember from "ember";
 
 export default Ember.Service.extend({
 
-    referralCodeState: null,
+    // referralCodeState: null,
     store: Ember.inject.service('store'),
 
     init() {
         this._super(...arguments);
 
-        this.set('referralCodeState', this._fetchReferralCodeState());
+        this.set('model.skipReferralCode', true);
+        this.set('model.allowAnyReferralCode', true);
+        this.set('model.referralCodeState', this._fetchReferralCodeState());
     },
 
-    model: new Ember.Object({
+    model: new Ember.Object({}),
 
-    }),
+    hasValidReferralCode: Ember.computed('model.referralCodeState.accepted', function () {
+        let accepted = this.get('model.referralCodeState.accepted');
+
+        // TODO: We will add more sophisticated detection here.
+
+        return !!accepted;
+    }).readOnly(),
+
+    isReferralCodeStateBlockingAppUsage: Ember.computed('model.skipReferralCode', 'hasValidReferralCode', function () {
+        let skip = this.get('model.skipReferralCode');
+        let hasValid = this.get('hasValidReferralCode');
+
+        if (skip) {
+            return false;
+        }
+
+        return !hasValid;
+
+    }).readOnly(),
 
     reset() {
-        this.set('model', new Ember.Object({
-
-        }));
+        this.set('model', new Ember.Object({}));
     },
 
-    _fetchReferralCodeState() {
+    _fetchReferralCodeState()
+    {
         let scope = this;
         let store = this.get('store');
 
@@ -68,7 +89,9 @@ export default Ember.Service.extend({
 
                         return storage;
                     })
-                .catch(() => { return null; })
+                .catch(() => {
+                    return null;
+                })
                 .then((recordsAsJson) => {
                     referralCodeState.options = recordsAsJson = (recordsAsJson || []);
 
@@ -91,4 +114,5 @@ export default Ember.Service.extend({
         });
     }
 
-});
+})
+;

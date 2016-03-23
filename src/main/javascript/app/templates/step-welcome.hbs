@@ -1,0 +1,10 @@
+<!-- If needed, show the wizard-step-referral-code component-->
+<!-- If needed, show the wizard-step-enter-email -->
+
+{{#if model.isReferralCodeStateBlockingAppUsage}}
+    {{wizard-step-referral-code model=model.state }}
+{{/if}}
+
+{{#unless model.isReferralCodeStateBlockingAppUsage}}
+    {{wizard-step-enter-email model=model.state action='next'}}
+{{/unless}}

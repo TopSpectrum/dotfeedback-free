@@ -1,11 +1,12 @@
-import Ember from 'ember';
+"use strict";
 
+import Ember from 'ember';
 
 export default Ember.Route.extend({
 
     context: Ember.inject.service('context'),
 
-    referralCodeState: Ember.computed.alias('context.referralCodeState'),
+    referralCodeState: Ember.computed.alias('context.model.referralCodeState'),
 
     beforeModel(transition) {
         let referralCodeState = this.get('referralCodeState');

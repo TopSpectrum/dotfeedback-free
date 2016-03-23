@@ -9,4 +9,10 @@ import WizardStepRoute from './wizard-step';
  */
 export default WizardStepRoute.extend({
 
+    actions: {
+        
+        next() {
+            this.transitionTo('step-verify');
+        }
+    }
 });

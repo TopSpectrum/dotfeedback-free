@@ -1,8 +1,8 @@
 "use strict";
 
-import Ember from 'ember';
+import Ember from "ember";
 
-export default Ember.Controller.extend({
+export default Ember.Component.extend({
 
     store: Ember.inject.service(),
 
@@ -15,7 +15,9 @@ export default Ember.Controller.extend({
 
             this.set('model.registrar', chosenRegistrar);
 
-            var reservation = this.store.createRecord('reservation', {
+            let store = this.get('store');
+
+            var reservation = store.createRecord('reservation', {
                 sourceFullDomainName: this.get('model.sourceFullDomainName'),
                 destinationFullDomainName: this.get('model.destinationFullDomainName'),
 
@@ -55,17 +57,13 @@ export default Ember.Controller.extend({
                     scope.set('model.waitingOnEmail', true);
                     scope.set('spinning', true);
 
-                    //scope.transitionTo('step-confirmation');
-                    scope.transitionToRoute('step-check-email');
+                    scope.sendAction();
                 })
                 .catch(function (err) {
                     alert('There was a problem submitting your request. Please try again.');
                     scope.set('spinning', false);
                     Ember.Logger.debug('Error', err);
                 });
-
         }
-
     }
-
 });

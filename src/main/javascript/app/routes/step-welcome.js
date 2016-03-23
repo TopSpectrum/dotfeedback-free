@@ -28,12 +28,10 @@ export default WizardStepRoute.extend({
     //     this.transitionTo('step-enter-email');
     // },
 
-    context: Ember.inject.service(),
-
     model() {
         return Ember.RSVP.hash({
             state: this._super(),
-            isReferralCodeStateBlockingAppUsage: this.get('context.isReferralCodeStateBlockingAppUsage')
+            isReferralCodeStateBlockingAppUsage: this.get('contextService.isReferralCodeStateBlockingAppUsage')
         });
     },
 

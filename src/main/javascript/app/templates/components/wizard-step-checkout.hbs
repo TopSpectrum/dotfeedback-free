@@ -1,0 +1,32 @@
+<div class="steps col-xs-12 col-sm-8 col-sm-offset-2 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3">
+    <div class="step active">
+
+        <h1>{{#unless model.record.checkoutDate}}Confirm {{/unless}}{{model.record.destinationFullDomainName}}</h1>
+
+        <div>
+            {{whois-table model=model.record email=model.record.email emailDisabled=true disabled=model.record.checkoutDate}}
+        </div>
+
+        {{#unless model.record.checkoutDate}}
+            <div class="row">
+                <textarea class="form-control" style="overflow-y: scroll; height: 100px; width: 100%;">{{model.terms}}</textarea>
+            </div>
+
+            <div class="row">
+                <a target="_blank" href="/terms" class="pull-right">View Terms</a>
+            </div>
+
+            <div class="checkbox">
+                <label>
+                    {{input type="checkbox" name="isAdmin" checked=model.acceptsTos disabled=model.spinning}} I agree to the terms of service
+                </label>
+            </div>
+
+            <div>
+                {{#ladda-button class="btn-add btn btn-primary ladda-button" data-style="slide-left" tabindex="1" action='next' disabled=isInvalid spinning=model.spinning}}
+                    Finish
+                {{/ladda-button}}
+            </div>
+        {{/unless}}
+    </div>
+</div>

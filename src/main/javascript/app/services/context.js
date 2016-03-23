@@ -10,12 +10,16 @@ export default Ember.Service.extend({
     init() {
         this._super(...arguments);
 
-        this.set('model.skipReferralCode', true);
-        this.set('model.allowAnyReferralCode', true);
-        this.set('model.referralCodeState', this._fetchReferralCodeState());
+        this.reset();
     },
 
     model: new Ember.Object({}),
+
+    hasActiveOrder: Ember.computed('model.email', function() {
+        let email = this.get('model.email');
+        
+        return !Ember.isBlank(email);
+    }).readOnly(),
 
     hasValidReferralCode: Ember.computed('model.referralCodeState.accepted', function () {
         let accepted = this.get('model.referralCodeState.accepted');
@@ -39,6 +43,10 @@ export default Ember.Service.extend({
 
     reset() {
         this.set('model', new Ember.Object({}));
+
+        this.set('model.skipReferralCode', true);
+        this.set('model.allowAnyReferralCode', true);
+        this.set('model.referralCodeState', this._fetchReferralCodeState());
     },
 
     _fetchReferralCodeState()

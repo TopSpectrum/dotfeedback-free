@@ -1,6 +1,7 @@
 package feedback.register.free.web.model;
 
 import feedback.register.free.data.FreeReservation;
+import org.joda.time.DateTime;
 
 import java.io.Serializable;
 
@@ -30,6 +31,7 @@ public class FreeReservationToken implements Serializable {
     private String faxExt;
     private String email;
     private String registrar;
+    private DateTime checkoutDate;
 
     public FreeReservationToken() {
 
@@ -53,6 +55,19 @@ public class FreeReservationToken implements Serializable {
         this.faxExt = reservation.getDestinationWhoisRecord().getAdminFaxExt();
         this.email = reservation.getDestinationWhoisRecord().getAdminEmail();
         this.registrar = reservation.getDestinationWhoisRecord().getRegistrar();
+        this.checkoutDate = reservation.getCheckoutDate();
+    }
+
+    public DateTime getCheckoutDate() {
+        return checkoutDate;
+    }
+
+    public void setRegistrar(String registrar) {
+        this.registrar = registrar;
+    }
+
+    public void setCheckoutDate(DateTime checkoutDate) {
+        this.checkoutDate = checkoutDate;
     }
 
     public String getRegistrar() {

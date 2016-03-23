@@ -1,0 +1,8 @@
+
+{{#if model.completed}}
+    Your reservation is now completed. Thanks!
+{{/if}}
+
+{{#unless model.completed}}
+    {{wizard-step-checkout model=model action='next'}}
+{{/unless}}

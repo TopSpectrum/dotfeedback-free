@@ -4,12 +4,10 @@ import Ember from 'ember';
 
 export default Ember.Route.extend({
 
-    context: Ember.inject.service('context'),
-
-    referralCodeState: Ember.computed.alias('context.model.referralCodeState'),
+    contextService: Ember.inject.service('context'),
 
     beforeModel(transition) {
-        let referralCodeState = this.get('referralCodeState');
+        let referralCodeState = this.get('contextService.model.referralCodeState');
 
         if (referralCodeState) {
             return;
@@ -29,12 +27,6 @@ export default Ember.Route.extend({
         }
     },
 
-    model() {
-        var model = this.get('context.model');
-
-        return Ember.RSVP.Promise.resolve(model);
-    },
-
     actions: {
 
         clearCookies() {
@@ -43,7 +35,7 @@ export default Ember.Route.extend({
 
             if (!Ember.isBlank(cookieString)) {
                 var cookies = cookieString.split(";");
-                
+
                 for (var i = 0; i < cookies.length; i++) {
                     var cookie = cookies[i];
                     var eqPos = cookie.indexOf("=");

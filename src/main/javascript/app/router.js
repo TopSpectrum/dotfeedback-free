@@ -16,26 +16,21 @@ Router.map(function () {
         path: '/reservation'
     });
 
-    this.route('step-select-registrar', {
+    this.route('step-registrar', {
         path: '/registrar'
+    });
+
+    this.route('step-verify', {
+        path: '/verify'
     });
 
     this.route('step-checkout', {
         path: '/checkout'
     });
 
-    // this.route('checkout');
-    // this.route('complete');
-    // this.route('step-submitting');
-    //
-    // this.route('terms');
-    //
-    // this.route('privacy');
-    //
-    // this.route('step-welcome');
-    // this.route('step-whois');
-    // this.route('abstract-route');
-    // this.route('wizard-step');
+    this.route('terms');
+    this.route('privacy');
+
 });
 
 export default Router;

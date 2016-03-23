@@ -13,20 +13,6 @@ import WizardStepRoute from "./wizard-step";
  */
 export default WizardStepRoute.extend({
 
-    beforeModel() {
-        let model = this.modelFor('application');
-        let sourceFullDomainName = Ember.get(model, 'email');
-
-        if (!sourceFullDomainName) {
-            Ember.Logger.warn('Could not determine the \'email\', so returning to the index route.');
-            this.transitionTo('step-welcome');
-        }
-    },
-
-    model() {
-        return this.modelFor('application');
-    },
-
     afterModel(model, transition) {
         let sourceFullDomainName = Ember.get(model, 'sourceFullDomainName');
 
@@ -92,6 +78,10 @@ export default WizardStepRoute.extend({
     },
 
     actions: {
+        next() {
+            this.transitionTo('step-registrar');
+        },
+
         changeSourceFullDomainName(model, sourceFullDomainName) {
             if (Ember.isBlank(sourceFullDomainName)) {
                 alert('Please enter a valid domain name');

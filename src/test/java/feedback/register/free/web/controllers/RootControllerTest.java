@@ -46,6 +46,13 @@ public class RootControllerTest extends ApplicationContextAwareTestBase {
     }
 
     @Test
+    public void testOperationsConfirmIdentity() throws Exception {
+        FreeReservation reservation = reservation();
+
+        controller.sendAdminAwarenessPreorderEmail(reservation);
+    }
+
+    @Test
     public void testCompanyConfirmationEmail_confirmed() throws Exception {
         FreeReservation reservation = reservation();
 

@@ -76,7 +76,7 @@ export default Ember.Component.extend(InboundActions, {
         if (this.get('muteInitialErrors') && !this.get('touched')) {
             return false;
         }
-        
+
         let errors = this.get('errors');
 
         if (errors) {
@@ -125,7 +125,7 @@ export default Ember.Component.extend(InboundActions, {
                 }
             });
 
-            $el.on('input', function (e) {
+            $el.on('input', function (/*e*/) {
 
                 let value = $el.val();
 

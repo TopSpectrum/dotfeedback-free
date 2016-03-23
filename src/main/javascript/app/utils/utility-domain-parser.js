@@ -1,3 +1,5 @@
+"use strict";
+
 import Ember from "ember";
 import TLDs from "javascript/utils/utility-domain-json";
 
@@ -7,7 +9,7 @@ export default function utilityDomainParser(domainName) {
     }
 
     var parts = domainName.split('.');
-    if (!parts || !parts.length > 2) {
+    if (!parts || parts.length < 2) {
         return null;
     }
 

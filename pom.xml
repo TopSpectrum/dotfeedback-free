@@ -14,8 +14,8 @@
     mvn clean package beanstalk:upload-source-bundle beanstalk:create-application-version beanstalk:replace-environment -DskipTests=true -e
     -->
     <!--<scm>-->
-        <!--&lt;!&ndash; Replace the connection below with your project connection &ndash;&gt;-->
-        <!--<connection>scm:git:git://github.com/TopSpectrum/topspectrum-mvc.git</connection>-->
+    <!--&lt;!&ndash; Replace the connection below with your project connection &ndash;&gt;-->
+    <!--<connection>scm:git:git://github.com/TopSpectrum/topspectrum-mvc.git</connection>-->
     <!--</scm>-->
 
     <distributionManagement>
@@ -159,6 +159,46 @@
 
         <plugins>
             <plugin>
+                <artifactId>exec-maven-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <version>1.4.0</version>
+                <executions>
+                    <execution><!-- Run our version calculation script -->
+                        <id>Generate Ember Sources</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${project.basedir}/src/main/javascript/ember-deploy.sh</executable>
+                        </configuration>
+                    </execution>
+
+                    <!--<execution>&lt;!&ndash; Run our version calculation script &ndash;&gt;-->
+                        <!--<id>Install Dependencies</id>-->
+                        <!--<phase>install</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>exec</goal>-->
+                        <!--</goals>-->
+                        <!--<configuration>-->
+                            <!--<executable>${project.basedir}/install-dependencies.sh</executable>-->
+                        <!--</configuration>-->
+                    <!--</execution>-->
+
+                    <execution><!-- Run our version calculation script -->
+                        <id>Clean Ember Sources</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${project.basedir}/src/main/javascript/ember-clean.sh</executable>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.2</version>
@@ -188,47 +228,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <!-- RequireJS Plugin -->
-            <!--<plugin>-->
-                <!--<groupId>com.github.bringking</groupId>-->
-                <!--<artifactId>requirejs-maven-plugin</artifactId>-->
-                <!--<version>2.0.4</version>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<goals>-->
-                            <!--<goal>optimize</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-                <!--<configuration>-->
-                    <!--&lt;!&ndash; optional path to a nodejs executable &ndash;&gt;-->
-                    <!--<runner>-->
-                        <!--Nashorn-->
-                    <!--</runner>-->
-                    <!--&lt;!&ndash; path to optimizer json config file(s) &ndash;&gt;-->
-                    <!--<configFile>-->
-                        <!--${basedir}/src/main/tools/build.json-->
-                    <!--</configFile>-->
-                    <!--&lt;!&ndash; optional path to optimizer executable &ndash;&gt;-->
-                    <!--&lt;!&ndash; optional parameters to optimizer executable &ndash;&gt;-->
-                    <!--<optimizerParameters>-->
-                        <!--<parameter>optimize=uglify</parameter>-->
-                    <!--</optimizerParameters>-->
-                    <!--&lt;!&ndash;-->
-                    <!--Whether or not to process configFile with maven filters.-->
-                    <!--If you use this option, some options in your configFile-->
-                    <!--must resolve to absolute paths (see below)-->
-                    <!--&ndash;&gt;-->
-                    <!--<filterConfig>-->
-                        <!--true-->
-                    <!--</filterConfig>-->
-                    <!--&lt;!&ndash; Skip requirejs optimization if true &ndash;&gt;-->
-                    <!--<skip>-->
-                        <!--false-->
-                    <!--</skip>-->
-                <!--</configuration>-->
-            <!--</plugin>-->
 
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -295,6 +294,18 @@
                 <groupId>br.com.ingenieux</groupId>
                 <artifactId>beanstalk-maven-plugin</artifactId>
                 <version>1.4.0</version>
+
+                <executions>
+                    <execution>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>upload-source-bundle</goal>
+                            <goal>create-application-version</goal>
+                            <goal>update-environment</goal>
+                            <goal>wait-for-environment</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
@@ -350,8 +361,8 @@
                                     <text>For more information, please look at the documentation:</text>
                                 </attachment>
                                 <attachment>
-                                    <title>http://docs.corp.topspectrum.com/dev/${project.artifactId}/${project.version}/javadocs/index.html</title>
-                                    <title_link>http://docs.corp.topspectrum.com/dev/${project.artifactId}/${project.version}/javadocs/index.html</title_link>
+                                    <title>http://docs.corp.topspectrum.com/${profile.id}/${project.artifactId}/${project.version}/javadocs/index.html</title>
+                                    <title_link>http://docs.corp.topspectrum.com/${profile.id}/${project.artifactId}/${project.version}/javadocs/index.html</title_link>
                                 </attachment>
                             </attachments>
                         </configuration>

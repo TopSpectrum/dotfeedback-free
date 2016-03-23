@@ -7,8 +7,6 @@ import com.topspectrum.mail.TemplatedMailService;
 import com.topspectrum.services.GoogleDocService;
 import com.topspectrum.template.EmailTemplateService;
 import com.topspectrum.template.Parameters;
-import com.topspectrum.template.STStringTemplate;
-import com.topspectrum.template.Template;
 import com.topspectrum.util.ConversionUtils;
 import com.topspectrum.util.DomainNameUtils;
 import com.topspectrum.util.MorePreconditions;
@@ -109,7 +107,7 @@ public class RootController {
         return "api/v1";
     }
 
-    @RequestMapping("/checkout_terms")
+    @RequestMapping("terms")
     @ResponseBody
     public String load_terms() throws InterruptedException, ExecutionException, IOException {
         //throw new RuntimeException("fuck");
@@ -122,7 +120,7 @@ public class RootController {
     public String load_privacy() throws InterruptedException, ExecutionException, IOException {
         // TODO: cache this.
         // TODO: find the right documentId
-        return googleDocService.getByDocumentId("1uvUkiVj0nnsONfHaT98uIljQ7CGKTuWBmOrM2pwVBzM");
+        return googleDocService.getByDocumentId("1sI_2D2AlYgsZPU5YU1DPNR4lk2nQ21moER9ml-_Mnn0");
     }
 
     @Transactional
@@ -212,6 +210,7 @@ public class RootController {
         final FreeReservation reservation = parseAndSaveReservationOrFail(wrapper);
 
         sendCustomerVerificationEmail(reservation);
+        sendAdminAwarenessPreorderEmail(reservation);
 
         // This will start everything over from scratch
         request.getSession().invalidate();
@@ -221,6 +220,20 @@ public class RootController {
         wrapper.getReservation().setId(reservation.getId());
 
         return wrapper;
+    }
+
+    public void sendAdminAwarenessPreorderEmail(FreeReservation reservation) throws IOException, MessagingException {
+        EmailTemplate template = emailTemplateService.getTemplateByName("email.operations.confirm-identity");
+
+        Parameters parameters = parameters(reservation);
+
+        {
+            parameters.put("", "");
+        }
+
+        Preconditions.checkState(StringUtils.isValidEmail(internalCompanyEmail), "must be valid email: " + internalCompanyEmail);
+
+        templatedMailService.send(internalCompanyEmail, template, parameters);
     }
 
     public void sendCustomerVerificationEmail(FreeReservation reservation) throws MessagingException, IOException {
@@ -347,7 +360,9 @@ public class RootController {
             params.put("reservation", reservation);
         }
 
-        templatedMailService.send(getCustomerEmail(reservation), template, params);
+        Preconditions.checkState(StringUtils.isValidEmail(internalCompanyEmail), "must be valid email: " + internalCompanyEmail);
+
+        templatedMailService.send(internalCompanyEmail, template, params);
     }
 
     public void sendCustomerConfirmationEmail(FreeReservation reservation) throws MessagingException, IOException {
@@ -374,22 +389,6 @@ public class RootController {
         parameters.put("topLevelDomainName", "feedback");
 
         return parameters;
-    }
-
-    public void sendPendingPolicyApprovalEmail(FreeReservation reservation) throws MessagingException {
-        Template template = new STStringTemplate("$email$ is trying to reserve $fullDomainName$ and requires approval. Please click $approvalUrl$");
-        EmailTemplate requiresPolicyApprovalEmailTemplate = new EmailTemplate(new STStringTemplate("$email$ - requires approval for $fullDomainName$"), template, template);
-
-        // We need to email ops.
-        Map<String, Object> parameters = new HashMap<>();
-
-        {
-            parameters.put("fullDomainName", reservation.getDestinationFullDomainName());
-            parameters.put("email", reservation.getEmail());
-            parameters.put("approvalUrl", "http://" + baseUrl + "/api/v1/approvals?" + reservation.getEmail());
-        }
-
-        templatedMailService.send(internalCompanyEmail, requiresPolicyApprovalEmailTemplate, parameters);
     }
 
     public boolean hasExistingReservationsForThisEmail(@NotNull final String email) {
@@ -482,7 +481,7 @@ public class RootController {
     public WhoisRecord findMostRecentWhoisRecord(@NotNull final String fullDomainName) {
         DateTime createdDate = DateTime.now().minusDays(30);
 
-        return PageUtils.first(whoisRecordRepository.findByFullDomainNameAndCreatedDateAfter(fullDomainName, createdDate, PageUtils.newest()));
+        return PageUtils.first(whoisRecordRepository.findByFullDomainNameAndSourceStrategyAndCreatedDateAfter(fullDomainName, "IanaWhoisConnection", createdDate, PageUtils.newest()));
     }
 
     protected Parameters parameters(FreeReservation reservation) {

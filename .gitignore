@@ -6,3 +6,7 @@ src/main/javascript/dist/
 src/main/javascript/tmp/
 src/main/webapp/static/assets/
 .idea/
+libraries/
+.name
+node_modules/
+

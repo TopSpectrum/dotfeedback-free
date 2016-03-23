@@ -1,6 +1,6 @@
 {
     "name": "javascript",
-    "version": "1.0.0",
+    "version": "0.0.0",
     "description": "The user interface for free.feedback",
     "private": true,
     "directories": {
@@ -8,7 +8,9 @@
         "test": "tests"
     },
     "scripts": {
-        "build": "ember build",
+        "build": "./ember-deploy.sh",
+        "deploy": "./ember-deploy.sh",
+        "clean": "./ember-clean.sh",
         "start": "ember serve --proxy http://dev.free.feedback:8098/",
         "test": "ember test"
     },
@@ -32,7 +34,6 @@
         "ember-cli-dependency-checker": "^1.2.0",
         "ember-cli-deploy": "0.6.0",
         "ember-cli-deploy-build": "0.1.1",
-        "ember-cli-deploy-slack": "0.1.0",
         "ember-cli-htmlbars": "^1.0.1",
         "ember-cli-htmlbars-inline-precompile": "^0.3.1",
         "ember-cli-ic-ajax": "0.2.4",
@@ -56,8 +57,7 @@
         "humanize": "0.0.9",
         "loader.js": "^4.0.0",
         "moment": "^2.11.2",
-        "npmlog": "https://registry.npmjs.org/npmlog/-/npmlog-2.0.2.tgz",
-        "ember": "latest"
+        "npmlog": "https://registry.npmjs.org/npmlog/-/npmlog-2.0.2.tgz"
     },
     "dependencies": {
         "email-addresses": "^2.0.2"

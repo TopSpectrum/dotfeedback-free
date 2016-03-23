@@ -1,3 +1,5 @@
+"use strict";
+
 import Ember from 'ember';
 import Resolver from './resolver';
 import loadInitializers from 'ember-load-initializers';

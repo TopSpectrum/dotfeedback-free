@@ -1,3 +1,5 @@
+"use strict";
+
 import Base from 'ember-validations/validators/base';
 
 export default Base.extend({

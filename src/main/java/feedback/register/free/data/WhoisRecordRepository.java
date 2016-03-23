@@ -12,6 +12,6 @@ public interface WhoisRecordRepository extends JpaRepository<WhoisRecord, Long> 
 
     Page<WhoisRecord> findByFullDomainName(String sourceFullDomainName, Pageable page);
 
-    Page<WhoisRecord> findByFullDomainNameAndCreatedDateAfter(String sourceFullDomainName, DateTime createdDate, Pageable page);
+    Page<WhoisRecord> findByFullDomainNameAndSourceStrategyAndCreatedDateAfter(String sourceFullDomainName, String sourceStrategy, DateTime createdDate, Pageable page);
 
 }

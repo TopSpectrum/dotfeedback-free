@@ -58,7 +58,8 @@ export default Ember.Component.extend(EmberValidations, {
             if (!parsedObject['public']) {
                 this.set('model.sourceFullDomainName', parsedObject.fullDomainName);
                 this.set('model.destinationCustomerDomainName', parsedObject.customerDomainName);
-                this.set('model.newDestinationCustomerDomainName', parsedObject.customerDomainName);
+                this.set('model.newDestinationCustomerDomainName', parsedObject.customerDomainName + '.feedback');
+                this.set('model.newDestinationFullDomainName', parsedObject.customerDomainName + '.feedback');
                 this.set('model.destinationFullDomainName', parsedObject.customerDomainName + '.feedback');
             }
 

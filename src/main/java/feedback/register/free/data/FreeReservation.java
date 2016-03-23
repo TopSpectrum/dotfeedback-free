@@ -17,6 +17,8 @@ import javax.persistence.*;
  */
 public class FreeReservation extends AbstractDto {
 
+    private static final long serialVersionUID = -9001493940550251340L;
+
     @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "destination_whois_record_id")
     WhoisRecord destinationWhoisRecord;

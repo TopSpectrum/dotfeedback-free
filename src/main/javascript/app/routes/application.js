@@ -6,27 +6,6 @@ export default Ember.Route.extend({
 
     contextService: Ember.inject.service('context'),
 
-    beforeModel(transition) {
-        let referralCodeState = this.get('contextService.model.referralCodeState');
-
-        if (referralCodeState) {
-            return;
-        }
-
-        var accepted = Ember.get(referralCodeState, 'accepted');
-        var required = Ember.get(referralCodeState, 'required');
-
-        if (accepted || !required) {
-            // They have accepted, or are not required to.
-            return this.transitionTo('step-enter-email');
-        } else {
-            // They have not accepted, but are required to.
-            if ('index' !== transition.targetName) {
-                return this.transitionTo('index`');
-            }
-        }
-    },
-
     actions: {
 
         clearCookies() {
@@ -44,7 +23,7 @@ export default Ember.Route.extend({
                 }
             }
 
-            document.location.reload();
+            document.location.href = '/api/v1/logout';
         }
     }
 });

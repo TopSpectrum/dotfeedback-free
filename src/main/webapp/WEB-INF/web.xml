@@ -9,7 +9,7 @@
         <session-timeout>31556926</session-timeout>
         <cookie-config>
             <path>/</path>
-            <http-only>true</http-only>
+            <http-only>false</http-only>
             <max-age>31556926</max-age>
         </cookie-config>
     </session-config>
@@ -83,7 +83,7 @@
     <!-- BEGIN: Define the ApplicationContext -->
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>/WEB-INF/applicationContext.xml</param-value>
+        <param-value>/WEB-INF/security.xml, /WEB-INF/applicationContext.xml</param-value>
     </context-param>
     <context-param>
         <param-name>spring.profiles.default</param-name>
@@ -104,10 +104,23 @@
         <filter-name>httpHeadFilter</filter-name>
         <filter-class>com.topspectrum.filters.HttpHeadFilter</filter-class>
     </filter>
+
     <filter-mapping>
         <filter-name>httpHeadFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+
+
+    <filter>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
     <!--<filter-mapping>-->
         <!--<filter-name>springSecurityFilterChain</filter-name>-->
         <!--<url-pattern>/*</url-pattern>-->

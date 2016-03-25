@@ -434,7 +434,7 @@ export default Ember.Component.extend(EmberValidations, {
             }
 
             this.set('model.sourceFullDomainName', value);
-            this.send('changeSourceFullDomainName', this.get('model'), value);
+            this.sendAction('changeSourceFullDomainName', this.get('model'), value);
             // this.set('model.newSourceFullDomainName', '');
 
             return false;

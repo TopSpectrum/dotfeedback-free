@@ -70,7 +70,7 @@ export default Ember.Component.extend(EmberValidations, {
         'email': {presence: true},
         'street': {presence: true},
         'city': {presence: true},
-        'state': {presence: true},
+        // 'state': {presence: true},
         'postal': {presence: true},
         'country': {presence: true},
         'phone': {presence: true}

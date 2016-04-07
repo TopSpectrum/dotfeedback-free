@@ -41,7 +41,7 @@
 
         <bean id="currentIPServletFilter" class="feedback.peoplestats.CurrentIPServletFilter"/>
 
-        <bean id="whoisConnection" class="feedback.register.free.whois.IanaWhoisConnection">
+        <bean id="whoisConnection" class="com.topspectrum.whois.IanaWhoisConnection">
             <property name="cacheService">
                 <bean class="com.topspectrum.cache.DiskCacheService"/>
             </property>

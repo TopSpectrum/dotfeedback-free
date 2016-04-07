@@ -59,7 +59,7 @@
     <entity class="feedback.web.data.PersistedOAuth2AccessToken"/>
     <entity class="feedback.register.free.data.FreeReservation"/>
 
-    <entity class="feedback.register.free.data.WhoisRecord" />
+    <entity class="com.topspectrum.whois.WhoisRecord" />
     <entity class="com.topspectrum.cache.DiskCache" />
 
 </entity-mappings>

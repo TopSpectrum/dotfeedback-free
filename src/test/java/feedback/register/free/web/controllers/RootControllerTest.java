@@ -3,7 +3,7 @@ package feedback.register.free.web.controllers;
 import com.topspectrum.data.dao.ApplicationContextAwareTestBase;
 import com.topspectrum.test.TestUtil;
 import feedback.register.free.data.FreeReservation;
-import feedback.register.free.data.WhoisRecord;
+import com.topspectrum.whois.WhoisRecord;
 import feedback.web.data.PendingVerificationToken;
 import org.joda.time.DateTime;
 import org.junit.Before;

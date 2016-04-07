@@ -1,12 +1,16 @@
 package feedback.register.free.data;
 
 import com.topspectrum.data.dto.AbstractDto;
+import com.topspectrum.whois.WhoisRecord;
 import feedback.web.data.PendingVerificationToken;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 /**
  * {discussion here}
@@ -160,7 +164,7 @@ public class FreeReservation extends AbstractDto {
     public boolean isPendingPolicyApproval() {
         return pendingPolicyApproval;
     }
-    
+
     public String getReferralCode() {
         return referralCode;
     }

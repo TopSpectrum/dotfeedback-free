@@ -388,7 +388,7 @@
         <dependency>
             <groupId>com.topspectrum</groupId>
             <artifactId>dotfeedback-lib</artifactId>
-            <version>1.21-SNAPSHOT</version>
+            <version>1.23-SNAPSHOT</version>
 
             <exclusions>
                 <exclusion>
@@ -496,10 +496,5 @@
             <version>4.3.6</version>
         </dependency>
 
-        <dependency>
-            <groupId>commons-net</groupId>
-            <artifactId>commons-net</artifactId>
-            <version>3.4</version>
-        </dependency>
     </dependencies>
 </project>

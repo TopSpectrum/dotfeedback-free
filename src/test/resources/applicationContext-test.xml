@@ -21,7 +21,7 @@ This file contains overrides that are used for unit tests.
         <bean class="com.topspectrum.cache.MemoryCachedDependencyManager"/>
         <bean class="org.springframework.cache.guava.GuavaCacheManager"/>
 
-        <bean class="feedback.web.hostedcontent.NullHostedContentService"/>
+        <bean class="feedback.web.services.NullHostedContentService"/>
 
         <!-- Creates the datasource bean. (Overrides the one in the global applicationContext. -->
         <jdbc:embedded-database id="dataSource" type="HSQL">

@@ -19,9 +19,13 @@
     <entity class="com.topspectrum.billing.dto.BillingPurchaseOption"/>
     <entity class="com.topspectrum.billing.dto.BillingTransaction"/>
     <entity class="com.topspectrum.billing.dto.CreditCardBillingWallet"/>
-    <entity class="com.topspectrum.events.Subscription"/>
-    <entity class="com.topspectrum.events.SubscriptionEntry"/>
+    <entity class="com.topspectrum.events.subscriptions.Subscription"/>
+    <entity class="com.topspectrum.events.subscriptions.SubscriptionEntry"/>
     <entity class="com.topspectrum.data.dto.Organization"/>
+    <entity class="com.topspectrum.events.subscriptions.InstalledSubscription"/>
+    <entity class="com.topspectrum.events.subscriptions.InstalledPackage"/>
+    <entity class="com.topspectrum.events.subscriptions.Package"/>
+    <entity class="com.topspectrum.events.scheduled.ScheduledEvent"/>
 
     <entity class="com.topspectrum.feedback.register.data.Reservation"/>
     <entity class="com.topspectrum.feedback.register.data.ReservationCustomer"/>

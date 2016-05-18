@@ -11,13 +11,25 @@ export default Ember.Service.extend({
         this._super(...arguments);
 
         this.reset();
+
+        var scope = this;
+
+        Ember.RSVP.Promise.resolve(Ember.$.ajax({
+            url: '/api/v1/intro'
+        }))
+            .then(function(text) {
+                scope.set('introMessage', text);
+            })
+
     },
 
-    model: new Ember.Object({}),
+    model: new Ember.Object({
+
+    }),
 
     hasActiveOrder: Ember.computed('model.email', function() {
         let email = this.get('model.email');
-        
+
         return !Ember.isBlank(email);
     }).readOnly(),
 
@@ -41,9 +53,14 @@ export default Ember.Service.extend({
 
     }).readOnly(),
 
+    introMessageDidChange: Ember.observer('introMessage', function() {
+        this.set('model.intro', this.get('introMessage'));
+    }),
+
     reset() {
         this.set('model', new Ember.Object({}));
 
+        this.set('model.intro');
         this.set('model.skipReferralCode', true);
         this.set('model.allowAnyReferralCode', true);
         this.set('model.referralCodeState', this._fetchReferralCodeState());

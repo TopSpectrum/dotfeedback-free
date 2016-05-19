@@ -417,6 +417,8 @@ public class RootController {
         final FreeReservation reservation = new FreeReservation();
 
         {
+            reservation.setAffiliateCode(wrapper.getReservation().getAffiliateCode());
+
             reservation.setDestinationFullDomainName(token.getDestinationFullDomainName());
             reservation.setSourceFullDomainName(token.getSourceFullDomainName());
 

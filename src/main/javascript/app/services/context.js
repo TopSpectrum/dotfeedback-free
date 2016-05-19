@@ -14,20 +14,18 @@ export default Ember.Service.extend({
 
         var scope = this;
 
-        Ember.RSVP.Promise.resolve(Ember.$.ajax({
-            url: '/api/v1/intro'
-        }))
-            .then(function(text) {
+        Ember.RSVP.Promise
+            .resolve(Ember.$.ajax({
+                url: '/api/v1/intro'
+            }))
+            .then(function (text) {
                 scope.set('introMessage', text);
-            })
-
+            });
     },
 
-    model: new Ember.Object({
+    model: new Ember.Object({}),
 
-    }),
-
-    hasActiveOrder: Ember.computed('model.email', function() {
+    hasActiveOrder: Ember.computed('model.email', function () {
         let email = this.get('model.email');
 
         return !Ember.isBlank(email);
@@ -53,7 +51,7 @@ export default Ember.Service.extend({
 
     }).readOnly(),
 
-    introMessageDidChange: Ember.observer('introMessage', function() {
+    introMessageDidChange: Ember.observer('introMessage', function () {
         this.set('model.intro', this.get('introMessage'));
     }),
 
@@ -64,6 +62,7 @@ export default Ember.Service.extend({
         this.set('model.skipReferralCode', true);
         this.set('model.allowAnyReferralCode', true);
         this.set('model.referralCodeState', this._fetchReferralCodeState());
+        this.set('model.affiliateCode', Cookies.get('affiliateCode'));
     },
 
     _fetchReferralCodeState()

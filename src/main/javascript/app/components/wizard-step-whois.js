@@ -374,6 +374,10 @@ export default Ember.Component.extend(EmberValidations, {
 
     //region Actions
     actions: {
+        editSourceFullDomainName() {
+            this.set('shouldEditSourceFullDomainName', true);
+        },
+
         focusedMainInputBox() {
             this.set('model.newDestinationCustomerDomainName', (this.get('model.newDestinationCustomerDomainName')||'').replace('.feedback', ''));
         },

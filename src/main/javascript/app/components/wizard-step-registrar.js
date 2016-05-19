@@ -17,7 +17,7 @@ export default Ember.Component.extend({
 
             let store = this.get('store');
 
-            var reservation = store.createRecord('reservation', {
+            let reservation = store.createRecord('reservation', {
                 sourceFullDomainName: this.get('model.sourceFullDomainName'),
                 destinationFullDomainName: this.get('model.destinationFullDomainName'),
 
@@ -35,12 +35,13 @@ export default Ember.Component.extend({
                 'phone': this.get('model.sourceFullDomainNameRecord.phone'),
                 'phoneExt': this.get('model.sourceFullDomainNameRecord.phoneExt'),
                 'fax': this.get('model.sourceFullDomainNameRecord.fax'),
+                'affiliateCode': this.get('model.affiliateCode'),
                 'faxExt': this.get('model.sourceFullDomainNameRecord.faxExt')
                 //'fingerprint': DS.attr(),
                 //'remoteHost': DS.attr(),
             });
 
-            var scope = this;
+            let scope = this;
 
             this.set('spinning', true);
 

@@ -50,6 +50,9 @@ public class FreeReservation extends AbstractDto {
     @Column
     String referralCode;
 
+    @Column
+    String affiliateCode;
+
     @ManyToOne
     @JoinColumn(name = "pending_verification_token_id")
     PendingVerificationToken pendingVerificationToken;
@@ -171,5 +174,13 @@ public class FreeReservation extends AbstractDto {
 
     public void setReferralCode(String referralCode) {
         this.referralCode = referralCode;
+    }
+
+    public String getAffiliateCode() {
+        return affiliateCode;
+    }
+
+    public void setAffiliateCode(String affiliateCode) {
+        this.affiliateCode = affiliateCode;
     }
 }

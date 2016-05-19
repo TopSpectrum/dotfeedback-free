@@ -32,6 +32,7 @@ public class FreeReservationToken implements Serializable {
     private String email;
     private String registrar;
     private DateTime checkoutDate;
+    private String affiliateCode;
 
     public FreeReservationToken() {
 
@@ -56,6 +57,7 @@ public class FreeReservationToken implements Serializable {
         this.email = reservation.getDestinationWhoisRecord().getAdminEmail();
         this.registrar = reservation.getDestinationWhoisRecord().getRegistrar();
         this.checkoutDate = reservation.getCheckoutDate();
+        this.affiliateCode = reservation.getAffiliateCode();
     }
 
     public DateTime getCheckoutDate() {
@@ -200,5 +202,13 @@ public class FreeReservationToken implements Serializable {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getAffiliateCode() {
+        return affiliateCode;
+    }
+
+    public void setAffiliateCode(String affiliateCode) {
+        this.affiliateCode = affiliateCode;
     }
 }

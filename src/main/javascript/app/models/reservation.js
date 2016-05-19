@@ -20,6 +20,7 @@ export default DS.Model.extend({
   'fingerprint': DS.attr(),
   'referralCode': DS.attr(),
   'registrar': DS.attr('string'),
+  'affiliateCode': DS.attr('string'),
   'checkoutDate': DS.attr('date')
 
 });

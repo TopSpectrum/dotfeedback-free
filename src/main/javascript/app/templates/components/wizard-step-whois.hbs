@@ -181,9 +181,17 @@
 
         {{#if shouldShowWhoisTable}}
             <div id="whois" class="section col-sm-12">
-                {{#if shouldShowWhoisTable}}
+
+                {{#unless shouldEditSourceFullDomainName}}
+                    <div class="whois-source-block">
+                        Importing whois from <span>{{ model.sourceFullDomainName }}</span> (<a href="#" {{action 'editSourceFullDomainName'}}>change</a>)
+                    </div>
+                {{/unless}}
+
+                {{#if shouldEditSourceFullDomainName}}
                     <div class="whois-table form-horizontal">
                         <div class="row">
+
                             <!-- I am using the whois-table wrap because I'm lazy. -->
                             <div class="form-group col-sm-12">
                                 <div class="row">

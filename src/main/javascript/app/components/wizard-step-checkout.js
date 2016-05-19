@@ -41,7 +41,7 @@ export default Ember.Component.extend(EmberValidations, {
                     // scope.sendAction();
                 })
                 .catch(function () {
-                    alert('Failed. Please try again o contact support.');
+                    alert('Failed. Please try again or contact support.');
                     scope.set('model.spinning', false);
                 });
 

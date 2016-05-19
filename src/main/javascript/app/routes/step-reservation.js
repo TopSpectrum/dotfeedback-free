@@ -53,15 +53,17 @@ export default WizardStepRoute.extend({
         Ember.set(model, 'fetchingSourceFullDomainNameRecord', true);
         Ember.set(model, 'chooseDifferentSourceFullDomainNameMode', false);
 
-        return this.peekAndFind('whois', sourceFullDomainName)
-            .then(function (whoisRecord) {
-                return scope.peekAndFind('availability', destinationFullDomainName)
-                    .then(function (availabilityRecord) {
-                        Ember.set(model, 'sourceFullDomainName', sourceFullDomainName);
+        return scope.peekAndFind('availability', destinationFullDomainName)
+            .then(function (availabilityRecord) {
+
+                Ember.set(model, 'destinationAvailabilityRecord', availabilityRecord);
+                Ember.set(model, 'sourceFullDomainName', sourceFullDomainName);
+
+                return this.peekAndFind('whois', sourceFullDomainName)
+                    .then(function (whoisRecord) {
                         Ember.set(model, 'sourceFullDomainNameRecord', whoisRecord);
-                        Ember.set(model, 'fetchingSourceFullDomainNameRecord', false);
                         Ember.set(model, 'sourceFullDomainNameRecord.email', Ember.get(model, 'email'));
-                        Ember.set(model, 'destinationAvailabilityRecord', availabilityRecord);
+                        Ember.set(model, 'fetchingSourceFullDomainNameRecord', false);
                     });
             })
             .catch(function (err) {
@@ -69,7 +71,7 @@ export default WizardStepRoute.extend({
                 //  console.log(err);
                 //}
 
-                alert('There was an unknown server error. Please try again.');
+                // alert('There was an unknown server error. Please try again.');
 
                 Ember.set(model, 'sourceFullDomainNameRecord', new Ember.Object());
                 Ember.set(model, 'sourceFullDomainNameRecord.failedToResolve', true);

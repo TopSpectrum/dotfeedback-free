@@ -114,7 +114,6 @@ public class RootController {
     @RequestMapping("/terms")
     @ResponseBody
     public String load_terms() throws InterruptedException, ExecutionException, IOException {
-        //throw new RuntimeException("fuck");
         // TODO: cache this.
         return googleDocService.getByDocumentId("1uvUkiVj0nnsONfHaT98uIljQ7CGKTuWBmOrM2pwVBzM");
     }
@@ -122,7 +121,6 @@ public class RootController {
     @RequestMapping("/intro")
     @ResponseBody
     public String load_intro() throws InterruptedException, ExecutionException, IOException {
-        //throw new RuntimeException("fuck");
         // TODO: cache this.
         return googleDocService.getByDocumentId("13Mx9WVlsr5Jh0ytMM47EzR_RxlHW13iNeLFYPwtRsYs");
     }

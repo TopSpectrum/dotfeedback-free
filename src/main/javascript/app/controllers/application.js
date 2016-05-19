@@ -11,7 +11,7 @@ export default Ember.Controller.extend({
     affiliateCodeHeaderText: Ember.computed('model.affiliateCode', function() {
         var affiliateCode = this.get('model.affiliateCode');
 
-        return affiliateCode || 'Name';
+        return affiliateCode || 'Source';
     }),
 
     actions: {
@@ -26,7 +26,7 @@ export default Ember.Controller.extend({
 
             this.set('model.affiliateCode', affiliateCode);
             this.set('editingAffiliateCode', false);
-            
+
             Cookies.set('affiliateCode', affiliateCode);
         },
 

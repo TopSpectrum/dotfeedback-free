@@ -47,7 +47,7 @@ export default Ember.Component.extend(EmberValidations, {
                 return false;
             }
 
-            let email = this.get('model.email');
+            let email = this.get('model.email').toLowerCase();
             let result = email.substring(email.indexOf('@') + 1);
             let parsedObject = domainParser(result);
 

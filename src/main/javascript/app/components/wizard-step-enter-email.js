@@ -17,6 +17,8 @@ export default Ember.Component.extend(EmberValidations, {
                     return;
                 }
 
+                value = value.toLowerCase();
+
                 if (!EMAIL_PATTERN.test(value)) {
                     this.errors.pushObject('Please enter a valid email');
                     return;
@@ -65,7 +67,7 @@ export default Ember.Component.extend(EmberValidations, {
 
             Ember.Logger.debug('transitioning to next step');
 
-            // Send the default unnamed action. 
+            // Send the default unnamed action.
             this.sendAction();
         }
     }

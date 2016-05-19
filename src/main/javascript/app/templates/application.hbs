@@ -10,7 +10,7 @@
 
                 <div class="pull-right" style="color: black; height: 100%;">
                     <div class="navbar-brand">
-                        <a href="#" {{action 'edit-affiliate'}}>
+                        <a href="#" {{action 'edit-affiliate'}} style="opacity: .1;">
                             {{affiliateCodeHeaderText}}
                         </a>
                     </div>
@@ -20,14 +20,14 @@
         </nav>
     </header>
 
-    {{#modal-window title='Edit Affiliate' visible=editingAffiliateCode on-hide='editingAffiliateCodeModalHidden' on-save='editingAffiliateCodeModalSaved'}}
-        <div class="form">
+    {{#modal-window title='Edit Source' visible=editingAffiliateCode on-hide='editingAffiliateCodeModalHidden' on-save='editingAffiliateCodeModalSaved'}}
+        <form {{action "editingAffiliateCodeModalSaved" on="submit"}}>
             <div class="form-group">
-                <label>My name:</label>
+                <label>Source name:</label>
 
                 {{input type='text' class='form-control' value=newAffiliateCode}}
             </div>
-        </div>
+        </form>
     {{/modal-window}}
 
     <div id="cookie_announcement" class="container mt" style="margin-bottom: -25px; display:none;">

@@ -29,6 +29,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
@@ -75,6 +76,11 @@ public class RootController {
     FreeReservationRepository freeReservationRepository;
 
     @Autowired
+    @Qualifier("feedbackWhoisConnection")
+    WhoisConnection feedbackWhoisConnection;
+
+    @Autowired
+    @Qualifier("whoisConnection")
     WhoisConnection whoisConnection;
 
     @Autowired
@@ -481,7 +487,11 @@ public class RootController {
         WhoisRecord record = findMostRecentWhoisRecord(fullDomainName);
 
         if (null == record) {
-            record = whoisConnection.queryForRecord(fullDomainName);
+            if (DomainNameUtils.isOurTopLevelDomainName(DomainNameUtils.getTopLevelDomainName(fullDomainName))) {
+                record = feedbackWhoisConnection.queryForRecord(fullDomainName);
+            } else {
+                record = whoisConnection.queryForRecord(fullDomainName);
+            }
 
             whoisRecordRepository.save(record);
         }

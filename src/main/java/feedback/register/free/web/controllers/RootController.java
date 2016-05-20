@@ -44,7 +44,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -493,22 +495,102 @@ public class RootController {
         if (null == record) {
             if (DomainNameUtils.isOurTopLevelDomainName(DomainNameUtils.getTopLevelDomainName(fullDomainName))) {
                 record = feedbackWhoisConnection.queryForRecord(fullDomainName);
+
+                whoisRecordRepository.save(record);
             } else {
-                record = whoisConnection.queryForRecord(fullDomainName);
+                WhoisRecord record1 = xmlApiWhoisConnection.queryForRecord(fullDomainName);
 
-                if (!isSuccess(record)) {
-                    record = xmlApiWhoisConnection.queryForRecord(fullDomainName);
+                if (isHealthy(record1)) {
+                    whoisRecordRepository.save(record1);
+
+                    return record1;
                 }
 
-                if (!isSuccess(record)) {
-                    record = feedbackWhoisConnection.queryForRecord(fullDomainName);
+                WhoisRecord record2 = whoisConnection.queryForRecord(fullDomainName);
+
+                if (isHealthy(record2)) {
+                    record2 = new WhoisRecordBuilder(record2)
+                            .merge(record1)
+                            .build();
+
+                    whoisRecordRepository.save(record2);
+
+                    return record1;
                 }
+
+                WhoisRecord record3 = feedbackWhoisConnection.queryForRecord(fullDomainName);
+
+                if (isHealthy(record3)) {
+                    record3 = new WhoisRecordBuilder(record3)
+                            .merge(record1)
+                            .merge(record2)
+                            .build();
+
+                    whoisRecordRepository.save(record3);
+
+                    return record1;
+                }
+
+                record = new WhoisRecordBuilder()
+                        .merge(record1)
+                        .merge(record2)
+                        .merge(record3)
+                        .build();
+
+                if (record1.isFailed() || record2.isFailed() || record3.isFailed()) {
+                    record.setFailed(true);
+                }
+
+                if (record1.isNotFound() || record2.isNotFound() || record3.isNotFound()) {
+                    record.setNotFound(true);
+                }
+
+                whoisRecordRepository.save(record1);
+                whoisRecordRepository.save(record2);
+                whoisRecordRepository.save(record3);
+
+                whoisRecordRepository.save(record);
+
+                return record;
             }
-
-            whoisRecordRepository.save(record);
         }
 
         return record;
+    }
+
+    private boolean isHealthy(WhoisRecord record) {
+        return 5 >= getMissCount(record);
+    }
+
+    private int getMissCount(WhoisRecord record) {
+        int count = 0;
+
+        if (!isSuccess(record)) {
+            return 9;
+        }
+
+        WhoisRecordBuilder builder = new WhoisRecordBuilder(record);
+
+        List<WhoisRecordBuilder.CommonPart> work = Arrays.asList(
+                WhoisRecordBuilder.CommonPart.name,
+                WhoisRecordBuilder.CommonPart.email,
+                WhoisRecordBuilder.CommonPart.organization,
+                WhoisRecordBuilder.CommonPart.street,
+                WhoisRecordBuilder.CommonPart.city,
+                WhoisRecordBuilder.CommonPart.state,
+                WhoisRecordBuilder.CommonPart.postal,
+                WhoisRecordBuilder.CommonPart.country,
+                WhoisRecordBuilder.CommonPart.phone);
+
+        for (WhoisRecordBuilder.CommonPart part : work) {
+            boolean missing = StringUtils.isBlank(builder.get(WhoisRecordBuilder.CommonAgent.Registrant, part));
+
+            if (missing) {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     private boolean isSuccess(@Nullable final WhoisRecord record) {

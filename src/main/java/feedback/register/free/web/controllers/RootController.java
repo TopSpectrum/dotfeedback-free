@@ -559,7 +559,7 @@ public class RootController {
     }
 
     private boolean isHealthy(WhoisRecord record) {
-        return 5 >= getMissCount(record);
+        return 3 >= getMissCount(record);
     }
 
     private int getMissCount(WhoisRecord record) {

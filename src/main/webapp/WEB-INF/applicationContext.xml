@@ -41,7 +41,11 @@
 
         <bean id="currentIPServletFilter" class="feedback.peoplestats.CurrentIPServletFilter"/>
 
-        <bean id="whoisConnection" class="com.topspectrum.whois.IanaWhoisConnection">
+        <bean id="whoisConnection" class="com.topspectrum.whois.WhoApiWhoisConnection">
+            <property name="asyncHttpClient" ref="client"/>
+        </bean>
+
+        <bean id="feedbackWhoisConnection" class="com.topspectrum.whois.IanaWhoisConnection">
             <property name="cacheService">
                 <bean class="com.topspectrum.cache.DiskCacheService"/>
             </property>

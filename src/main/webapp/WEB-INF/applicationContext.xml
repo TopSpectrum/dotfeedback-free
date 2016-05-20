@@ -51,6 +51,10 @@
             </property>
         </bean>
 
+        <bean id="xmlApiWhoisConnection" class="com.topspectrum.whois.WhoisXmlApiWhoisConnection">
+            <property name="asyncHttpClient" ref="client"/>
+        </bean>
+
         <!-- Because Maxmind API conflicts with TOR-->
         <bean id="locationService" class="com.topspectrum.location.MockLocationService"/>
 

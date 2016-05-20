@@ -80,6 +80,10 @@ public class RootController {
     WhoisConnection feedbackWhoisConnection;
 
     @Autowired
+    @Qualifier("xmlApiWhoisConnection")
+    WhoisConnection xmlApiWhoisConnection;
+
+    @Autowired
     @Qualifier("whoisConnection")
     WhoisConnection whoisConnection;
 
@@ -491,6 +495,14 @@ public class RootController {
                 record = feedbackWhoisConnection.queryForRecord(fullDomainName);
             } else {
                 record = whoisConnection.queryForRecord(fullDomainName);
+
+                if (!isSuccess(record)) {
+                    record = xmlApiWhoisConnection.queryForRecord(fullDomainName);
+                }
+
+                if (!isSuccess(record)) {
+                    record = feedbackWhoisConnection.queryForRecord(fullDomainName);
+                }
             }
 
             whoisRecordRepository.save(record);
@@ -499,11 +511,24 @@ public class RootController {
         return record;
     }
 
+    private boolean isSuccess(@Nullable final WhoisRecord record) {
+        if (null == record) {
+            return false;
+        }
+
+        if (record.isNotFound() || record.isFailed()) {
+            return false;
+        }
+
+        return true;
+    }
+
     @Nullable
     public WhoisRecord findMostRecentWhoisRecord(@NotNull final String fullDomainName) {
-        DateTime createdDate = DateTime.now().minusDays(30);
-
-        return PageUtils.first(whoisRecordRepository.findByFullDomainNameAndSourceStrategyAndCreatedDateAfter(fullDomainName, "IanaWhoisConnection", createdDate, PageUtils.newest()));
+//        DateTime createdDate = DateTime.now().minusDays(30);
+//
+//        return PageUtils.first(whoisRecordRepository.findByFullDomainNameAndSourceStrategyAndCreatedDateAfter(fullDomainName, "IanaWhoisConnection", createdDate, PageUtils.newest()));
+        return null;
     }
 
     protected Parameters parameters(FreeReservation reservation) {

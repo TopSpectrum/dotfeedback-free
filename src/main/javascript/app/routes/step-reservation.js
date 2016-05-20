@@ -59,7 +59,7 @@ export default WizardStepRoute.extend({
                 Ember.set(model, 'destinationAvailabilityRecord', availabilityRecord);
                 Ember.set(model, 'sourceFullDomainName', sourceFullDomainName);
 
-                return this.peekAndFind('whois', sourceFullDomainName)
+                return scope.peekAndFind('whois', sourceFullDomainName)
                     .then(function (whoisRecord) {
                         Ember.set(model, 'sourceFullDomainNameRecord', whoisRecord);
                         Ember.set(model, 'sourceFullDomainNameRecord.email', Ember.get(model, 'email'));

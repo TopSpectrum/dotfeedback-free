@@ -24,12 +24,18 @@ This file contains overrides that are used for unit tests.
         <bean class="feedback.web.services.NullHostedContentService"/>
 
         <!-- Creates the datasource bean. (Overrides the one in the global applicationContext. -->
-        <jdbc:embedded-database id="dataSource" type="HSQL">
+        <jdbc:embedded-database id="freeDataSource" type="HSQL">
             <jdbc:script location="classpath:schema/price_tier.schema"/>
             <jdbc:script location="classpath:schema/reservation.schema"/>
             <jdbc:script location="classpath:schema/reservation_customer.schema"/>
         </jdbc:embedded-database>
 
+        <jdbc:embedded-database id="dataSource" type="HSQL">
+            <jdbc:script location="classpath:schema/price_tier.schema"/>
+            <jdbc:script location="classpath:schema/reservation.schema"/>
+            <jdbc:script location="classpath:schema/site.schema"/>
+            <jdbc:script location="classpath:schema/reservation_customer.schema"/>
+        </jdbc:embedded-database>
 
         <bean id="jpaAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
             <property name="database" value="HSQL"/>

@@ -518,6 +518,17 @@ public class RootController {
 
                 if (!record.isFailed()) {
                     whoisRecordRepository.save(record);
+                } else {
+                    // the record failed.
+                    // let's be hopeful
+
+                    record = new WhoisRecord();
+
+                    record.setFullDomainName(fullDomainName);
+                    record.setFailed(false);
+                    record.setNotFound(true);
+
+                    return record;
                 }
             } else {
                 WhoisRecord record1 = xmlApiWhoisConnection.queryForRecord(fullDomainName);

@@ -607,10 +607,10 @@ public class RootController {
 
     @Nullable
     public WhoisRecord findMostRecentWhoisRecord(@NotNull final String fullDomainName) {
-//        DateTime createdDate = DateTime.now().minusDays(30);
-//
-//        return PageUtils.first(whoisRecordRepository.findByFullDomainNameAndSourceStrategyAndCreatedDateAfter(fullDomainName, "IanaWhoisConnection", createdDate, PageUtils.newest()));
-        return null;
+        DateTime createdDate = DateTime.now().minusDays(30);
+
+        return PageUtils.first(whoisRecordRepository.findByFullDomainNameAndSourceStrategyAndCreatedDateAfter(fullDomainName, "IanaWhoisConnection", createdDate, PageUtils.newest()));
+//        return null;
     }
 
     protected Parameters parameters(FreeReservation reservation) {

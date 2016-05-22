@@ -1,9 +1,9 @@
 <persistence xmlns="http://java.sun.com/xml/ns/persistence"
              version="1.0">
-    <persistence-unit name="default" transaction-type="RESOURCE_LOCAL">
+    <persistence-unit name="free" transaction-type="RESOURCE_LOCAL">
         <!-- By default your mappings can be defined in orm.xml file, -->
         <!-- which is discovered automatically.                       -->
-        <mapping-file>META-INF/orm.xml</mapping-file>
+        <mapping-file>META-INF/free_orm.xml</mapping-file>
 
         <!-- Enables auto discovery of persistent classes, -->
         <!-- otherwise they must be listed using <class>  -->

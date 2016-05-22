@@ -37,6 +37,10 @@
             </property>
         </bean>
 
+        <!--<bean id="service" class="feedback.web.data.services.SiteService">-->
+            <!---->
+        <!--</bean>-->
+
         <bean class="feedback.services.DefaultVerificationService"/>
 
         <bean id="currentIPServletFilter" class="feedback.peoplestats.CurrentIPServletFilter"/>
@@ -46,9 +50,9 @@
         </bean>
 
         <bean id="feedbackWhoisConnection" class="com.topspectrum.whois.IanaWhoisConnection">
-            <property name="cacheService">
-                <bean class="com.topspectrum.cache.DiskCacheService"/>
-            </property>
+            <!--<property name="cacheService">-->
+                <!--<bean class="com.topspectrum.cache.DiskCacheService"/>-->
+            <!--</property>-->
         </bean>
 
         <bean id="xmlApiWhoisConnection" class="com.topspectrum.whois.WhoisXmlApiWhoisConnection">

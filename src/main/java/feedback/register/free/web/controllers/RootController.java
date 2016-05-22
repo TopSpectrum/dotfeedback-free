@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.topspectrum.data.PageUtils;
 import com.topspectrum.mail.EmailTemplate;
 import com.topspectrum.mail.TemplatedMailService;
+import com.topspectrum.registry.ParsedDomainParts;
 import com.topspectrum.services.GoogleDocService;
 import com.topspectrum.template.EmailTemplateService;
 import com.topspectrum.template.Parameters;
@@ -24,6 +25,8 @@ import feedback.services.VerificationService;
 import feedback.web.controllers.exceptions.RestExceptions;
 import feedback.web.data.JpaContextHelper;
 import feedback.web.data.PendingVerificationToken;
+import feedback.web.data.Site;
+import feedback.web.data.services.SiteService;
 import feedback.web.security.SecurityUtil;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -112,6 +115,9 @@ public class RootController {
     @Autowired
     ReferralCodeRepository referralCodeRepository;
 
+    @Autowired
+    SiteService siteService;
+
 //    @RequestMapping(value = "/", method = RequestMethod.GET)
 //    public ModelAndView load_ember() throws ExecutionException, InterruptedException, IOException {
 //        return new ModelAndView("index");
@@ -145,7 +151,7 @@ public class RootController {
         return googleDocService.getByDocumentId("1sI_2D2AlYgsZPU5YU1DPNR4lk2nQ21moER9ml-_Mnn0");
     }
 
-    @Transactional
+    @Transactional("freeTransactionManager")
     @RequestMapping(value = "/checkout", method = RequestMethod.POST)
     @ResponseBody
     public Object checkout(HttpServletRequest request) throws MessagingException, IOException {
@@ -310,6 +316,7 @@ public class RootController {
     }
 
     @RequestMapping(value = "/availabilities/{fullDomainName:.+}", method = RequestMethod.GET)
+//    @Transactional("freeTransactionManager")
     @ResponseBody
     public Map<String, Object> query_available(
             HttpServletRequest request,
@@ -442,6 +449,7 @@ public class RootController {
             reservation.setPendingVerificationToken(verificationService.generate("free.feedback", token.getEmail()));
         }
 
+
         // Save the customer WHOIS.
         whoisRecordRepository.save(reservation.getDestinationWhoisRecord());
 
@@ -494,9 +502,23 @@ public class RootController {
 
         if (null == record) {
             if (DomainNameUtils.isOurTopLevelDomainName(DomainNameUtils.getTopLevelDomainName(fullDomainName))) {
+                Site site = siteService.optSite(ParsedDomainParts.fromFullDomainNameWithSlug(fullDomainName));
+
+                if (null != site) {
+                    record = new WhoisRecord();
+
+                    record.setFullDomainName(fullDomainName);
+                    record.setFailed(false);
+                    record.setNotFound(true);
+
+                    return record;
+                }
+
                 record = feedbackWhoisConnection.queryForRecord(fullDomainName);
 
-                whoisRecordRepository.save(record);
+                if (!record.isFailed()) {
+                    whoisRecordRepository.save(record);
+                }
             } else {
                 WhoisRecord record1 = xmlApiWhoisConnection.queryForRecord(fullDomainName);
 
@@ -557,6 +579,7 @@ public class RootController {
 
         return record;
     }
+
 
     private boolean isHealthy(WhoisRecord record) {
         return 3 >= getMissCount(record);

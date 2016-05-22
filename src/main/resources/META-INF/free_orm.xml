@@ -4,16 +4,16 @@
                  xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_2_0.xsd"
                  version="2.0">
 
-    <persistence-unit-metadata>
-        <persistence-unit-defaults>
-            <entity-listeners>
-                <entity-listener class="org.springframework.data.jpa.domain.support.AuditingEntityListener"/>
-                <entity-listener class="feedback.jpa.EventListener"/>
-            </entity-listeners>
-        </persistence-unit-defaults>
-    </persistence-unit-metadata>
+    <!--<persistence-unit-metadata>-->
+        <!--<persistence-unit-defaults>-->
+            <!--<entity-listeners>-->
+                <!--<entity-listener class="org.springframework.data.jpa.domain.support.AuditingEntityListener"/>-->
+                <!--<entity-listener class="feedback.jpa.EventListener"/>-->
+            <!--</entity-listeners>-->
+        <!--</persistence-unit-defaults>-->
+    <!--</persistence-unit-metadata>-->
 
-    <package>feedback</package>
+    <package>feedback.register.free</package>
 
     <entity class="com.topspectrum.billing.dto.BillingPurchase"/>
     <entity class="com.topspectrum.billing.dto.BillingPurchaseOption"/>

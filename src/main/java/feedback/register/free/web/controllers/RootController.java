@@ -509,7 +509,7 @@ public class RootController {
 
                     record.setFullDomainName(fullDomainName);
                     record.setFailed(false);
-                    record.setNotFound(true);
+                    record.setNotFound(false);
 
                     return record;
                 }

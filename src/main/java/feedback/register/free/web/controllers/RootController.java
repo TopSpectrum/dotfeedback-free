@@ -449,7 +449,6 @@ public class RootController {
             reservation.setPendingVerificationToken(verificationService.generate("free.feedback", token.getEmail()));
         }
 
-
         // Save the customer WHOIS.
         whoisRecordRepository.save(reservation.getDestinationWhoisRecord());
 

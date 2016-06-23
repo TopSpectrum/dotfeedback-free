@@ -1,19 +1,62 @@
 "use strict";
 
 import Ember from "ember";
+import InboundActions from "ember-component-inbound-actions/inbound-actions";
 
-export default Ember.Component.extend({
+var ObjectPromiseProxy = Ember.ObjectProxy.extend(Ember.PromiseProxyMixin);
+
+export default Ember.Component.extend(InboundActions, {
 
     store: Ember.inject.service(),
 
+    disabled: Ember.computed('selectedRegistrar', 'model.suggestedReservationMode', 'acceptedTerms', function() {
+        let suggestedReservationMode = this.get('model.suggestedReservationMode');
+        let selectedRegistrar = this.get('selectedRegistrar');
+        let acceptedTerms = this.get('acceptedTerms');
+
+        if (suggestedReservationMode) {
+            return false;
+        }
+
+        return !acceptedTerms;
+    }),
+
+    selectedRegistrarTerms: Ember.computed('selectedRegistrar', function () {
+        let selectedRegistrar = this.get('selectedRegistrar') || '';
+
+        if (!selectedRegistrar) {
+            return null;
+        }
+
+        this.set('acceptedTerms', false);
+
+        return ObjectPromiseProxy
+            .create({
+                promise: Ember.$
+                    .ajax({
+                        url: '/api/v1/terms',
+                        data: {
+                            registrar: selectedRegistrar
+                        }
+                    })
+                    .then((string) => {
+                        return {
+                            value: string
+                        }
+                    })
+            });
+    }),
+
     actions: {
 
-        innerNext(chosenRegistrar) {
-            if (Ember.isBlank(chosenRegistrar)) {
+        attemptNext() {
+            let selectedRegistrar = this.get('selectedRegistrar');
+
+            if (Ember.isBlank(selectedRegistrar)) {
                 return;
             }
 
-            this.set('model.registrar', chosenRegistrar);
+            this.set('model.registrar', selectedRegistrar);
 
             let store = this.get('store');
 
@@ -36,6 +79,7 @@ export default Ember.Component.extend({
                 'phoneExt': this.get('model.sourceFullDomainNameRecord.phoneExt'),
                 'fax': this.get('model.sourceFullDomainNameRecord.fax'),
                 'affiliateCode': this.get('model.affiliateCode'),
+                'suggested': this.get('model.suggestedReservationMode'),
                 'faxExt': this.get('model.sourceFullDomainNameRecord.faxExt')
                 //'fingerprint': DS.attr(),
                 //'remoteHost': DS.attr(),

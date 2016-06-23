@@ -319,3 +319,46 @@ body > .ember-view {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+.ui {
+    &.divider {
+        margin: 1rem 0;
+        line-height: 1;
+        height: 0;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        color: rgba(0,0,0,.85);
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        font-size: 1rem;
+
+        &.horizontal {
+            position: relative;
+            height: auto;
+            margin: '';
+            overflow: hidden;
+            line-height: 1;
+            text-align: center;
+
+            &:before {
+                margin-left: -webkit-calc(-50% - 1em);
+                margin-left: calc(-50% - 1em);
+            }
+
+            &:before, &:after {
+                position: absolute;
+                content: '';
+                z-index: 3;
+                width: 50%;
+                top: 50%;
+                height: 0;
+                border-top: 1px solid rgba(0,0,0,.1);
+                border-bottom: 1px solid rgba(255,255,255,.2);
+            }
+        }
+    }
+}

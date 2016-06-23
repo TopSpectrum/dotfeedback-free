@@ -62,7 +62,7 @@
         <!-- Because Maxmind API conflicts with TOR-->
         <bean id="locationService" class="com.topspectrum.location.MockLocationService"/>
 
-        <bean class="com.topspectrum.template.DefaultEmailTemplateService">
+        <bean id="emailTemplateService" class="com.topspectrum.template.DefaultEmailTemplateService">
             <property name="templateService">
                 <bean class="com.topspectrum.template.ClassPathTemplateService">
                     <property name="resourceLoader">

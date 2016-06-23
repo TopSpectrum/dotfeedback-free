@@ -3,6 +3,13 @@
 
         <h1>{{#unless model.record.checkoutDate}}Confirm {{/unless}}{{model.record.destinationFullDomainName}}</h1>
 
+        {{#if model.record.suggested}}
+            <div class="alert alert-info">
+                This domain is provided <b>free of charge</b> for the first year to the following person. Next year you will
+                have the option to renew at your discretion. This offer expires if someone else purchased the domain first.
+            </div>
+        {{/if}}
+
         <div>
             {{whois-table model=model.record email=model.record.email emailDisabled=true disabled=model.record.checkoutDate}}
         </div>

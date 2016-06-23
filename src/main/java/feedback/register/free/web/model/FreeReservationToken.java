@@ -14,6 +14,7 @@ import java.io.Serializable;
  */
 public class FreeReservationToken implements Serializable {
 
+    private static final long serialVersionUID = -1283837595512845702L;
     private Long id;
     private String sourceFullDomainName;
     private String destinationFullDomainName;
@@ -33,6 +34,7 @@ public class FreeReservationToken implements Serializable {
     private String registrar;
     private DateTime checkoutDate;
     private String affiliateCode;
+    private boolean suggested;
 
     public FreeReservationToken() {
 
@@ -58,6 +60,15 @@ public class FreeReservationToken implements Serializable {
         this.registrar = reservation.getDestinationWhoisRecord().getRegistrar();
         this.checkoutDate = reservation.getCheckoutDate();
         this.affiliateCode = reservation.getAffiliateCode();
+        this.suggested = reservation.isSuggested();
+    }
+
+    public boolean isSuggested() {
+        return suggested;
+    }
+
+    public void setSuggested(boolean suggested) {
+        this.suggested = suggested;
     }
 
     public DateTime getCheckoutDate() {

@@ -3,7 +3,50 @@
         <div>
             <h1>Which registrar would you like?</h1>
 
-            {{registrar-list action='innerNext' spinning=spinning}}
+            {{radio-button checked=selectedRegistrar name='registrar' class='labelauty' id='internetxyz' value='InternetXYZ' }}
+            <label for="internetxyz">
+                <span class="labelauty-image labelauty-checked-image"></span>
+                <span class="labelauty-image labelauty-unchecked-image"></span>
+                <span class="labelauty-label">Internet.XYZ</span>
+            </label>
+
+            {{radio-button checked=selectedRegistrar name='registrar' class='labelauty' id='101Domain' value='101Domain' }}
+            <label for="101Domain">
+                <span class="labelauty-image labelauty-checked-image"></span>
+                <span class="labelauty-image labelauty-unchecked-image"></span>
+                <span class="labelauty-label">101Domain</span>
+            </label>
+
+            {{#if model.suggestedReservationMode}}
+                <div class="alert alert-info mt">
+                    You are in <b>Suggested Registration</b> mode. An email will be sent to <b>{{model.email}}</b> with
+                    more information.
+                </div>
+            {{else}}
+                {{#if selectedRegistrar}}
+                    <div class="ui horizontal divider">Terms of Service</div>
+
+                    <textarea class="form-control mt" style="overflow-y: scroll; height: 100px; width: 100%;">{{#if selectedRegistrarTerms.isPending}}Loading...{{/if}}{{#if selectedRegistrarTerms.isRejected}}Failed to load!{{/if}}{{#if selectedRegistrarTerms.isFulfilled}}{{selectedRegistrarTerms.value}}{{/if}}</textarea>
+
+                    <div class="mt">
+
+                        {{input type='checkbox' name='acceptedTerms' class='labelauty' id='acceptedTerms' checked=acceptedTerms }}
+                        <label for="acceptedTerms">
+                            <span class="labelauty-image labelauty-checked-image"></span>
+                            <span class="labelauty-image labelauty-unchecked-image"></span>
+                            <span class="labelauty-label">I agree to the terms of service for {{ selectedRegistrar }}</span>
+                        </label>
+                    </div>
+
+                    <div class="ui horizontal divider mt">&nbsp;</div>
+                {{/if}}
+            {{/if}}
+
+            <div>
+                {{#ladda-button class='btn btn-primary' action='attemptNext' spinning=spinning disabled=disabled}}
+                    Finish
+                {{/ladda-button}}
+            </div>
         </div>
     </div>
 </div>

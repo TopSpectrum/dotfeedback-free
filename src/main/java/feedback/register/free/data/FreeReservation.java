@@ -1,7 +1,10 @@
 package feedback.register.free.data;
 
 import com.topspectrum.data.dto.AbstractDto;
+import com.topspectrum.registry.WhoisIdentity;
 import com.topspectrum.whois.WhoisRecord;
+import com.topspectrum.whois.WhoisRecordAccessor;
+import com.topspectrum.whois.WhoisRecordBuilder;
 import feedback.web.data.PendingVerificationToken;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
@@ -11,6 +14,7 @@ import javax.persistence.Column;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotNull;
 
 /**
  * {discussion here}
@@ -31,6 +35,10 @@ public class FreeReservation extends AbstractDto {
     @ManyToOne(optional = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "source_whois_record_id")
     WhoisRecord sourceWhoisRecord;
+
+    @ManyToOne(optional = true, fetch = FetchType.EAGER)
+    @JoinColumn(name = "free_registration_account_id")
+    FreeRegistrationAccount freeRegistrationAccount;
 
     @Column
     String sourceFullDomainName;
@@ -70,6 +78,16 @@ public class FreeReservation extends AbstractDto {
 
     @Column
     private boolean deleted;
+    private boolean suggested;
+
+    @Nullable
+    public FreeRegistrationAccount getFreeRegistrationAccount() {
+        return freeRegistrationAccount;
+    }
+
+    public void setFreeRegistrationAccount(@Nullable FreeRegistrationAccount freeRegistrationAccount) {
+        this.freeRegistrationAccount = freeRegistrationAccount;
+    }
 
     public boolean isDeleted() {
         return deleted;
@@ -182,5 +200,23 @@ public class FreeReservation extends AbstractDto {
 
     public void setAffiliateCode(String affiliateCode) {
         this.affiliateCode = affiliateCode;
+    }
+
+    @Nullable
+    public WhoisIdentity toWhoisIdentity(@NotNull final WhoisRecordBuilder.CommonAgent agent) {
+        return new WhoisRecordAccessor(getDestinationWhoisRecord(), agent).toWhoisIdentity();
+    }
+
+    @Nullable
+    public WhoisIdentity toWhoisIdentity() {
+        return toWhoisIdentity(WhoisRecordBuilder.CommonAgent.Registrant);
+    }
+
+    public boolean isSuggested() {
+        return suggested;
+    }
+
+    public void setSuggested(boolean suggested) {
+        this.suggested = suggested;
     }
 }

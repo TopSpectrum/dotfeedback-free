@@ -42,7 +42,7 @@ public class RootControllerTest extends ApplicationContextAwareTestBase {
     public void testCustomerVerificationEmail() throws Exception {
         // This verification email does not consider the pending status
 
-        controller.sendCustomerVerificationEmail(reservation());
+        controller.sendCustomerSuggestionEmail(reservation());
     }
 
     @Test

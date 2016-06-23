@@ -2,6 +2,13 @@
 
 import Ember from "ember";
 
+let ContextModel = window.ContextModel = Ember.Object.extend({
+
+    suggestedReservationMode: Ember.computed('affiliateCode', function() {
+        return -1 != (this.get('affiliateCode') || '').indexOf(':');
+    })
+});
+
 export default Ember.Service.extend({
 
     // referralCodeState: null,
@@ -23,7 +30,7 @@ export default Ember.Service.extend({
             });
     },
 
-    model: new Ember.Object({}),
+    model: null,
 
     hasActiveOrder: Ember.computed('model.email', function () {
         let email = this.get('model.email');
@@ -56,7 +63,7 @@ export default Ember.Service.extend({
     }),
 
     reset() {
-        this.set('model', new Ember.Object({}));
+        this.set('model', new ContextModel());
 
         this.set('model.intro');
         this.set('model.skipReferralCode', true);

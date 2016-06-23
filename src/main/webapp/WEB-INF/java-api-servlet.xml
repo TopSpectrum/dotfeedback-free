@@ -43,6 +43,10 @@
 
     <bean class="feedback.register.free.web.controllers.RootController"/>
 
-    <bean class="com.topspectrum.services.GoogleDocService"/>
+    <bean id="googleDocService" class="com.topspectrum.services.CachedGoogleDocService">
+        <property name="googleDocService">
+            <bean class="com.topspectrum.services.DefaultGoogleDocService"/>
+        </property>
+    </bean>
 
 </beans>

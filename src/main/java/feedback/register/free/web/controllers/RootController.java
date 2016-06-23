@@ -3,7 +3,7 @@ package feedback.register.free.web.controllers;
 import com.google.common.base.Preconditions;
 import com.topspectrum.data.PageUtils;
 import com.topspectrum.mail.EmailTemplate;
-import com.topspectrum.mail.TemplatedMailService;
+import com.topspectrum.mail.TemplatedEmailService;
 import com.topspectrum.registry.ParsedDomainParts;
 import com.topspectrum.services.GoogleDocService;
 import com.topspectrum.template.EmailTemplateService;
@@ -31,6 +31,7 @@ import feedback.web.security.SecurityUtil;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,7 +62,7 @@ import java.util.concurrent.ExecutionException;
  * @since 9/7/15
  */
 @Controller
-public class RootController {
+public class RootController implements InitializingBean {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RootController.class);
 
@@ -93,7 +94,7 @@ public class RootController {
     WhoisConnection whoisConnection;
 
     @Autowired
-    TemplatedMailService templatedMailService;
+    TemplatedEmailService templatedEmailService;
 
     @Autowired
     JpaContextHelper contextHelper;
@@ -118,14 +119,19 @@ public class RootController {
     @Autowired
     SiteService siteService;
 
-//    @RequestMapping(value = "/", method = RequestMethod.GET)
-//    public ModelAndView load_ember() throws ExecutionException, InterruptedException, IOException {
-//        return new ModelAndView("index");
-//    }
+    EmailTemplate suggestedReservationEmailTemplate;
 
-    @RequestMapping(value = "/", method = RequestMethod.GET)
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        suggestedReservationEmailTemplate = emailTemplateService.getTemplateByName("email.customer.suggestion");
+
+        Preconditions.checkState(StringUtils.isValidEmail(internalCompanyEmail), "must be valid email: " + internalCompanyEmail);
+        RestExceptions.checkServerError(baseUrl, StringUtils::isNotBlank);
+    }
+
+    @RequestMapping(value = "/")
     @ResponseBody
-    public String load_api() throws ExecutionException, InterruptedException, IOException, MessagingException {
+    public String index() {
         return "api/v1";
     }
 
@@ -154,7 +160,7 @@ public class RootController {
     @Transactional("freeTransactionManager")
     @RequestMapping(value = "/checkout", method = RequestMethod.POST)
     @ResponseBody
-    public Object checkout(HttpServletRequest request) throws MessagingException, IOException {
+    public Object checkout(HttpServletRequest request) throws Exception {
         FreeReservation reservation = getSavedReservation(request);
 
         // TOOD: validate the reservation.
@@ -202,7 +208,7 @@ public class RootController {
         FreeReservation reservation = (FreeReservation) request.getSession().getAttribute("DATA");
 
         if (null == reservation) {
-            RestExceptions.notFound();
+            RestExceptions.notFound("Nothing saved.");
         }
 
         return new FreeReservationTokenWrapper(new FreeReservationToken(reservation));
@@ -228,7 +234,7 @@ public class RootController {
     public FreeReservationTokenWrapper submit_request(
             HttpServletRequest request,
             @RequestBody FreeReservationTokenWrapper wrapper
-    ) throws ExecutionException, InterruptedException, IOException, MessagingException {
+    ) throws Exception {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("params: " + request.getParameterMap());
         }
@@ -237,7 +243,12 @@ public class RootController {
         // This will throw a BadRequest exception if it's not fully valid.
         final FreeReservation reservation = parseAndSaveReservationOrFail(wrapper);
 
-        sendCustomerVerificationEmail(reservation);
+        if (reservation.isSuggested()) {
+            sendCustomerSuggestionEmail(reservation);
+        } else {
+            // TODO: We need to actually execute the purchase for this domain.
+        }
+
         sendAdminAwarenessPreorderEmail(reservation);
 
         // This will start everything over from scratch
@@ -250,34 +261,6 @@ public class RootController {
         return wrapper;
     }
 
-    public void sendAdminAwarenessPreorderEmail(FreeReservation reservation) throws IOException, MessagingException {
-        EmailTemplate template = emailTemplateService.getTemplateByName("email.operations.confirm-identity");
-
-        Parameters parameters = parameters(reservation);
-
-        {
-            parameters.put("", "");
-        }
-
-        Preconditions.checkState(StringUtils.isValidEmail(internalCompanyEmail), "must be valid email: " + internalCompanyEmail);
-
-        templatedMailService.send(internalCompanyEmail, template, parameters);
-    }
-
-    public void sendCustomerVerificationEmail(FreeReservation reservation) throws MessagingException, IOException {
-        EmailTemplate template = emailTemplateService.getTemplateByName("email.customer.confirm-identity");
-
-        Parameters parameters = parameters(reservation);
-
-        RestExceptions.checkServerError(baseUrl, StringUtils::isNotBlank);
-
-        {
-            parameters.put("url", "http://" + baseUrl + "/api/v1/verify_email?token=" + reservation.getPendingVerificationToken().getToken());
-        }
-
-        templatedMailService.send(getCustomerEmail(reservation), template, parameters);
-    }
-
     /**
      * This is accessed via the browser when they click the link.
      *
@@ -286,10 +269,10 @@ public class RootController {
      * @return
      * @throws Exception
      */
-    @RequestMapping(value = "/verify_email", method = RequestMethod.GET)
+    @RequestMapping(value = "/checkout", method = RequestMethod.GET)
     public ModelAndView verify_email__verify_token(
             HttpServletRequest request,
-            @RequestParam(value = "token", required = false) String token
+            @RequestParam(value = "reservation", required = false) String token
     ) throws Exception {
         final PendingVerificationToken pendingVerificationToken = verificationService.getByToken("free.feedback", token);
 
@@ -316,15 +299,12 @@ public class RootController {
     }
 
     @RequestMapping(value = "/availabilities/{fullDomainName:.+}", method = RequestMethod.GET)
-//    @Transactional("freeTransactionManager")
     @ResponseBody
     public Map<String, Object> query_available(
             HttpServletRequest request,
             @PathVariable("fullDomainName") String fullDomainName
     ) throws Exception {
         RestExceptions.checkBadRequest(fullDomainName, DomainNameUtils::isValidDotFeedbackFullDomainName);
-
-//        Thread.sleep(3000);
 
         Map<String, Object> result = new HashMap<>();
 
@@ -360,18 +340,16 @@ public class RootController {
                 whois.put("fullDomainName", sourceFullDomainName);
                 whois.put("id", sourceFullDomainName); // Same ID for Ember every time.
 
-                if (null != whoisRecord) {
-                    whois.put("name", whoisRecord.getRegistrantName());
-                    whois.put("email", whoisRecord.getRegistrantEmail());
-                    whois.put("street", whoisRecord.getRegistrantStreet());
-                    whois.put("city", whoisRecord.getRegistrantCity());
-                    whois.put("state", whoisRecord.getRegistrantState());
-                    whois.put("postal", whoisRecord.getRegistrantPostal());
-                    whois.put("country", whoisRecord.getRegistrantCountry());
-                    whois.put("phone", whoisRecord.getRegistrantPhone());
-                    whois.put("organization", whoisRecord.getRegistrantOrganization());
-                    whois.put("phoneExt", whoisRecord.getRegistrantPhoneExt());
-                }
+                whois.put("name", whoisRecord.getRegistrantName());
+                whois.put("email", whoisRecord.getRegistrantEmail());
+                whois.put("street", whoisRecord.getRegistrantStreet());
+                whois.put("city", whoisRecord.getRegistrantCity());
+                whois.put("state", whoisRecord.getRegistrantState());
+                whois.put("postal", whoisRecord.getRegistrantPostal());
+                whois.put("country", whoisRecord.getRegistrantCountry());
+                whois.put("phone", whoisRecord.getRegistrantPhone());
+                whois.put("organization", whoisRecord.getRegistrantOrganization());
+                whois.put("phoneExt", whoisRecord.getRegistrantPhoneExt());
             }
 
             result.put("whois", whois);
@@ -380,7 +358,28 @@ public class RootController {
         return result;
     }
 
-    public void sendCompanyConfirmationEmail(FreeReservation reservation) throws MessagingException, IOException {
+
+    public void sendAdminAwarenessPreorderEmail(FreeReservation reservation) throws Exception {
+        EmailTemplate template = emailTemplateService.getTemplateByName("email.operations.confirm-identity");
+        Parameters parameters = parameters(reservation);
+
+        templatedEmailService.send(internalCompanyEmail, template, parameters);
+    }
+
+    public void sendCustomerSuggestionEmail(FreeReservation reservation) throws Exception {
+        Parameters parameters = parameters(reservation);
+
+        {
+            parameters.put("url", "http://" + baseUrl + "/manage?reservation=" + reservation.getPendingVerificationToken().getToken());
+        }
+
+        templatedEmailService.send(
+                getCustomerEmail(reservation),
+                suggestedReservationEmailTemplate,
+                parameters);
+    }
+
+    public void sendCompanyConfirmationEmail(FreeReservation reservation) throws Exception {
         EmailTemplate template = emailTemplateService.getTemplateByName("email.operations.confirmation");
 
         final Parameters params = parameters();
@@ -391,19 +390,26 @@ public class RootController {
 
         Preconditions.checkState(StringUtils.isValidEmail(internalCompanyEmail), "must be valid email: " + internalCompanyEmail);
 
-        templatedMailService.send(internalCompanyEmail, template, params);
+        templatedEmailService.send(internalCompanyEmail, template, params);
     }
 
-    public void sendCustomerConfirmationEmail(FreeReservation reservation) throws MessagingException, IOException {
+    /**
+     * Should be called when "Agree To Terms" is submitted.
+     *
+     * @param reservation
+     * @throws Exception
+     */
+    public void sendCustomerConfirmationEmail(FreeReservation reservation) throws Exception {
         EmailTemplate template = emailTemplateService.getTemplateByName("email.customer.confirmation");
 
         final Parameters params = parameters();
 
         {
+            params.put("identity", reservation.toWhoisIdentity());
             params.put("reservation", reservation);
         }
 
-        templatedMailService.send(getCustomerEmail(reservation), template, params);
+        templatedEmailService.send(getCustomerEmail(reservation), template, params);
     }
 
     @NotNull
@@ -434,6 +440,7 @@ public class RootController {
         final FreeReservation reservation = new FreeReservation();
 
         {
+            reservation.setSuggested(token.isSuggested());
             reservation.setAffiliateCode(wrapper.getReservation().getAffiliateCode());
 
             reservation.setDestinationFullDomainName(token.getDestinationFullDomainName());
@@ -465,7 +472,7 @@ public class RootController {
         return RestExceptions.checkNotFound(contextHelper.get(RestExceptions.checkNotFound(reservation)));
     }
 
-    public WhoisRecord parseWhoisRecordOrFail(FreeReservationToken token) {
+    public static WhoisRecord parseWhoisRecordOrFail(FreeReservationToken token) {
         return new WhoisRecordBuilder()
                 .name(token.getName())
                 .address(token.getStreet(), token.getCity(), token.getState(), token.getPostal(), token.getCountry())
@@ -647,6 +654,9 @@ public class RootController {
     }
 
     protected Parameters parameters(FreeReservation reservation) {
-        return parameters().put("reservation", reservation);
+        return parameters()
+                .put("reservation", reservation)
+                .put("identity", reservation.toWhoisIdentity());
     }
+
 }

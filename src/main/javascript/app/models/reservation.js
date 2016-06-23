@@ -21,6 +21,7 @@ export default DS.Model.extend({
   'referralCode': DS.attr(),
   'registrar': DS.attr('string'),
   'affiliateCode': DS.attr('string'),
-  'checkoutDate': DS.attr('date')
+  'checkoutDate': DS.attr('date'),
+  'suggested': DS.attr()
 
 });

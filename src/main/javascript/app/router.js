@@ -8,29 +8,30 @@ const Router = Ember.Router.extend({
 });
 
 Router.map(function () {
-    this.route('step-welcome', {
-        path: '/'
-    });
+  this.route('step-welcome', {
+      path: '/'
+  });
 
-    this.route('step-reservation', {
-        path: '/reservation'
-    });
+  this.route('step-reservation', {
+      path: '/reservation'
+  });
 
-    this.route('step-registrar', {
-        path: '/registrar'
-    });
+  this.route('step-registrar', {
+      path: '/registrar'
+  });
 
-    this.route('step-verify', {
-        path: '/verify'
-    });
+  this.route('step-verify', {
+      path: '/verify'
+  });
 
-    this.route('step-checkout', {
-        path: '/checkout'
-    });
+  this.route('step-checkout', {
+      path: '/checkout'
+  });
 
-    this.route('terms');
-    this.route('privacy');
+  this.route('terms');
+  this.route('privacy');
 
+  this.route('manage');
 });
 
 export default Router;

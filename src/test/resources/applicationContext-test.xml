@@ -13,6 +13,8 @@ This file contains overrides that are used for unit tests.
 
     <context:property-placeholder location="classpath:application-test.properties" ignore-unresolvable="true"/>
 
+    <import resource="common-mail.xml"/>
+
     <beans profile="test">
 
         <context:annotation-config/>
@@ -28,6 +30,11 @@ This file contains overrides that are used for unit tests.
             <jdbc:script location="classpath:schema/price_tier.schema"/>
             <jdbc:script location="classpath:schema/reservation.schema"/>
             <jdbc:script location="classpath:schema/reservation_customer.schema"/>
+            <jdbc:script location="classpath:schema/reservation_account_domain.sql"/>
+            <jdbc:script location="classpath:schema/free_reservation.sql"/>
+            <jdbc:script location="classpath:schema/free_registration_account.sql"/>
+            <jdbc:script location="classpath:schema/whois_record.sql"/>
+            <jdbc:script location="classpath:schema/pending_verification_token.schema"/>
         </jdbc:embedded-database>
 
         <jdbc:embedded-database id="dataSource" type="HSQL">
@@ -45,7 +52,10 @@ This file contains overrides that are used for unit tests.
             <property name="showSql" value="true" />
         </bean>
 
-        <!--<bean id="templatedMailService" class="com.topspectrum.mail.MockTemplatedMailService">-->
+        <bean class="feedback.register.free.services.DefaultFreeRegistrationWelcomeService">
+
+        </bean>
+        <!--<bean id="templatedEmailService" class="com.topspectrum.mail.MockTemplatedEmailServicee">-->
 
         <!--</bean>-->
 

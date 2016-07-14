@@ -2,7 +2,7 @@
 <!-- If needed, show the wizard-step-enter-email -->
 
 {{#if model.isReferralCodeStateBlockingAppUsage}}
-    {{wizard-step-referral-code model=model.state }}
+    {{wizard-step-referral-code model=model.state action='next'}}
 {{/if}}
 
 {{#unless model.isReferralCodeStateBlockingAppUsage}}

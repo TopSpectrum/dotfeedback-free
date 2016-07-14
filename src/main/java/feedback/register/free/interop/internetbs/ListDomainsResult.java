@@ -15,8 +15,8 @@ public class ListDomainsResult extends ApiResult {
     private int domaincount;
     private String[] domain;
 
-    protected ListDomainsResult(String transactionId) {
-        super(transactionId);
+    protected ListDomainsResult(String transactionId, String status) {
+        super(transactionId, status);
     }
 
     public int getDomainCount() {

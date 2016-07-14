@@ -14,8 +14,8 @@ public class CreateDomainResult extends ApiResult {
     private Date domainexpiration;
     private String privatewhois;
 
-    protected CreateDomainResult(String transactionId) {
-        super(transactionId);
+    protected CreateDomainResult(String transactionId, String status) {
+        super(transactionId, status);
     }
 
     public String getDomain() {

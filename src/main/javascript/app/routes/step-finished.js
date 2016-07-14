@@ -3,6 +3,9 @@
 import Ember from 'ember';
 import WizardStepRoute from './wizard-step';
 
+/**
+ * @class step-finished
+ */
 export default WizardStepRoute.extend({
 
     contextService: Ember.inject.service('context'),

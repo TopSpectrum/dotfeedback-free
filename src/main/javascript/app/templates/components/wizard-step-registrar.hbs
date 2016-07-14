@@ -1,21 +1,7 @@
 <div class="steps col-xs-12 col-sm-8 col-sm-offset-2 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3">
     <div class="step active">
         <div>
-            <h1>Which registrar would you like?</h1>
-
-            {{radio-button checked=selectedRegistrar name='registrar' class='labelauty' id='internetxyz' value='InternetXYZ' }}
-            <label for="internetxyz">
-                <span class="labelauty-image labelauty-checked-image"></span>
-                <span class="labelauty-image labelauty-unchecked-image"></span>
-                <span class="labelauty-label">Internet.XYZ</span>
-            </label>
-
-            {{radio-button checked=selectedRegistrar name='registrar' class='labelauty' id='101Domain' value='101Domain' }}
-            <label for="101Domain">
-                <span class="labelauty-image labelauty-checked-image"></span>
-                <span class="labelauty-image labelauty-unchecked-image"></span>
-                <span class="labelauty-label">101Domain</span>
-            </label>
+            <!--<h1>Terms and Conditions</h1>-->
 
             {{#if model.suggestedReservationMode}}
                 <div class="alert alert-info mt">
@@ -23,29 +9,32 @@
                     more information.
                 </div>
             {{else}}
-                {{#if selectedRegistrar}}
-                    <div class="ui horizontal divider">Terms of Service</div>
+                <div class="ui horizontal divider">Terms of Service</div>
 
-                    <textarea class="form-control mt" style="overflow-y: scroll; height: 100px; width: 100%;">{{#if selectedRegistrarTerms.isPending}}Loading...{{/if}}{{#if selectedRegistrarTerms.isRejected}}Failed to load!{{/if}}{{#if selectedRegistrarTerms.isFulfilled}}{{selectedRegistrarTerms.value}}{{/if}}</textarea>
+                <textarea class="form-control mt normal textarea-terms-and-conditions" style="overflow-y: scroll; width: 100%;">{{#if contextService.termsAndConditions.isPending}}Loading...{{/if}}{{#if contextService.termsAndConditions.isRejected}}Failed to load!{{/if}}{{#if contextService.termsAndConditions.isFulfilled}}{{contextService.termsAndConditions.value}}{{/if}}</textarea>
 
-                    <div class="mt">
+                <a style="margin-left: 15px;" target="_blank" href="{{contextService.termsAndConditionsUrl}}">Expand Terms and Conditions</a>
 
-                        {{input type='checkbox' name='acceptedTerms' class='labelauty' id='acceptedTerms' checked=acceptedTerms }}
-                        <label for="acceptedTerms">
-                            <span class="labelauty-image labelauty-checked-image"></span>
-                            <span class="labelauty-image labelauty-unchecked-image"></span>
-                            <span class="labelauty-label">I agree to the terms of service for {{ selectedRegistrar }}</span>
-                        </label>
-                    </div>
+                <div class="mt">
+                    {{input type='checkbox' name='acceptedTerms' class='labelauty' id='acceptedTerms' checked=acceptedTerms }}
+                    <label for="acceptedTerms">
+                        <span class="labelauty-image labelauty-checked-image"></span>
+                        <span class="labelauty-image labelauty-unchecked-image"></span>
+                        <span class="labelauty-label">I agree to the terms of service for <b>Internet.BS</b></span>
+                    </label>
+                </div>
 
-                    <div class="ui horizontal divider mt">&nbsp;</div>
-                {{/if}}
+                <div class="ui horizontal divider mt">&nbsp;</div>
             {{/if}}
 
             <div>
-                {{#ladda-button class='btn btn-primary' action='attemptNext' spinning=spinning disabled=disabled}}
-                    Finish
-                {{/ladda-button}}
+                {{#if contextService.termsAndConditions.isPending}}Please wait while the TOS downloads...{{/if}}
+                {{#if contextService.termsAndConditions.isRejected}}The TOS failed to download. Please refresh the page.{{/if}}
+                {{#if contextService.termsAndConditions.isFulfilled}}
+                    {{#ladda-button class='btn btn-primary' action='attemptNext' spinning=spinning disabled=disabled}}
+                        Finish
+                    {{/ladda-button}}
+                {{/if}}
             </div>
         </div>
     </div>

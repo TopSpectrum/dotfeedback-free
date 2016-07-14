@@ -4,8 +4,20 @@
 
 @font-family-sans-serif:  "RobotoDraft", "Roboto", sans-serif;
 
+body {
+    background-color: #C8D7E0;
+    background-image: -webkit-radial-gradient(#C8D7E0, #7ba5cb);
+    background-image: radial-gradient(#C8D7E0, #7ba5cb);
+}
+
 body > .ember-view {
     height: 100%;
+    min-height: 100%;
+    display: table;
+    table-border-color-dark: black;
+    table-layout: fixed;
+    width: 100%;
+
 }
 
 .label-free-domain-name {
@@ -20,7 +32,7 @@ body > .ember-view {
 
 }
 
-.form-control:focus {
+.form-control:focus:not(.normal) {
     border-color: #F2F2F2;
     background-color: rgba(123, 165, 203, 0.2);
     //box-shadow: inset 0 1px 1px
@@ -170,6 +182,10 @@ body > .ember-view {
         -khtml-user-select: none;
         -webkit-user-select: none;
         -o-user-select: none;
+    }
+
+    .textarea-terms-and-conditions {
+        height: 100px;
     }
 
     /* Stylish text inside label */

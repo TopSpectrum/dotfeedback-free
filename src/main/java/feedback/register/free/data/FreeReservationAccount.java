@@ -14,7 +14,7 @@ import javax.persistence.Entity;
  * @since 6/21/16
  */
 @Entity
-public class FreeRegistrationAccount extends AbstractDto {
+public class FreeReservationAccount extends AbstractDto {
 
     private static final long serialVersionUID = -7310420902685554503L;
 
@@ -41,6 +41,7 @@ public class FreeRegistrationAccount extends AbstractDto {
 
     @Column
     private String lastName;
+    private String externalTransactionId;
 
     public String getExternalAccountVendor() {
         return externalAccountVendor;
@@ -109,5 +110,13 @@ public class FreeRegistrationAccount extends AbstractDto {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public void setExternalTransactionId(String externalTransactionId) {
+        this.externalTransactionId = externalTransactionId;
+    }
+
+    public String getExternalTransactionId() {
+        return externalTransactionId;
     }
 }

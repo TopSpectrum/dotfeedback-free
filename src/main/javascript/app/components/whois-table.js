@@ -9,6 +9,12 @@ export default Ember.Component.extend({
         let disabled2 = this.get('emailDisabled');
 
         return disabled1 || disabled2;
-    })
+    }),
+
+    actions: {
+        selectEmailAlternative(email) {
+            this.set('email', email);
+        }
+    }
 
 });

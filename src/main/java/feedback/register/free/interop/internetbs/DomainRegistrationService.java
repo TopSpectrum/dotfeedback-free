@@ -1,11 +1,10 @@
 package feedback.register.free.interop.internetbs;
 
 import com.topspectrum.registry.WhoisIdentity;
-import feedback.register.free.data.FreeRegistrationAccount;
+import feedback.register.free.data.FreeReservationAccount;
 import feedback.register.free.data.FreeReservation;
 
 import javax.validation.constraints.NotNull;
-import java.util.List;
 
 /**
  * @author msmyers
@@ -14,8 +13,8 @@ import java.util.List;
 public interface DomainRegistrationService {
 
     @NotNull
-    FreeRegistrationAccount getOrCreateAccount(@NotNull WhoisIdentity identity) throws Exception;
+    FreeReservationAccount getOrCreateAccount(@NotNull WhoisIdentity identity) throws Exception;
 
-    void register(@NotNull FreeRegistrationAccount account, @NotNull FreeReservation reservation) throws Exception;
+    void register(@NotNull FreeReservationAccount account, @NotNull FreeReservation reservation) throws Exception;
 
 }

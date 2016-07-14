@@ -11,6 +11,8 @@ import java.io.Serializable;
  */
 public class FreeReservationTokenWrapper implements Serializable {
 
+    private static final long serialVersionUID = 8271115706581368039L;
+
     private FreeReservationToken reservation;
 
     public FreeReservationTokenWrapper() {

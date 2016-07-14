@@ -3,10 +3,7 @@ package com.topspectrum.interop.internetbs;
 import com.ning.http.client.AsyncHttpClient;
 import com.topspectrum.registry.WhoisIdentity;
 import com.zipwhip.concurrent.ObservableFuture;
-import feedback.register.free.interop.internetbs.AvailabilityResult;
-import feedback.register.free.interop.internetbs.DefaultInternetBSClient;
-import feedback.register.free.interop.internetbs.ListDomainsResult;
-import feedback.register.free.interop.internetbs.RequestFailedException;
+import feedback.register.free.interop.internetbs.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -97,7 +94,7 @@ public class DefaultInternetBSClientTest {
     public void testDuplicateAccountInProduction() throws Exception {
         switchToProduction(); // THIS WORKS IN PRODUCTION
 
-        ObservableFuture<Map<String, Object>> account = client.createAccount(DefaultInternetBSClient.getUsernameFromEmail("ops@topspectrum.com"), "ops@topspectrum.com", "password", "FirstName", "LastName", "US");
+        ObservableFuture<ApiResult> account = client.createAccount(DefaultInternetBSClient.getUsernameFromEmail("ops@topspectrum.com"), "ops@topspectrum.com", "password", "FirstName", "LastName", "US");
 
         account.await();
 

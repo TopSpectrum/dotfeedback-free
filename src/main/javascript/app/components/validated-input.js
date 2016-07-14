@@ -18,10 +18,11 @@ export default Ember.Component.extend(InboundActions, {
     feedback: false,
     errors: null,
 
-    inputClass: Ember.computed('focused_value', function() {
-        var focused = this.get('focused_value');
+    inputClass: Ember.computed('focused_value', 'inputClasses', function() {
+        let focused = this.get('focused_value');
+        let classes = this.get('inputClasses') || '';
 
-        return 'form-control ' + (focused ? 'focused' : '');
+        return 'form-control ' + (focused ? 'focused ' : '') + classes;
     }),
 
     focusedClassBinding: Ember.computed('focused', function() {
@@ -136,7 +137,7 @@ export default Ember.Component.extend(InboundActions, {
                 if (!mask(value)) {
                     $el.val(previouslyValidValue);
 
-                    Ember.Logger.debug('Did not validate! ' + value + ":" + previouslyValidValue);
+                    Ember.Logger.debug(`Did not validate! (new:${value}) (prev:${previouslyValidValue}`);
                     return;
                 }
 
@@ -162,6 +163,12 @@ export default Ember.Component.extend(InboundActions, {
 
         enter() {
             this.sendAction('enter');
+        },
+
+        blur() {
+            this.$()
+                .find('input')
+                .blur()
         },
 
         focus() {

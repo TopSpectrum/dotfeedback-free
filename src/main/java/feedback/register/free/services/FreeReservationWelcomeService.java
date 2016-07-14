@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull;
  * @author msmyers
  * @since 6/22/16
  */
-public interface FreeRegistrationWelcomeService {
+public interface FreeReservationWelcomeService {
 
     void send(@NotNull FreeReservation reservation) throws Exception;
 

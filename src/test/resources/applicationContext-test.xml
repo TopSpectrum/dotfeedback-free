@@ -19,6 +19,9 @@ This file contains overrides that are used for unit tests.
 
         <context:annotation-config/>
 
+        <bean id="slackServiceExecutor"
+              class="com.topspectrum.executors.ExecutorUtils" factory-method="newScheduledExecutorService"/>
+
         <!--<bean class="com.topspectrum.cache.DefaultDependencyCacheService"/>-->
         <bean class="com.topspectrum.cache.MemoryCachedDependencyManager"/>
         <bean class="org.springframework.cache.guava.GuavaCacheManager"/>
@@ -32,7 +35,8 @@ This file contains overrides that are used for unit tests.
             <jdbc:script location="classpath:schema/reservation_customer.schema"/>
             <jdbc:script location="classpath:schema/reservation_account_domain.sql"/>
             <jdbc:script location="classpath:schema/free_reservation.sql"/>
-            <jdbc:script location="classpath:schema/free_registration_account.sql"/>
+            <jdbc:script location="classpath:schema/free_reservation_account.sql"/>
+            <jdbc:script location="classpath:schema/email_log.sql"/>
             <jdbc:script location="classpath:schema/whois_record.sql"/>
             <jdbc:script location="classpath:schema/pending_verification_token.schema"/>
         </jdbc:embedded-database>
@@ -52,12 +56,12 @@ This file contains overrides that are used for unit tests.
             <property name="showSql" value="true" />
         </bean>
 
-        <bean class="feedback.register.free.services.DefaultFreeRegistrationWelcomeService">
+        <bean class="feedback.register.free.services.DefaultFreeReservationWelcomeService">
 
         </bean>
+
         <!--<bean id="templatedEmailService" class="com.topspectrum.mail.MockTemplatedEmailServicee">-->
 
         <!--</bean>-->
-
     </beans>
 </beans>

@@ -1,24 +1,29 @@
 package feedback.register.free.web.controllers;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.topspectrum.data.PageUtils;
+import com.topspectrum.mail.AuditedEmailService;
 import com.topspectrum.mail.EmailTemplate;
 import com.topspectrum.mail.TemplatedEmailService;
 import com.topspectrum.registry.ParsedDomainParts;
+import com.topspectrum.registry.WhoisIdentity;
 import com.topspectrum.services.GoogleDocService;
 import com.topspectrum.template.EmailTemplateService;
 import com.topspectrum.template.Parameters;
-import com.topspectrum.util.ConversionUtils;
-import com.topspectrum.util.DomainNameUtils;
-import com.topspectrum.util.MorePreconditions;
-import com.topspectrum.util.StringUtils;
+import com.topspectrum.util.*;
 import com.topspectrum.whois.WhoisConnection;
 import com.topspectrum.whois.WhoisRecord;
 import com.topspectrum.whois.WhoisRecordBuilder;
 import com.topspectrum.whois.WhoisRecordRepository;
+import feedback.register.free.data.FreeReservationAccount;
 import feedback.register.free.data.FreeReservation;
 import feedback.register.free.data.FreeReservationRepository;
 import feedback.register.free.data.ReferralCodeRepository;
+import feedback.register.free.interop.internetbs.DomainRegistrationService;
+import feedback.register.free.services.ApprovalService;
+import feedback.register.free.services.FreeReservationWelcomeService;
 import feedback.register.free.web.model.FreeReservationToken;
 import feedback.register.free.web.model.FreeReservationTokenWrapper;
 import feedback.services.VerificationService;
@@ -41,6 +46,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.Nullable;
 import javax.mail.MessagingException;
@@ -53,6 +59,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
  * {discussion here}
@@ -119,16 +126,30 @@ public class RootController implements InitializingBean {
     @Autowired
     SiteService siteService;
 
+    @Autowired
+    DomainRegistrationService domainRegistrationService;
+
+    @Autowired
+    FreeReservationWelcomeService freeReservationWelcomeService;
+
+    @Autowired
+    ApprovalService approvalService;
+
     EmailTemplate suggestedReservationEmailTemplate;
+
+    @Autowired
+    AuditedEmailService auditedEmailService;
 
     @Override
     public void afterPropertiesSet() throws Exception {
         suggestedReservationEmailTemplate = emailTemplateService.getTemplateByName("email.customer.suggestion");
 
-        Preconditions.checkState(StringUtils.isValidEmail(internalCompanyEmail), "must be valid email: " + internalCompanyEmail);
+        // Disabled this check so we can support "Name <email>" syntax.
+//        Preconditions.checkState(StringUtils.isValidEmail(internalCompanyEmail), "must be valid email: " + internalCompanyEmail);
         RestExceptions.checkServerError(baseUrl, StringUtils::isNotBlank);
     }
 
+    //region docs
     @RequestMapping(value = "/")
     @ResponseBody
     public String index() {
@@ -156,6 +177,7 @@ public class RootController implements InitializingBean {
         // TODO: find the right documentId
         return googleDocService.getByDocumentId("1sI_2D2AlYgsZPU5YU1DPNR4lk2nQ21moER9ml-_Mnn0");
     }
+    //endregion
 
     @Transactional("freeTransactionManager")
     @RequestMapping(value = "/checkout", method = RequestMethod.POST)
@@ -177,7 +199,6 @@ public class RootController implements InitializingBean {
         /***
          * Send ops email if customer is reserving more than one.
          */
-
         sendCompanyConfirmationEmail(reservation);
 
         /***
@@ -188,6 +209,55 @@ public class RootController implements InitializingBean {
         return null;
     }
 
+    @Transactional("freeTransactionManager")
+    @RequestMapping(value = "/approval", method = RequestMethod.GET)
+    @ResponseBody
+    public Object approval(HttpServletRequest request,
+                           @RequestParam("approved") Boolean approved,
+                           @RequestParam("token") String token
+                           ) throws Exception {
+
+        FreeReservation reservation = RestExceptions.checkNotFound(approvalService.getByToken(token), "Token was invalid.");
+
+        return "yes: " + reservation.getId();
+    }
+
+    @Transactional("freeTransactionManager")
+    @RequestMapping(value = "/claim", method = RequestMethod.GET)
+    @ResponseBody
+    public Object claim(
+            HttpServletRequest request,
+            @RequestParam("reservation") String reservationToken
+    ) throws Exception {
+        @Nullable
+        final PendingVerificationToken pendingVerificationToken = verificationService.getByToken("free.feedback", reservationToken);
+
+        if (null == pendingVerificationToken) {
+            return "redirect:/claim/error";
+        }
+
+        @Nullable
+        final FreeReservation reservation = freeReservationRepository.findByPendingVerificationToken(pendingVerificationToken);
+
+        if (null == reservation) {
+            return "redirect:/claim/error";
+        }
+
+        @Nullable
+        WhoisIdentity identity = reservation.toWhoisIdentity();
+
+        if (null == identity) {
+            return "redirect:/claim/error";
+        }
+
+        request.getSession().invalidate();
+
+        FreeReservationAccount account = domainRegistrationService.getOrCreateAccount(identity);
+
+        return "redirect:/claim";
+    }
+
+    //region /referralCodes
     @RequestMapping("/referralCodes")
     @ResponseBody
     public Map<String, Object> list_referral_codes() {
@@ -201,7 +271,9 @@ public class RootController implements InitializingBean {
 
         return result;
     }
+    //endregion
 
+    //region /reservations
     @RequestMapping(value = "/reservations", method = RequestMethod.GET)
     @ResponseBody
     public FreeReservationTokenWrapper get_sessioned_reservation(HttpServletRequest request) {
@@ -246,7 +318,20 @@ public class RootController implements InitializingBean {
         if (reservation.isSuggested()) {
             sendCustomerSuggestionEmail(reservation);
         } else {
-            // TODO: We need to actually execute the purchase for this domain.
+            reservation.setPendingPolicyApproval(hasExistingReservationsForThisEmail(reservation.getEmail()));
+            reservation.setCheckoutDate(DateTime.now());
+
+            freeReservationRepository.save(reservation);
+
+            /***
+             * Send ops email if customer is reserving more than one.
+             */
+            sendCompanyConfirmationEmail(reservation);
+
+            /***
+             * Send customer confirmation email with status
+             */
+            sendCustomerConfirmationEmail(reservation);
         }
 
         sendAdminAwarenessPreorderEmail(reservation);
@@ -256,11 +341,15 @@ public class RootController implements InitializingBean {
 
         // The customer wants to know the ID? Not exactly sure how valuable it is to tell the customer this info.
         // My understanding is that they can close the window after making this call, since we are sending an email.
+        wrapper.getReservation().setPendingPolicyApproval(reservation.isPendingPolicyApproval());
+        wrapper.getReservation().setCheckoutDate(reservation.getCheckoutDate());
         wrapper.getReservation().setId(reservation.getId());
 
         return wrapper;
     }
+    //endregion
 
+    //region /checkout
     /**
      * This is accessed via the browser when they click the link.
      *
@@ -297,7 +386,9 @@ public class RootController implements InitializingBean {
             return new ModelAndView("redirect:/checkout");
         }
     }
+    //endregion
 
+    //region /availabilities/fullDomainName
     @RequestMapping(value = "/availabilities/{fullDomainName:.+}", method = RequestMethod.GET)
     @ResponseBody
     public Map<String, Object> query_available(
@@ -321,7 +412,9 @@ public class RootController implements InitializingBean {
 
         return result;
     }
+    //endregion
 
+    //region /whois/fullDomainName
     @RequestMapping(value = "/whois/{sourceFullDomainName:.+}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Map<String, Object> search_whois(
@@ -350,6 +443,22 @@ public class RootController implements InitializingBean {
                 whois.put("phone", whoisRecord.getRegistrantPhone());
                 whois.put("organization", whoisRecord.getRegistrantOrganization());
                 whois.put("phoneExt", whoisRecord.getRegistrantPhoneExt());
+
+                whois.put("emailAlternatives", Joiner.on(";").skipNulls().join(
+                        ConversionUtils.toStream(
+                                ConversionUtils.toSet(
+                                            whoisRecord.getAdminEmail(),
+                                        whoisRecord.getBillingEmail(),
+                                        whoisRecord.getRegistrantEmail(),
+                                        whoisRecord.getAdminEmail(),
+                                        whoisRecord.getTechEmail(),
+                                        whoisRecord.getAbuseContactEmail(),
+                                        whoisRecord.getRegistrarAbuseContactEmail()))
+                                .map(StringUtils::trimToNull)
+                                .map(StringUtils::toLowerCase)
+                                .filter(StringUtils::isNotBlank)
+                                .collect(Collectors.toSet())
+                ));
             }
 
             result.put("whois", whois);
@@ -357,8 +466,9 @@ public class RootController implements InitializingBean {
 
         return result;
     }
+    //endregion
 
-
+    //region Emails
     public void sendAdminAwarenessPreorderEmail(FreeReservation reservation) throws Exception {
         EmailTemplate template = emailTemplateService.getTemplateByName("email.operations.confirm-identity");
         Parameters parameters = parameters(reservation);
@@ -383,14 +493,21 @@ public class RootController implements InitializingBean {
         EmailTemplate template = emailTemplateService.getTemplateByName("email.operations.confirmation");
 
         final Parameters params = parameters();
+        final UriComponentsBuilder actionUrl = approvalService.approvalUrlBuilder(reservation);
 
         {
             params.put("reservation", reservation);
+            params.put("approveUrl", actionUrl.buildAndExpand(true));
+            params.put("denyUrl", actionUrl.buildAndExpand(false));
         }
 
         Preconditions.checkState(StringUtils.isValidEmail(internalCompanyEmail), "must be valid email: " + internalCompanyEmail);
 
         templatedEmailService.send(internalCompanyEmail, template, params);
+
+        if (reservation.isPendingPolicyApproval()) {
+            approvalService.requestApproval(reservation);
+        }
     }
 
     /**
@@ -417,7 +534,10 @@ public class RootController implements InitializingBean {
         return MorePreconditions.checkNotBlank(StringUtils.defaultIfBlank(customerEmailOverride, reservation.getEmail()));
     }
 
-    public Parameters parameters() {
+    //endregion
+
+    @VisibleForTesting
+    protected Parameters parameters() {
         Parameters parameters = new Parameters();
 
         parameters.put("baseUrl", baseUrl);
@@ -426,14 +546,16 @@ public class RootController implements InitializingBean {
         return parameters;
     }
 
-    public boolean hasExistingReservationsForThisEmail(@NotNull final String email) {
+    @VisibleForTesting
+    protected boolean hasExistingReservationsForThisEmail(@NotNull final String email) {
         RestExceptions.checkBadRequest(email, StringUtils::isNotBlank);
 
         return PageUtils.isNotEmpty(freeReservationRepository.findByEmailAndCheckoutDateIsNullAndDeletedIsFalse(email, PageUtils.singleResult()));
     }
 
     @NotNull
-    public FreeReservation parseAndSaveReservationOrFail(@NotNull final FreeReservationTokenWrapper wrapper) {
+    @VisibleForTesting
+    protected FreeReservation parseAndSaveReservationOrFail(@NotNull final FreeReservationTokenWrapper wrapper) {
         final FreeReservationToken token = wrapper.getReservation();
         final WhoisRecord record = parseWhoisRecordOrFail(token);
 
@@ -463,7 +585,8 @@ public class RootController implements InitializingBean {
         return freeReservationRepository.save(reservation);
     }
 
-    public FreeReservation getSavedReservation(HttpServletRequest request) {
+    @VisibleForTesting
+    protected FreeReservation getSavedReservation(HttpServletRequest request) {
         Preconditions.checkNotNull(request);
         HttpSession session = RestExceptions.checkBadRequest(request.getSession());
         Object data = RestExceptions.checkBadRequest(session.getAttribute("DATA"));
@@ -472,7 +595,8 @@ public class RootController implements InitializingBean {
         return RestExceptions.checkNotFound(contextHelper.get(RestExceptions.checkNotFound(reservation)));
     }
 
-    public static WhoisRecord parseWhoisRecordOrFail(FreeReservationToken token) {
+    @VisibleForTesting
+    protected static WhoisRecord parseWhoisRecordOrFail(FreeReservationToken token) {
         return new WhoisRecordBuilder()
                 .name(token.getName())
                 .address(token.getStreet(), token.getCity(), token.getState(), token.getPostal(), token.getCountry())
@@ -485,7 +609,8 @@ public class RootController implements InitializingBean {
     }
 
     @NotNull
-    public String availability(@NotNull final String dotfeedbackFullDomainName) throws Exception {
+    @VisibleForTesting
+    protected String availability(@NotNull final String dotfeedbackFullDomainName) throws Exception {
         RestExceptions.checkBadRequest(dotfeedbackFullDomainName, DomainNameUtils::isValidDotFeedbackFullDomainName);
 
         WhoisRecord record = findAndSaveMostRecentWhoisRecord(dotfeedbackFullDomainName);
@@ -503,7 +628,8 @@ public class RootController implements InitializingBean {
     }
 
     @NotNull
-    public WhoisRecord findAndSaveMostRecentWhoisRecord(@NotNull final String fullDomainName) throws Exception {
+    @VisibleForTesting
+    protected WhoisRecord findAndSaveMostRecentWhoisRecord(@NotNull final String fullDomainName) throws Exception {
         WhoisRecord record = findMostRecentWhoisRecord(fullDomainName);
 
         if (null == record) {
@@ -597,12 +723,11 @@ public class RootController implements InitializingBean {
         return record;
     }
 
-
-    private boolean isHealthy(WhoisRecord record) {
+    protected boolean isHealthy(WhoisRecord record) {
         return 3 >= getMissCount(record);
     }
 
-    private int getMissCount(WhoisRecord record) {
+    protected int getMissCount(WhoisRecord record) {
         int count = 0;
 
         if (!isSuccess(record)) {

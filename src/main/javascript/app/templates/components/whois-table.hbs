@@ -1,15 +1,30 @@
 <div class="whois-table form-horizontal">
 
     <div class="row">
-      {{validated-input value=email errors=errors.email name='admin_email' label='Email' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12"  disabled=emailOrAllDisabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors}}
-      {{validated-input value=model.name errors=errors.name name='admin_name' label='Name' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12" disabled=disabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors}}
-      {{validated-input value=model.organization errors=errors.organization name='admin_organization' label='Organization' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12" disabled=disabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors}}
-      {{validated-input value=model.street errors=errors.street name='admin_street' label='Street' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12" disabled=disabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors}}
-      {{validated-input value=model.city errors=errors.city name='admin_city' label='City' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12" disabled=disabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors}}
+        {{validated-input value=email errors=errors.email name='admin_email' label='Email' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12"  disabled=emailOrAllDisabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors}}
 
-      {{validated-input value=model.state errors=errors.state name='admin_state' label='State/Prov' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12" disabled=disabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors}}
-      {{validated-input value=model.postal errors=errors.postal name='admin_postal' label='Postal' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12" disabled=disabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors}}
-      {{validated-input value=model.country errors=errors.country name='admin_country' label='Country' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12" disabled=disabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors}}
-      {{validated-input value=model.phone errors=errors.phone name='admin_phone' label='Phone' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12" disabled=disabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors}}
+        <div class="form-group" style="padding-bottom: 25px;">
+            <div class="col-sm-3">&nbsp;</div>
+            <div class="col-sm-9">
+                <div class="row">
+                    <label class="control-label col-sm-3">Suggestions</label>
+                    <div class="col-sm-9" style="padding-top: 10px;">
+                        {{#each model.emails as | email | }}
+                            <a href="#" {{action 'selectEmailAlternative' email}}>{{email}}</a>
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{validated-input value=model.name errors=errors.name name='admin_name' label='Name' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12" disabled=disabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors}}
+        {{validated-input value=model.organization errors=errors.organization name='admin_organization' label='Organization' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12" disabled=disabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors}}
+        {{validated-input value=model.street errors=errors.street name='admin_street' label='Street' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12" disabled=disabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors}}
+        {{validated-input value=model.city errors=errors.city name='admin_city' label='City' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12" disabled=disabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors}}
+
+        {{validated-input value=model.state errors=errors.state name='admin_state' label='State/Prov' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12" disabled=disabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors}}
+        {{validated-input value=model.postal errors=errors.postal name='admin_postal' label='Postal' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12" disabled=disabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors}}
+        {{validated-input value=model.country errors=errors.country name='admin_country' label='Country' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12" disabled=disabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors}}
+        {{validated-input value=model.phone errors=errors.phone name='admin_phone' label='Phone' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12" disabled=disabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors}}
     </div>
 </div>

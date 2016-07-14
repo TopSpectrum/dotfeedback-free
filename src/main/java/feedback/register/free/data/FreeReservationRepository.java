@@ -18,4 +18,8 @@ public interface FreeReservationRepository extends JpaRepository<FreeReservation
 
     Page<FreeReservation> findByEmailAndCheckoutDateIsNullAndDeletedIsFalse(String email, Pageable pageable);
 
+    Page<FreeReservation> findByEmailAndPurchaseDateIsNullAndDeletedIsFalseAndPendingPolicyApprovalIsTrue(String email, Pageable pageable);
+
+    Page<FreeReservation> findByEmailAndPurchaseDateIsNotNullAndDeletedIsFalse(String email, Pageable pageable);
+
 }

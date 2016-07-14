@@ -37,9 +37,9 @@
     width: 100%;
     padding-bottom: 2rem;
 
-    background-color: #C8D7E0;
-    background-image: -webkit-radial-gradient(#C8D7E0, #7ba5cb);
-    background-image: radial-gradient(#C8D7E0, #7ba5cb);
+    //background-color: #C8D7E0;
+    //background-image: -webkit-radial-gradient(#C8D7E0, #7ba5cb);
+    //background-image: radial-gradient(#C8D7E0, #7ba5cb);
 
     header {
         display: table-row;
@@ -767,6 +767,18 @@ tfoot {
     > span {
         font-weight: bold;
         text-decoration: underline;
+    }
+
+    @media @media-xs-atmost {
+        padding: 1.5rem 0;
+        line-height: 2rem;
+    }
+}
+
+.full-domain-name-block {
+    @media @media-sm-atmost {
+        margin-left: -20px;
+        margin-right: -20px;
     }
 }
 

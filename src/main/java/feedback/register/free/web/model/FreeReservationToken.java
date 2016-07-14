@@ -35,6 +35,7 @@ public class FreeReservationToken implements Serializable {
     private DateTime checkoutDate;
     private String affiliateCode;
     private boolean suggested;
+    private boolean pendingPolicyApproval;
 
     public FreeReservationToken() {
 
@@ -61,6 +62,15 @@ public class FreeReservationToken implements Serializable {
         this.checkoutDate = reservation.getCheckoutDate();
         this.affiliateCode = reservation.getAffiliateCode();
         this.suggested = reservation.isSuggested();
+        this.pendingPolicyApproval = reservation.isPendingPolicyApproval();
+    }
+
+    public boolean isPendingPolicyApproval() {
+        return pendingPolicyApproval;
+    }
+
+    public void setPendingPolicyApproval(boolean pendingPolicyApproval) {
+        this.pendingPolicyApproval = pendingPolicyApproval;
     }
 
     public boolean isSuggested() {

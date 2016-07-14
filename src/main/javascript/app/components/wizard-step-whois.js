@@ -4,6 +4,7 @@ import Ember from 'ember';
 
 import domainParser from 'javascript/utils/utility-domain-parser';
 import EmberValidations /*, { validator }*/ from 'ember-validations';
+import AbstractWizardStep from './abstract-wizard-step';
 
 //region Global Utilities
 var customerDomainNameRegex = /^[\w-]+$/;
@@ -60,7 +61,7 @@ function sanitizeCustomerDomainName(customerDomainName) {
 }
 //endregion
 
-export default Ember.Component.extend(EmberValidations, {
+export default AbstractWizardStep.extend(EmberValidations, {
 
     store: Ember.inject.service(),
 
@@ -390,7 +391,7 @@ export default Ember.Component.extend(EmberValidations, {
 
         destinationCustomerDomainNameDotted(){
             // trigger
-            this.send('enterWasHitOnDestinationDomainName');
+            this.get('emailField').send('blur');
         },
 
         enterWasHitOnDestinationDomainName() {
@@ -445,13 +446,14 @@ export default Ember.Component.extend(EmberValidations, {
         },
 
         next() {
+            debugger;
+
             if (this.get('nextIsDisabled')) {
                 // enter was hit..
                 return false;
             }
 
             // So they can pick a registrar.
-
             this.sendAction();
         },
 

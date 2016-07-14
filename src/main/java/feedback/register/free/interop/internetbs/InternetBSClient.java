@@ -19,5 +19,8 @@ public interface InternetBSClient {
     ObservableFuture<AvailabilityResult> isAvailable(@NotNull String fullDomainName);
 
     @NotNull
-    ObservableFuture<Map<String, Object>> createAccount(String username, String email, String password, String firstName, String lastName, String countryCode);
+    ObservableFuture<ApiResult> createAccount(String username, String email, String password, String firstName, String lastName, String countryCode);
+
+    String getVendorId();
+
 }

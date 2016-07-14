@@ -13,74 +13,26 @@ import WizardStepRoute from "./wizard-step";
  */
 export default WizardStepRoute.extend({
 
+    contextService: Ember.inject.service('context'),
+
     afterModel(model, transition) {
         let sourceFullDomainName = Ember.get(model, 'sourceFullDomainName');
 
         if (!Ember.isBlank(sourceFullDomainName)) {
-            this.query(model)
+            this.get('contextService')
+                .queryForWhois(sourceFullDomainName)
                 .then(function () {
+                    // TODO: not sure what this is.
                     Ember.set(model, 'newSourceFullDomainName', Ember.get(model, 'sourceFullDomainName'));
                 });
         }
     },
 
-    peekAndFind(recordType, recordId) {
-        var scope = this;
-
-        return Ember.RSVP.Promise
-            .resolve(this.store.peekRecord(recordType, recordId))
-            .then(function (record) {
-                if (record) {
-                    return Ember.RSVP.Promise.resolve(record);
-                } else {
-                    return scope.store.findRecord(recordType, recordId);
-                }
-            });
-    },
-
-    query: function (model, sourceFullDomainName) {
-        if (Ember.isBlank(sourceFullDomainName)) {
-            sourceFullDomainName = Ember.get(model, 'sourceFullDomainName');
-        }
-
-        if (Ember.isBlank(sourceFullDomainName)) {
-            return Ember.RSVP.Promise.resolve();
-        }
-
-        var scope = this;
-        var destinationFullDomainName = Ember.get(model, 'destinationFullDomainName');
-
-        Ember.set(model, 'fetchingSourceFullDomainNameRecord', true);
-        Ember.set(model, 'chooseDifferentSourceFullDomainNameMode', false);
-
-        return scope.peekAndFind('availability', destinationFullDomainName)
-            .then(function (availabilityRecord) {
-
-                Ember.set(model, 'destinationAvailabilityRecord', availabilityRecord);
-                Ember.set(model, 'sourceFullDomainName', sourceFullDomainName);
-
-                return scope.peekAndFind('whois', sourceFullDomainName)
-                    .then(function (whoisRecord) {
-                        Ember.set(model, 'sourceFullDomainNameRecord', whoisRecord);
-                        Ember.set(model, 'sourceFullDomainNameRecord.email', Ember.get(model, 'email'));
-                        Ember.set(model, 'fetchingSourceFullDomainNameRecord', false);
-                    });
-            })
-            .catch(function (err) {
-                //if (console) {
-                //  console.log(err);
-                //}
-
-                // alert('There was an unknown server error. Please try again.');
-
-                Ember.set(model, 'sourceFullDomainNameRecord', new Ember.Object());
-                Ember.set(model, 'sourceFullDomainNameRecord.failedToResolve', true);
-                Ember.set(model, 'fetchingSourceFullDomainNameRecord', false);
-            });
-    },
-
     actions: {
+
         next() {
+            debugger;
+
             this.transitionTo('step-registrar');
         },
 
@@ -90,7 +42,9 @@ export default WizardStepRoute.extend({
                 return;
             }
 
-            this.query(model, sourceFullDomainName);
+            let contextService = this.get('contextService');
+
+            contextService.queryForWhois(sourceFullDomainName);
         }
     }
 });

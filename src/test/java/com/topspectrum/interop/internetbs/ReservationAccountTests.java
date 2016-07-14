@@ -10,19 +10,19 @@ import com.topspectrum.util.DomainNameUtils;
 import com.topspectrum.whois.WhoisRecord;
 import com.topspectrum.whois.WhoisRecordBuilder;
 import com.topspectrum.whois.WhoisRecordRepository;
-import feedback.register.free.data.FreeRegistrationAccount;
-import feedback.register.free.data.FreeRegistrationAccountRepository;
+import feedback.register.free.data.FreeReservationAccount;
+import feedback.register.free.data.FreeReservationAccountRepository;
 import feedback.register.free.data.FreeReservation;
 import feedback.register.free.data.FreeReservationRepository;
 import feedback.register.free.interop.internetbs.DomainRegistrationService;
 import feedback.register.free.interop.internetbs.MockDomainRegistrationService;
-import feedback.register.free.services.FreeRegistrationWelcomeService;
+import feedback.register.free.services.FreeReservationWelcomeService;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.validation.constraints.NotNull;
-import java.util.Arrays;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
@@ -31,10 +31,11 @@ import static org.junit.Assert.*;
  * @author msmyers
  * @since 6/21/16
  */
+@Component
 public class ReservationAccountTests extends ApplicationContextAwareTestBase {
 
     @Autowired
-    FreeRegistrationAccountRepository freeRegistrationAccountRepository;
+    FreeReservationAccountRepository freeReservationAccountRepository;
 
     @Autowired
     FreeReservationRepository freeReservationRepository;
@@ -51,26 +52,26 @@ public class ReservationAccountTests extends ApplicationContextAwareTestBase {
     EmailTemplateService emailTemplateService;
 
     @Autowired
-    FreeRegistrationWelcomeService freeRegistrationWelcomeService;
+    FreeReservationWelcomeService freeReservationWelcomeService;
 
     @Before
     public void setUp() throws Exception {
         service = new MockDomainRegistrationService();
 
-        ((MockDomainRegistrationService)service).setFreeRegistrationAccountRepository(freeRegistrationAccountRepository);
+        ((MockDomainRegistrationService)service).setFreeReservationAccountRepository(freeReservationAccountRepository);
     }
 
     //region Database Tests
     @Test
     public void testAutowiring() throws Exception {
-        assertNotNull(freeRegistrationAccountRepository);
+        assertNotNull(freeReservationAccountRepository);
         assertNotNull(freeReservationRepository);
         assertNotNull(templatedEmailService);
     }
 
     @Test
     public void testSaveAndRead() throws Exception {
-        FreeRegistrationAccount account = new FreeRegistrationAccount();
+        FreeReservationAccount account = new FreeReservationAccount();
 
         account.setDisplayName("Michael Smyers");
         account.setEmail(TestUtil.randomCustomerEmailAddress());
@@ -79,11 +80,11 @@ public class ReservationAccountTests extends ApplicationContextAwareTestBase {
 
         assertNull(account.getId());
 
-        freeRegistrationAccountRepository.save(account);
+        freeReservationAccountRepository.save(account);
 
         assertNotNull(account.getId());
 
-        FreeRegistrationAccount one = freeRegistrationAccountRepository.findOne(account.getId());
+        FreeReservationAccount one = freeReservationAccountRepository.findOne(account.getId());
 
         assertEquals(one, account);
     }
@@ -96,7 +97,7 @@ public class ReservationAccountTests extends ApplicationContextAwareTestBase {
 
         FreeReservation reservation1 = reservation(whoisRecord(identity));
 
-        freeRegistrationWelcomeService.send(reservation1);
+        freeReservationWelcomeService.send(reservation1);
     }
 
     public WhoisIdentity identity() {

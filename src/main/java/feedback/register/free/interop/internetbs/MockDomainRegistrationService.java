@@ -1,11 +1,9 @@
 package feedback.register.free.interop.internetbs;
 
-import com.topspectrum.mail.TemplatedEmailService;
 import com.topspectrum.registry.WhoisIdentity;
-import feedback.register.free.data.FreeRegistrationAccount;
-import feedback.register.free.data.FreeRegistrationAccountRepository;
+import feedback.register.free.data.FreeReservationAccount;
+import feedback.register.free.data.FreeReservationAccountRepository;
 import feedback.register.free.data.FreeReservation;
-import feedback.register.free.services.FreeRegistrationWelcomeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,15 +18,15 @@ import java.util.*;
 public class MockDomainRegistrationService implements DomainRegistrationService {
 
     @Autowired
-    FreeRegistrationAccountRepository freeRegistrationAccountRepository;
+    FreeReservationAccountRepository freeReservationAccountRepository;
 
     @NotNull
     @Override
-    public FreeRegistrationAccount getOrCreateAccount(@NotNull WhoisIdentity identity) throws Exception {
-        FreeRegistrationAccount account = freeRegistrationAccountRepository.findByEmail(identity.getEmail());
+    public FreeReservationAccount getOrCreateAccount(@NotNull WhoisIdentity identity) throws Exception {
+        FreeReservationAccount account = freeReservationAccountRepository.findByEmail(identity.getEmail());
 
         if (null == account) {
-            account = new FreeRegistrationAccount();
+            account = new FreeReservationAccount();
 
             account.setDisplayName(identity.getName());
             account.setUsername(DefaultInternetBSClient.getUsernameFromEmail(identity.getEmail()));
@@ -37,22 +35,22 @@ public class MockDomainRegistrationService implements DomainRegistrationService 
             account.setExternalAccountVendor("Mock");
             account.setPassword(DefaultInternetBSClient.getTemporaryPassword());
 
-            freeRegistrationAccountRepository.save(account);
+            freeReservationAccountRepository.save(account);
         }
 
         return account;
     }
 
     @Override
-    public void register(@NotNull FreeRegistrationAccount account, @NotNull FreeReservation reservation) throws Exception {
+    public void register(@NotNull FreeReservationAccount account, @NotNull FreeReservation reservation) throws Exception {
 
     }
 
-    public FreeRegistrationAccountRepository getFreeRegistrationAccountRepository() {
-        return freeRegistrationAccountRepository;
+    public FreeReservationAccountRepository getFreeReservationAccountRepository() {
+        return freeReservationAccountRepository;
     }
 
-    public void setFreeRegistrationAccountRepository(FreeRegistrationAccountRepository freeRegistrationAccountRepository) {
-        this.freeRegistrationAccountRepository = freeRegistrationAccountRepository;
+    public void setFreeReservationAccountRepository(FreeReservationAccountRepository freeReservationAccountRepository) {
+        this.freeReservationAccountRepository = freeReservationAccountRepository;
     }
 }

@@ -43,10 +43,54 @@
 
     <bean class="feedback.register.free.web.controllers.RootController"/>
 
-    <bean id="googleDocService" class="com.topspectrum.services.CachedGoogleDocService">
-        <property name="googleDocService">
-            <bean class="com.topspectrum.services.DefaultGoogleDocService"/>
+    <bean id="compositeExceptionResolver"
+          class="org.springframework.web.servlet.handler.HandlerExceptionResolverComposite">
+        <property name="order" value="0"/>
+        <property name="exceptionResolvers">
+            <list>
+                <bean class="com.topspectrum.spring.errors.LoggingHandlerExceptionResolver"/>
+
+                <bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+                    <property name="exceptionMappings">
+                        <props>
+                            <prop key="java.lang.ClassNotFoundException">404</prop>
+                            <prop key="feedback.web.controllers.exceptions.NotFoundException">404</prop>
+                            <prop key="org.springframework.web.servlet.NoHandlerFoundException">404</prop>
+                        </props>
+                    </property>
+                    <property name="statusCodes">
+                        <props>
+                            <prop key="404">404</prop>
+                            <prop key="500">500</prop>
+                        </props>
+                    </property>
+                </bean>
+
+                <bean class="feedback.oauth2.OAuth2ClientExceptionResolver"/>
+
+                <bean class="org.springframework.web.servlet.mvc.annotation.ResponseStatusExceptionResolver"/>
+
+                <bean id="exceptionHandlerExceptionResolver"
+                      class="org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver"/>
+
+                <bean id="restExceptionResolver"
+                      class="cz.jirutka.spring.exhandler.RestHandlerExceptionResolverFactoryBean">
+                    <property name="messageSource" ref="httpErrorMessageSource"/>
+                    <property name="defaultContentType" value="application/json"/>
+                    <property name="exceptionHandlers">
+                        <map>
+                            <entry key="org.springframework.dao.EmptyResultDataAccessException" value="404"/>
+                        </map>
+                    </property>
+                </bean>
+            </list>
         </property>
+    </bean>
+
+    <bean id="httpErrorMessageSource"
+          class="org.springframework.security.core.SpringSecurityMessageSource">
+        <!--<property templateName="basename" value="classpath:/org/example/errorMessages"/>-->
+        <property name="defaultEncoding" value="UTF-8"/>
     </bean>
 
 </beans>

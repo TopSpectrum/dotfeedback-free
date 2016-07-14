@@ -21,6 +21,7 @@ CREATE TABLE free_reservation (
 
   verified_date                 TIMESTAMP,
   checkout_date                 TIMESTAMP,
+  purchase_date                 TIMESTAMP,
   deleted                       BOOLEAN,
   suggested                     BOOLEAN,
 

@@ -2,9 +2,11 @@
 
 import Ember from "ember";
 
+var ObjectPromiseProxy = Ember.ObjectProxy.extend(Ember.PromiseProxyMixin);
+
 let ContextModel = window.ContextModel = Ember.Object.extend({
 
-    suggestedReservationMode: Ember.computed('affiliateCode', function() {
+    suggestedReservationMode: Ember.computed('affiliateCode', function () {
         return -1 != (this.get('affiliateCode') || '').indexOf(':');
     })
 });
@@ -13,6 +15,8 @@ export default Ember.Service.extend({
 
     // referralCodeState: null,
     store: Ember.inject.service('store'),
+
+    model: null,
 
     init() {
         this._super(...arguments);
@@ -28,14 +32,118 @@ export default Ember.Service.extend({
             .then(function (text) {
                 scope.set('introMessage', text);
             });
+
+        this.set('termsAndConditions', ObjectPromiseProxy
+            .create({
+                promise: Ember.$
+                    .ajax({
+                        url: '/api/v1/terms'
+                    })
+                    .then((string) => {
+                        return {
+                            value: string
+                        }
+                    })
+            }));
+        this.set('termsAndConditionsUrl', '/api/v1/terms');
     },
 
-    model: null,
+    /**
+     *
+     * @param {String} [sourceFullDomainName]
+     * @returns {Promise<Whois>}
+     */
+    queryForWhois: function (sourceFullDomainName) {
+        /**
+         * @type {ContextModel}
+         */
+        let model = this.get('model');
 
-    hasActiveOrder: Ember.computed('model.email', function () {
-        let email = this.get('model.email');
+        if (Ember.isBlank(sourceFullDomainName)) {
+            sourceFullDomainName = Ember.get(model, 'sourceFullDomainName');
+        }
 
-        return !Ember.isBlank(email);
+        if (Ember.isBlank(sourceFullDomainName)) {
+            return Ember.RSVP.Promise.resolve();
+        }
+
+        var scope = this;
+        var destinationFullDomainName = Ember.get(model, 'destinationFullDomainName');
+
+        Ember.set(model, 'fetchingSourceFullDomainNameRecord', true);
+        Ember.set(model, 'chooseDifferentSourceFullDomainNameMode', false);
+
+        let promise = Ember.RSVP.Promise.resolve();
+
+        if (!Ember.isBlank(destinationFullDomainName)) {
+            promise = promise.then(() => {
+                scope.peekAndFindRecord('availability', destinationFullDomainName)
+                    .then(function (availabilityRecord) {
+
+                        Ember.set(model, 'destinationAvailabilityRecord', availabilityRecord);
+                        Ember.set(model, 'sourceFullDomainName', sourceFullDomainName);
+
+                        return null;
+                    });
+            });
+        } else {
+            promise = promise.then(() => {
+                Ember.set(model, 'sourceFullDomainName', sourceFullDomainName);
+            });
+        }
+
+        promise = promise.then(() => {
+            scope.peekAndFindRecord('whois', sourceFullDomainName)
+                .then(function (whoisRecord) {
+                    Ember.set(model, 'sourceFullDomainNameRecord', whoisRecord);
+                    Ember.set(model, 'sourceFullDomainNameRecord.email', Ember.get(model, 'email'));
+                    Ember.set(model, 'fetchingSourceFullDomainNameRecord', false);
+                });
+        });
+
+        return promise.catch(function (err) {
+                //if (console) {
+                //  console.log(err);
+                //}
+                debugger;
+                // alert('There was an unknown server error. Please try again.');
+                Ember.Logger.error(err);
+                console.error(err);
+
+                Ember.set(model, 'sourceFullDomainNameRecord', new Ember.Object());
+                Ember.set(model, 'sourceFullDomainNameRecord.failedToResolve', true);
+                Ember.set(model, 'fetchingSourceFullDomainNameRecord', false);
+            });
+    },
+
+    /**
+     *
+     * @param {String} recordType
+     * @param {*} recordId
+     * @returns {*|Promise|Promise.<TResult>}
+     */
+    peekAndFindRecord(recordType, recordId) {
+        let scope = this;
+        let store = this.get('store');
+
+        if (!recordId) {
+            debugger;
+            throw new Error('The recordId must be defined');
+        }
+
+        return Ember.RSVP.Promise
+            .resolve(store.peekRecord(recordType, recordId))
+            .then(function (record) {
+                if (record) {
+                    return Ember.RSVP.Promise.resolve(record);
+                } else {
+                    return store.findRecord(recordType, recordId);
+                }
+            });
+    },
+
+    hasActiveOrder: Ember.computed('model.emailOrDomainNameOrUrl', function () {
+        return !Ember.isBlank(this.get('model.emailOrDomainNameOrUrl'));
     }).readOnly(),
 
     hasValidReferralCode: Ember.computed('model.referralCodeState.accepted', function () {
@@ -62,6 +170,7 @@ export default Ember.Service.extend({
         this.set('model.intro', this.get('introMessage'));
     }),
 
+
     reset() {
         this.set('model', new ContextModel());
 
@@ -72,8 +181,7 @@ export default Ember.Service.extend({
         this.set('model.affiliateCode', Cookies.get('affiliateCode'));
     },
 
-    _fetchReferralCodeState()
-    {
+    _fetchReferralCodeState() {
         let scope = this;
         let store = this.get('store');
 

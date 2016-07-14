@@ -2,22 +2,52 @@
 
 <beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
-       xmlns="http://www.springframework.org/schema/beans"
+       xmlns="http://www.springframework.org/schema/beans" xmlns:aop="http://www.springframework.org/schema/aop"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
             http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
             http://www.springframework.org/schema/context
-            http://www.springframework.org/schema/context/spring-context-4.1.xsd">
+            http://www.springframework.org/schema/context/spring-context-4.1.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
 
     <beans>
         <import resource="classpath:common-applicationContext.xml"/>
         <import resource="applicationContext-persistence.xml"/>
+
+        <bean class="feedback.register.free.interop.internetbs.DefaultDomainRegistrationService"/>
+
+        <bean class="feedback.register.free.interop.internetbs.DefaultInternetBSClient">
+            <property name="client" ref="client"/>
+            <property name="apiKey" value="testapi"/>
+            <property name="baseUrl" value="https://testapi.internet.bs"/>
+            <property name="password" value="testpass"/>
+        </bean>
+
+        <bean class="feedback.register.free.services.SlackApprovalService">
+
+        </bean>
+
+        <bean id="urlFactory" class="com.topspectrum.web.util.DefaultUrlFactory">
+            <constructor-arg index="0" type="java.lang.String" value="${feedback.free.url}"/>
+            <constructor-arg index="1" type="boolean" value="false"/>
+        </bean>
+
+        <bean class="com.topspectrum.mail.DefaultAuditedEmailService">
+            <property name="productName" value="free.feedback"/>
+        </bean>
+
+        <bean class="feedback.register.free.services.DefaultFreeReservationWelcomeService"/>
+
+        <bean id="googleDocService" class="com.topspectrum.services.CachedGoogleDocService">
+            <property name="googleDocService">
+                <bean class="com.topspectrum.services.DefaultGoogleDocService"/>
+            </property>
+        </bean>
 
         <!-- We are overriding this bean. It is normally imported from common-applicationContext.xml -> common-mail.xml -->
         <!--
          My goal is to override only the defaultFromAddress. Rather than go into the common-mail.xml file and change it (and then
          take the hour change) I'll just do this.
         -->
-        <bean id="mailService" class="com.topspectrum.mail.DefaultMailService">
+        <bean id="emailService" class="com.topspectrum.mail.DefaultEmailService">
             <property name="defaultFromAddress" value="${feedback.free.externalCompanyEmail}"/>
             <property name="javaMailSender">
                 <bean class="org.springframework.mail.javamail.JavaMailSenderImpl">

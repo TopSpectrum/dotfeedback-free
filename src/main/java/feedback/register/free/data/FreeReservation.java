@@ -38,7 +38,7 @@ public class FreeReservation extends AbstractDto {
 
     @ManyToOne(optional = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "free_registration_account_id")
-    FreeRegistrationAccount freeRegistrationAccount;
+    FreeReservationAccount freeReservationAccount;
 
     @Column
     String sourceFullDomainName;
@@ -65,10 +65,26 @@ public class FreeReservation extends AbstractDto {
     @JoinColumn(name = "pending_verification_token_id")
     PendingVerificationToken pendingVerificationToken;
 
+    /**
+     * This is the Timestamp where the customer has actually been given the domain.
+     * It should be considered "taken" at this point.
+     */
+    @Column
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    DateTime purchaseDate;
+
+    /**
+     * This is the Timestamp where the customer has received approval to purchase the domain.
+     * It does not mean that the domain has been actually purchased yet.
+     */
     @Column
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     DateTime verifiedDate;
 
+    /**
+     * This is the Timestamp where the customer has decided to purchase the domain.
+     * It means intent to purchase. It does not mean approval of purchase.
+     */
     @Column
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     DateTime checkoutDate;
@@ -78,15 +94,17 @@ public class FreeReservation extends AbstractDto {
 
     @Column
     private boolean deleted;
+
+    @Column
     private boolean suggested;
 
     @Nullable
-    public FreeRegistrationAccount getFreeRegistrationAccount() {
-        return freeRegistrationAccount;
+    public FreeReservationAccount getFreeReservationAccount() {
+        return freeReservationAccount;
     }
 
-    public void setFreeRegistrationAccount(@Nullable FreeRegistrationAccount freeRegistrationAccount) {
-        this.freeRegistrationAccount = freeRegistrationAccount;
+    public void setFreeReservationAccount(@Nullable FreeReservationAccount freeReservationAccount) {
+        this.freeReservationAccount = freeReservationAccount;
     }
 
     public boolean isDeleted() {
@@ -219,4 +237,13 @@ public class FreeReservation extends AbstractDto {
     public void setSuggested(boolean suggested) {
         this.suggested = suggested;
     }
+
+    public DateTime getPurchaseDate() {
+        return purchaseDate;
+    }
+
+    public void setPurchaseDate(DateTime purchaseDate) {
+        this.purchaseDate = purchaseDate;
+    }
+
 }

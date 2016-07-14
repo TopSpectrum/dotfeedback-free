@@ -75,7 +75,7 @@ public class DefaultInternetBSClient implements InternetBSClient {
     }
 
     @NotNull
-    public ObservableFuture<Map<String, Object>> createAccount(@NotNull final String username, @NotNull String email, @NotNull String password, @NotNull String displayName) {
+    public ObservableFuture<ApiResult> createAccount(@NotNull final String username, @NotNull String email, @NotNull String password, @NotNull String displayName) {
         Named named = NameUtil.parse(displayName);
         String firstName = StringUtils.defaultString(named.getFirstName(), "Guest");
         String lastName = StringUtils.defaultString(named.getLastName());
@@ -85,7 +85,7 @@ public class DefaultInternetBSClient implements InternetBSClient {
 
     @NotNull
     @Override
-    public ObservableFuture<Map<String, Object>> createAccount(String username, String email, String password, String firstName, String lastName, String countryCode) {
+    public ObservableFuture<ApiResult> createAccount(String username, String email, String password, String firstName, String lastName, String countryCode) {
         AsyncHttpClient.BoundRequestBuilder builder = prepareGet("/subaccount/create");
 
         // TODO: further sanitize it?
@@ -97,7 +97,12 @@ public class DefaultInternetBSClient implements InternetBSClient {
         builder.addQueryParam("userpass", password);
         builder.addQueryParam("countrycode", countryCode);
 
-        return execute(builder);
+        return execute(builder, ApiResult.class);
+    }
+
+    @Override
+    public String getVendorId() {
+        return "internet.bs";
     }
 
     @NotNull

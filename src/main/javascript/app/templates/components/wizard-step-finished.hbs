@@ -1,0 +1,19 @@
+<div class="steps col-xs-12 col-sm-8 col-sm-offset-2 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3">
+    <div class="step active">
+        <h3>{{#if model.suggestedReservationMode}}Suggestion Email Sent{{else}}Verification Email Sent{{/if}}</h3>
+
+        {{#if model.reservation.pendingPolicyApproval}}
+            Thanks for your reservation. We will contact you shortly.
+        {{else}}
+            {{#if model.suggestedReservationMode}}
+                An email has been sent to <strong>{{model.email}}</strong> with further instructions.
+            {{else}}
+                Thanks for your reservation. You will receive a confirmation email within the next 24 hours.
+            {{/if}}
+        {{/if}}
+    </div>
+</div>
+
+<div class="col-xs-12">
+    {{json-pretty obj=model shouldHighlight=true }}
+</div>

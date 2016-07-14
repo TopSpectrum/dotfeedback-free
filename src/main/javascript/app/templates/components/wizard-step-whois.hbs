@@ -1,5 +1,5 @@
 <div class="steps col-xs-12 col-sm-8 col-sm-offset-2 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3">
-    <div class="step active">
+    <div class="step active row">
         <table class="table hidden">
             <thead>
             <tr>
@@ -149,34 +149,55 @@
                 {{/if}}
             {{/unless}}
 
-            {{#validated-input type="text" data-minlength="3" tabindex="0" autocomplete="off" placeholder="" value=model.newDestinationCustomerDomainName errors=errors.model.domainName enter='enterWasHitOnDestinationDomainName'
-            disabled=model.loading mask='^[\w-]*$' disabled=isFetchingSomething blurred='blurredMainInputBox' focused='focusedMainInputBox' hasFeedback=false class=inputBoxClass dot='destinationCustomerDomainNameDotted'}}
-                {{#unless isEditingDestination}}
-                    {{#if isAvailable}}
-                        <span class="glyphicon glyphicon-ok form-control-feedback form-control-feedback-success"></span>
-                    {{/if}}
+            <div class="col-sm-12 full-domain-name-block">
+                {{#validated-input
+                    type="text"
+                    data-minlength="3"
+                    tabindex="0"
+                    autocomplete="off"
+                    placeholder=""
+                    value=model.newDestinationCustomerDomainName
+                    errors=errors.model.domainName
+                    enter='enterWasHitOnDestinationDomainName'
+                    disabled=model.loading
+                    mask='^[\w-]*$'
+                    disabled=isFetchingSomething
+                    blurred='blurredMainInputBox'
+                    focused='focusedMainInputBox'
+                    hasFeedback=false
+                    class=inputBoxClass
+                    inputClasses='normal'
+                    dot='destinationCustomerDomainNameDotted'
+                    actionReceiver=emailField
+                }}
 
-                    {{#unless isAvailable}}
-                        <span class="glyphicon glyphicon-warning-sign form-control-feedback form-control-feedback-error"></span>
-                    {{/unless}}
-                {{/unless}}
-
-                <div class="pull-out" style="position: relative;">
-                    <div class="btn-add-controls">
-                        {{#unless isEditingDestination}}
-                            {{#ladda-button class="btn-add btn btn-primary ladda-button" data-style="slide-left" tabindex="1" action='next' disabled=nextIsDisabled spinning=isFetchingSomething}}
-                                Next
-                            {{/ladda-button}}
-                        {{/unless}}
-
-                        {{#if isEditingDestination}}
-                            {{#ladda-button class="btn-add btn btn-primary ladda-button" data-style="slide-left" tabindex="1" action='finishUpdateDestinationCustomerDomainName' disabled=hasInvalidNewDestinationCustomerDomainName spinning=isFetchingSomething}}
-                                Check
-                            {{/ladda-button}}
+                    {{#unless isEditingDestination}}
+                        {{#if isAvailable}}
+                            <span class="glyphicon glyphicon-ok form-control-feedback form-control-feedback-success"></span>
                         {{/if}}
+
+                        {{#unless isAvailable}}
+                            <span class="glyphicon glyphicon-warning-sign form-control-feedback form-control-feedback-error"></span>
+                        {{/unless}}
+                    {{/unless}}
+
+                    <div class="pull-out" style="position: relative;">
+                        <div class="btn-add-controls">
+                            {{#unless isEditingDestination}}
+                                {{#ladda-button class="btn-add btn btn-primary ladda-button" data-style="slide-left" tabindex="1" action='next' disabled=nextIsDisabled spinning=isFetchingSomething}}
+                                    Next
+                                {{/ladda-button}}
+                            {{/unless}}
+
+                            {{#if isEditingDestination}}
+                                {{#ladda-button class="btn-add btn btn-primary ladda-button" data-style="slide-left" tabindex="1" action='finishUpdateDestinationCustomerDomainName' disabled=hasInvalidNewDestinationCustomerDomainName spinning=isFetchingSomething}}
+                                    Check
+                                {{/ladda-button}}
+                            {{/if}}
+                        </div>
                     </div>
-                </div>
-            {{/validated-input}}
+                {{/validated-input}}
+            </div>
         {{/unless}}
 
         {{#if shouldShowWhoisTable}}

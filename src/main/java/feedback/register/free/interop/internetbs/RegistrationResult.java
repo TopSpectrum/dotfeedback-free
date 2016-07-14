@@ -14,8 +14,8 @@ public class RegistrationResult extends ApiResult {
     private final AvailabilityResult availability;
     private final Map<String, Object> account;
 
-    public RegistrationResult(String transactionId, AvailabilityResult availability, CreateDomainResult domain, Map<String, Object> account) {
-        super(transactionId);
+    public RegistrationResult(String transactionId, String status, AvailabilityResult availability, CreateDomainResult domain, Map<String, Object> account) {
+        super(transactionId, status);
 
         this.availability = availability;
         this.domain = domain;

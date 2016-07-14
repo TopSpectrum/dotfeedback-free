@@ -1,37 +1,31 @@
 "use strict";
 
 import Ember from "ember";
-import EmberValidations, {validator} from "ember-validations";
-import domainParser from "javascript/utils/utility-domain-parser";
+import { validator } from "ember-validations";
+import AbstractWizardStep from './abstract-wizard-step';
+import DomainNameUtil from '../utils/domain-name-util';
 
-var EMAIL_PATTERN = /^[-a-z0-9~!$%^&*_=+}{\'?]+(\.[-a-z0-9~!$%^&*_=+}{\'?]+)*@([a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*\.([a-z]{2,10}))$/;
+export default AbstractWizardStep.extend({
 
-export default Ember.Component.extend(EmberValidations, {
+    classNames: ['row'],
 
     validations: {
-        'model.email': {
+        'model.emailOrDomainNameOrUrl': {
             presence: true,
             inline: validator(function () {
-                let value = this.model.get(this.property);
-                if (!value) {
+                /**
+                 * @type {String}
+                 */
+                let string = this.model.get(this.property);
+                if (!string) {
                     return;
                 }
 
-                value = value.toLowerCase();
+                string = string.toLowerCase();
 
-                if (!EMAIL_PATTERN.test(value)) {
-                    this.errors.pushObject('Please enter a valid email');
-                    return;
-                }
+                string = DomainNameUtil.toValidFullDomainName(string);
 
-                // Trim past the @ and grab the domain.
-
-                let index = value.indexOf('@') + 1;
-                let suffix = value.substring(index);
-                let parsedObject = domainParser(suffix);
-
-                if (!parsedObject) {
-                    //  Hmm, that's not right.
+                if (!string || !DomainNameUtil.isValidFullDomainName(string)) {
                     this.errors.pushObject('Please enter a valid email');
                 }
             })
@@ -47,9 +41,22 @@ export default Ember.Component.extend(EmberValidations, {
                 return false;
             }
 
-            let email = this.get('model.email').toLowerCase();
-            let result = email.substring(email.indexOf('@') + 1);
-            let parsedObject = domainParser(result);
+            /**
+             * @type {string}
+             */
+            let emailOrDomainNameOrUrl = (this.get('model.emailOrDomainNameOrUrl') || '').toLowerCase();
+            let emailMode;
+
+            if (DomainNameUtil.isEmail(emailOrDomainNameOrUrl)) {
+                this.set('model.email', emailOrDomainNameOrUrl);
+                emailMode = true;
+            } else {
+                this.set('model.email', null);
+                emailMode = false;
+            }
+
+            let fullDomainName = DomainNameUtil.toValidFullDomainName(emailOrDomainNameOrUrl);
+            let parsedObject = DomainNameUtil.parse(fullDomainName);
 
             if (!parsedObject) {
                 Ember.Logger.warn('The domain name was not parsable.');
@@ -57,7 +64,7 @@ export default Ember.Component.extend(EmberValidations, {
             }
 
             // is this a public one?
-            if (!parsedObject['public']) {
+            if (!parsedObject.public || !emailMode) {
                 this.set('model.sourceFullDomainName', parsedObject.fullDomainName);
                 this.set('model.destinationCustomerDomainName', parsedObject.customerDomainName);
                 this.set('model.newDestinationCustomerDomainName', parsedObject.customerDomainName + '.feedback');

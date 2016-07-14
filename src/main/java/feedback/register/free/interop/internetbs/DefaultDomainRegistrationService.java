@@ -5,6 +5,8 @@ import com.topspectrum.feedback.register.data.ReservationDomain;
 import com.topspectrum.names.NameUtil;
 import com.topspectrum.names.Named;
 import com.topspectrum.registry.WhoisIdentity;
+import com.topspectrum.test.TestUtil;
+import com.topspectrum.util.ConversionUtils;
 import com.topspectrum.util.FutureUtils;
 import com.topspectrum.util.StringUtils;
 import com.zipwhip.concurrent.ObservableFuture;
@@ -16,6 +18,7 @@ import javax.annotation.Nonnull;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 
@@ -27,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 public class DefaultDomainRegistrationService implements DomainRegistrationService {
 
     @Autowired
-    FreeRegistrationAccountRepository freeRegistrationAccountRepository;
+    FreeReservationAccountRepository freeReservationAccountRepository;
 
     @Autowired
     FreeReservationRepository freeReservationRepository;
@@ -35,53 +38,61 @@ public class DefaultDomainRegistrationService implements DomainRegistrationServi
     @Autowired
     InternetBSClient client;
 
-    public FreeRegistrationAccount getOrCreateAccount(FreeReservation reservation) throws Exception {
-        FreeRegistrationAccount account = freeRegistrationAccountRepository.findByEmail(reservation.getEmail());
+    @NotNull
+    @Override
+    public FreeReservationAccount getOrCreateAccount(@NotNull WhoisIdentity identity) throws Exception {
+        Preconditions.checkNotNull(identity, "identity");
+        String email = TestUtil.randomCustomerEmailAddress();
+//        String email = Preconditions.checkNotNull(identity.getEmail(), "email");
 
-        if (null != account) {
-            return account;
-        }
+//        FreeReservationAccount account = freeReservationAccountRepository.findByEmail(email);
+//
+//        if (null != account) {
+//            return account;
+//        }
 
         @Nonnull
-        String displayName = StringUtils.defaultString(StringUtils.defaultIfBlank(reservation.getDestinationWhoisRecord().getRegistrantName(), "Guest"));
+        String displayName = StringUtils.defaultString(StringUtils.defaultIfBlank(identity.getName(), "Guest"));
         Named named = NameUtil.parse(displayName);
 
         String password = "password";
         String firstName = Preconditions.checkNotNull(named.getFirstName());
         String lastName = StringUtils.defaultString(named.getFirstName());
-        String email = reservation.getEmail();
         String username = DefaultInternetBSClient.getUsernameFromEmail(email);
 
-        ObservableFuture<Map<String, Object>> future = client.createAccount(username, email, password, firstName, lastName, "US");
-        Map<String, Object> unchecked = FutureUtils.getUnchecked(future, 30, TimeUnit.SECONDS);
+        ApiResult result = FutureUtils.getUnchecked(
+                client.createAccount(username, email, password, firstName, lastName, "US")
+                , 30, TimeUnit.SECONDS);
 
-        account = new FreeRegistrationAccount();
+        @Nonnull
+        String transactionId = ConversionUtils.defaultString(ConversionUtils.toString(result.getTransactionId()));
+
+        FreeReservationAccount account = new FreeReservationAccount();
+
+        account.setExternalAccountVendor(client.getVendorId());
+        account.setExternalAccountId(username);
+        account.setExternalTransactionId(transactionId);
+
         account.setDisplayName(displayName);
         account.setEmail(email);
         account.setUsername(username);
         account.setPassword(password);
 
-        freeRegistrationAccountRepository.save(account);
+        freeReservationAccountRepository.save(account);
 
         return account;
     }
 
-    protected void notifyCustomer(FreeRegistrationAccount account, List<ReservationDomain> domains ) {
+    protected void notifyCustomer(FreeReservationAccount account, List<ReservationDomain> domains ) {
 
     }
 
-    protected void notifyCustomer(FreeRegistrationAccount account, FreeReservation domain) {
+    protected void notifyCustomer(FreeReservationAccount account, FreeReservation domain) {
 
-    }
-
-    @NotNull
-    @Override
-    public FreeRegistrationAccount getOrCreateAccount(@NotNull WhoisIdentity identity) throws Exception {
-        return null;
     }
 
     @Override
-    public void register(@NotNull FreeRegistrationAccount account, @NotNull FreeReservation reservation) throws Exception {
+    public void register(@NotNull FreeReservationAccount account, @NotNull FreeReservation reservation) throws Exception {
 
     }
 }

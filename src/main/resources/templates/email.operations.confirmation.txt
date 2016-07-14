@@ -2,13 +2,10 @@ $if(reservation.pendingPolicyApproval)$
 
 $reservation.destinationWhoisRecord.adminName$ ($reservation.email$) is attempting to reserve $reservation.destinationFullDomainName$
 
-    APPROVE: http://$baseUrl$/api/v1/admin/reservation/$reservation.id$/approve
+    APPROVE: $approveUrl$
 
-    DECLINE: http://$baseUrl$/api/v1/admin/reservation/$reservation.id$/decline
+    DECLINE: $denyUrl$
 
-    SUMMARY: http://$baseUrl$/api/v1/admin/reservation/$reservation.id$
-
-    GENERIC ADMIN: http://$baseUrl$/api/v1/admin
 $else$
 
 Overview

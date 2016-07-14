@@ -4,7 +4,6 @@ import com.topspectrum.registry.WhoisIdentity;
 import com.zipwhip.concurrent.ObservableFuture;
 
 import javax.validation.constraints.NotNull;
-import java.util.Map;
 
 /**
  * @author msmyers

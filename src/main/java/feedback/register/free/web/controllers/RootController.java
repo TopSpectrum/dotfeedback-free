@@ -10,15 +10,17 @@ import com.topspectrum.mail.TemplatedEmailService;
 import com.topspectrum.registry.ParsedDomainParts;
 import com.topspectrum.registry.WhoisIdentity;
 import com.topspectrum.services.GoogleDocService;
+import com.topspectrum.slack.SlackService;
 import com.topspectrum.template.EmailTemplateService;
-import com.topspectrum.template.Parameters;
-import com.topspectrum.util.*;
+import com.topspectrum.util.ConversionUtils;
+import com.topspectrum.util.DomainNameUtils;
+import com.topspectrum.util.StringUtils;
 import com.topspectrum.whois.WhoisConnection;
 import com.topspectrum.whois.WhoisRecord;
 import com.topspectrum.whois.WhoisRecordBuilder;
 import com.topspectrum.whois.WhoisRecordRepository;
-import feedback.register.free.data.FreeReservationAccount;
 import feedback.register.free.data.FreeReservation;
+import feedback.register.free.data.FreeReservationAccount;
 import feedback.register.free.data.FreeReservationRepository;
 import feedback.register.free.data.ReferralCodeRepository;
 import feedback.register.free.interop.internetbs.DomainRegistrationService;
@@ -39,14 +41,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.Nullable;
 import javax.mail.MessagingException;
@@ -106,17 +106,6 @@ public class RootController implements InitializingBean {
     @Autowired
     JpaContextHelper contextHelper;
 
-    // Should reference a property.
-    @Value("${feedback.free.url}")
-    String baseUrl;
-
-    // Should reference a property.
-    @Value("${feedback.free.customerEmail}")
-    String customerEmailOverride;
-
-    @Value("${feedback.free.internalCompanyEmail}")
-    String internalCompanyEmail;
-
     @Autowired
     EmailTemplateService emailTemplateService;
 
@@ -135,18 +124,17 @@ public class RootController implements InitializingBean {
     @Autowired
     ApprovalService approvalService;
 
-    EmailTemplate suggestedReservationEmailTemplate;
-
     @Autowired
     AuditedEmailService auditedEmailService;
 
+    @Autowired
+    SlackService slackService;
+
     @Override
     public void afterPropertiesSet() throws Exception {
-        suggestedReservationEmailTemplate = emailTemplateService.getTemplateByName("email.customer.suggestion");
 
         // Disabled this check so we can support "Name <email>" syntax.
 //        Preconditions.checkState(StringUtils.isValidEmail(internalCompanyEmail), "must be valid email: " + internalCompanyEmail);
-        RestExceptions.checkServerError(baseUrl, StringUtils::isNotBlank);
     }
 
     //region docs
@@ -196,41 +184,46 @@ public class RootController implements InitializingBean {
         // Nuke it so no replays.
         request.getSession().invalidate();
 
-        /***
-         * Send ops email if customer is reserving more than one.
-         */
-        sendCompanyConfirmationEmail(reservation);
-
-        /***
-         * Send customer confiramtion email with status
-         */
-        sendCustomerConfirmationEmail(reservation);
-
         return null;
     }
 
+    /**
+     * Called when Operations approves a reservation.
+     *
+     * @param request
+     * @param approved
+     * @param token
+     * @return
+     * @throws Exception
+     */
     @Transactional("freeTransactionManager")
     @RequestMapping(value = "/approval", method = RequestMethod.GET)
     @ResponseBody
     public Object approval(HttpServletRequest request,
                            @RequestParam("approved") Boolean approved,
                            @RequestParam("token") String token
-                           ) throws Exception {
-
+    ) throws Exception {
         FreeReservation reservation = RestExceptions.checkNotFound(approvalService.getByToken(token), "Token was invalid.");
 
         return "yes: " + reservation.getId();
     }
 
+    /**
+     * Called when the customer wants to claim a domain name.
+     *
+     * @param request
+     * @param reservationToken
+     * @return
+     * @throws Exception
+     */
     @Transactional("freeTransactionManager")
     @RequestMapping(value = "/claim", method = RequestMethod.GET)
     @ResponseBody
     public Object claim(
-            HttpServletRequest request,
             @RequestParam("reservation") String reservationToken
     ) throws Exception {
         @Nullable
-        final PendingVerificationToken pendingVerificationToken = verificationService.getByToken("free.feedback", reservationToken);
+        final PendingVerificationToken pendingVerificationToken = verificationService.getByToken("free.feedback/suggestion", reservationToken);
 
         if (null == pendingVerificationToken) {
             return "redirect:/claim/error";
@@ -249,8 +242,6 @@ public class RootController implements InitializingBean {
         if (null == identity) {
             return "redirect:/claim/error";
         }
-
-        request.getSession().invalidate();
 
         FreeReservationAccount account = domainRegistrationService.getOrCreateAccount(identity);
 
@@ -274,17 +265,18 @@ public class RootController implements InitializingBean {
     //endregion
 
     //region /reservations
-    @RequestMapping(value = "/reservations", method = RequestMethod.GET)
-    @ResponseBody
-    public FreeReservationTokenWrapper get_sessioned_reservation(HttpServletRequest request) {
-        FreeReservation reservation = (FreeReservation) request.getSession().getAttribute("DATA");
 
-        if (null == reservation) {
-            RestExceptions.notFound("Nothing saved.");
-        }
-
-        return new FreeReservationTokenWrapper(new FreeReservationToken(reservation));
-    }
+//    @RequestMapping(value = "/reservations", method = RequestMethod.GET)
+//    @ResponseBody
+//    public FreeReservationTokenWrapper get_sessioned_reservation(HttpServletRequest request) {
+//        FreeReservation reservation = (FreeReservation) request.getSession().getAttribute("DATA");
+//
+//        if (null == reservation) {
+//            RestExceptions.notFound("Nothing saved.");
+//        }
+//
+//        return new FreeReservationTokenWrapper(new FreeReservationToken(reservation));
+//    }
 
     /***
      * Triggered when a customer has decided to buy.
@@ -293,9 +285,10 @@ public class RootController implements InitializingBean {
      * - Save the reservation
      * - Send email challenge (url with confirmation/token)
      *
-     * @param request
      * @param wrapper
+     *
      * @return
+     *
      * @throws ExecutionException
      * @throws InterruptedException
      * @throws IOException
@@ -303,53 +296,31 @@ public class RootController implements InitializingBean {
      */
     @RequestMapping(value = "/reservations", method = RequestMethod.POST)
     @ResponseBody
-    public FreeReservationTokenWrapper submit_request(
-            HttpServletRequest request,
+    public FreeReservationTokenWrapper submit_reservation(
             @RequestBody FreeReservationTokenWrapper wrapper
     ) throws Exception {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("params: " + request.getParameterMap());
-        }
+        // The flow: https://docs.google.com/drawings/d/1YE0mzFSdsrmQTeHtIu97vRD3dLKUK3AXCY6_QJGNAww
 
         // Step 1, gather the info.
         // This will throw a BadRequest exception if it's not fully valid.
-        final FreeReservation reservation = parseAndSaveReservationOrFail(wrapper);
+        FreeReservation reservation = parseAndSaveReservationOrFail(wrapper);
 
-        if (reservation.isSuggested()) {
-            sendCustomerSuggestionEmail(reservation);
-        } else {
-            reservation.setPendingPolicyApproval(hasExistingReservationsForThisEmail(reservation.getEmail()));
-            reservation.setCheckoutDate(DateTime.now());
+        reservation = freeReservationRepository.save(reservation);
 
-            freeReservationRepository.save(reservation);
-
-            /***
-             * Send ops email if customer is reserving more than one.
-             */
-            sendCompanyConfirmationEmail(reservation);
-
-            /***
-             * Send customer confirmation email with status
-             */
-            sendCustomerConfirmationEmail(reservation);
-        }
-
-        sendAdminAwarenessPreorderEmail(reservation);
-
-        // This will start everything over from scratch
-        request.getSession().invalidate();
+        freeReservationWelcomeService.send(reservation);
 
         // The customer wants to know the ID? Not exactly sure how valuable it is to tell the customer this info.
         // My understanding is that they can close the window after making this call, since we are sending an email.
+        wrapper.getReservation().setId(reservation.getId());
         wrapper.getReservation().setPendingPolicyApproval(reservation.isPendingPolicyApproval());
         wrapper.getReservation().setCheckoutDate(reservation.getCheckoutDate());
-        wrapper.getReservation().setId(reservation.getId());
 
         return wrapper;
     }
     //endregion
 
     //region /checkout
+
     /**
      * This is accessed via the browser when they click the link.
      *
@@ -374,8 +345,8 @@ public class RootController implements InitializingBean {
                 return new ModelAndView("redirect:/failed");
             }
 
-            if (null == reservation.getVerifiedDate()) {
-                reservation.setVerifiedDate(DateTime.now());
+            if (null == reservation.getApprovalDate()) {
+                reservation.setApprovalDate(DateTime.now());
 
                 freeReservationRepository.save(reservation);
             }
@@ -447,7 +418,7 @@ public class RootController implements InitializingBean {
                 whois.put("emailAlternatives", Joiner.on(";").skipNulls().join(
                         ConversionUtils.toStream(
                                 ConversionUtils.toSet(
-                                            whoisRecord.getAdminEmail(),
+                                        whoisRecord.getAdminEmail(),
                                         whoisRecord.getBillingEmail(),
                                         whoisRecord.getRegistrantEmail(),
                                         whoisRecord.getAdminEmail(),
@@ -469,82 +440,13 @@ public class RootController implements InitializingBean {
     //endregion
 
     //region Emails
-    public void sendAdminAwarenessPreorderEmail(FreeReservation reservation) throws Exception {
-        EmailTemplate template = emailTemplateService.getTemplateByName("email.operations.confirm-identity");
-        Parameters parameters = parameters(reservation);
-
-        templatedEmailService.send(internalCompanyEmail, template, parameters);
-    }
-
-    public void sendCustomerSuggestionEmail(FreeReservation reservation) throws Exception {
-        Parameters parameters = parameters(reservation);
-
-        {
-            parameters.put("url", "http://" + baseUrl + "/manage?reservation=" + reservation.getPendingVerificationToken().getToken());
-        }
-
-        templatedEmailService.send(
-                getCustomerEmail(reservation),
-                suggestedReservationEmailTemplate,
-                parameters);
-    }
-
-    public void sendCompanyConfirmationEmail(FreeReservation reservation) throws Exception {
-        EmailTemplate template = emailTemplateService.getTemplateByName("email.operations.confirmation");
-
-        final Parameters params = parameters();
-        final UriComponentsBuilder actionUrl = approvalService.approvalUrlBuilder(reservation);
-
-        {
-            params.put("reservation", reservation);
-            params.put("approveUrl", actionUrl.buildAndExpand(true));
-            params.put("denyUrl", actionUrl.buildAndExpand(false));
-        }
-
-        Preconditions.checkState(StringUtils.isValidEmail(internalCompanyEmail), "must be valid email: " + internalCompanyEmail);
-
-        templatedEmailService.send(internalCompanyEmail, template, params);
-
-        if (reservation.isPendingPolicyApproval()) {
-            approvalService.requestApproval(reservation);
-        }
-    }
-
-    /**
-     * Should be called when "Agree To Terms" is submitted.
-     *
-     * @param reservation
-     * @throws Exception
-     */
-    public void sendCustomerConfirmationEmail(FreeReservation reservation) throws Exception {
-        EmailTemplate template = emailTemplateService.getTemplateByName("email.customer.confirmation");
-
-        final Parameters params = parameters();
-
-        {
-            params.put("identity", reservation.toWhoisIdentity());
-            params.put("reservation", reservation);
-        }
-
-        templatedEmailService.send(getCustomerEmail(reservation), template, params);
-    }
-
-    @NotNull
-    public String getCustomerEmail(@NotNull final FreeReservation reservation) {
-        return MorePreconditions.checkNotBlank(StringUtils.defaultIfBlank(customerEmailOverride, reservation.getEmail()));
-    }
-
+//    public void sendAdminAwarenessPreorderEmail(FreeReservation reservation) throws Exception {
+//        EmailTemplate template = emailTemplateService.getTemplateByName("email.operations.confirm-identity");
+//        Parameters parameters = parameters(reservation);
+//
+//        templatedEmailService.send(internalCompanyEmail, template, parameters);
+//    }
     //endregion
-
-    @VisibleForTesting
-    protected Parameters parameters() {
-        Parameters parameters = new Parameters();
-
-        parameters.put("baseUrl", baseUrl);
-        parameters.put("topLevelDomainName", "feedback");
-
-        return parameters;
-    }
 
     @VisibleForTesting
     protected boolean hasExistingReservationsForThisEmail(@NotNull final String email) {
@@ -562,7 +464,6 @@ public class RootController implements InitializingBean {
         final FreeReservation reservation = new FreeReservation();
 
         {
-            reservation.setSuggested(token.isSuggested());
             reservation.setAffiliateCode(wrapper.getReservation().getAffiliateCode());
 
             reservation.setDestinationFullDomainName(token.getDestinationFullDomainName());
@@ -572,6 +473,12 @@ public class RootController implements InitializingBean {
 
             reservation.setRemoteHost(SecurityUtil.currentRemoteHost());
             reservation.setFingerprint(SecurityUtil.currentFingerprint());
+
+            if (token.isSuggested()) {
+                reservation.markSuggested();
+            } else {
+                reservation.setPendingPolicyApproval(hasExistingReservationsForThisEmail(reservation.getEmail()));
+            }
 
             reservation.setDestinationWhoisRecord(record);
 
@@ -595,19 +502,6 @@ public class RootController implements InitializingBean {
         return RestExceptions.checkNotFound(contextHelper.get(RestExceptions.checkNotFound(reservation)));
     }
 
-    @VisibleForTesting
-    protected static WhoisRecord parseWhoisRecordOrFail(FreeReservationToken token) {
-        return new WhoisRecordBuilder()
-                .name(token.getName())
-                .address(token.getStreet(), token.getCity(), token.getState(), token.getPostal(), token.getCountry())
-                .email(token.getEmail())
-                .fullDomainName(token.getDestinationFullDomainName())
-                .phone(token.getPhone(), token.getPhoneExt())
-                .fax(token.getFax(), token.getFaxExt())
-                .registrar(token.getRegistrar())
-                .build();
-    }
-
     @NotNull
     @VisibleForTesting
     protected String availability(@NotNull final String dotfeedbackFullDomainName) throws Exception {
@@ -621,10 +515,30 @@ public class RootController implements InitializingBean {
             return "unknown";
         } else if (record.isReserved()) {
             return "reserved";
+        } else if ("FreeReservationDestination".equalsIgnoreCase(record.getSourceStrategy())) {
+            FreeReservation reservation = ConversionUtils.toStream(freeReservationRepository.findByDestinationWhoisRecord(record))
+                    .filter((reservation1) -> {
+                        if (null == reservation1) {
+                            return false;
+                        } else if (reservation1.isSuggested()) {
+                            return true;
+                        } else if (reservation1.isPendingPolicyApproval()) {
+                            return false;
+                        } else if (reservation1.isDeleted()) {
+                            return false;
+                        }
+
+                        return true;
+                    })
+                    .findFirst()
+                    .orElse(null);
+
+            if (null == reservation) {
+                return "available";
+            }
         }
 
         return "unavailable";
-//        return "available";
     }
 
     @NotNull
@@ -723,11 +637,25 @@ public class RootController implements InitializingBean {
         return record;
     }
 
-    protected boolean isHealthy(WhoisRecord record) {
+    @Nullable
+    public WhoisRecord findMostRecentWhoisRecord(@NotNull final String fullDomainName) {
+        DateTime createdDate = DateTime.now().minusDays(30);
+
+        return PageUtils.first(whoisRecordRepository.findByFullDomainNameAndCreatedDateAfter(fullDomainName, createdDate, PageUtils.newest()));
+    }
+
+    @VisibleForTesting
+    public static boolean isMocked(@NotNull final WhoisRecord record) {
+        return (record.isMocked() || "FreeReservationDestination".equalsIgnoreCase(record.getSourceStrategy()));
+    }
+
+    @VisibleForTesting
+    protected static boolean isHealthy(WhoisRecord record) {
         return 3 >= getMissCount(record);
     }
 
-    protected int getMissCount(WhoisRecord record) {
+    @VisibleForTesting
+    protected static int getMissCount(WhoisRecord record) {
         int count = 0;
 
         if (!isSuccess(record)) {
@@ -758,7 +686,21 @@ public class RootController implements InitializingBean {
         return count;
     }
 
-    private boolean isSuccess(@Nullable final WhoisRecord record) {
+    @VisibleForTesting
+    protected static WhoisRecord parseWhoisRecordOrFail(FreeReservationToken token) {
+        return new WhoisRecordBuilder()
+                .sourceStrategy("FreeReservationDestination")
+                .name(token.getName())
+                .address(token.getStreet(), token.getCity(), token.getState(), token.getPostal(), token.getCountry())
+                .email(token.getEmail())
+                .fullDomainName(token.getDestinationFullDomainName())
+                .phone(token.getPhone(), token.getPhoneExt())
+                .fax(token.getFax(), token.getFaxExt())
+                .registrar(token.getRegistrar())
+                .build();
+    }
+
+    protected static boolean isSuccess(@Nullable final WhoisRecord record) {
         if (null == record) {
             return false;
         }
@@ -769,19 +711,4 @@ public class RootController implements InitializingBean {
 
         return true;
     }
-
-    @Nullable
-    public WhoisRecord findMostRecentWhoisRecord(@NotNull final String fullDomainName) {
-        DateTime createdDate = DateTime.now().minusDays(30);
-
-        return PageUtils.first(whoisRecordRepository.findByFullDomainNameAndSourceStrategyAndCreatedDateAfter(fullDomainName, "IanaWhoisConnection", createdDate, PageUtils.newest()));
-//        return null;
-    }
-
-    protected Parameters parameters(FreeReservation reservation) {
-        return parameters()
-                .put("reservation", reservation)
-                .put("identity", reservation.toWhoisIdentity());
-    }
-
 }

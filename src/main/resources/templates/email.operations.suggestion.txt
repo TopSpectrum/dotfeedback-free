@@ -1,0 +1,18 @@
+Overview
+--------
+
+Suggested $reservation.destinationWhoisRecord.fullDomainName$  to $reservation.destinationWhoisRecord.adminName$ ($reservation.email$).
+
+http://$reservation.destinationFullDomainName$ was modeled after http://www.$reservation.sourceFullDomainName$
+
+*We are waiting on them to click the claim link and confirm the reservation*
+
+WHOIS Record
+------------
+
+| Field        | Value |
+| ------------ | ----- |
+| Name         | $identity.name$
+| Organization | $identity.organization$
+| Phone        | $identity.phone$ $identity.phoneExt$
+| Address      | $identity.humanizedAddress$

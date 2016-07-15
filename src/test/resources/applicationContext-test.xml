@@ -55,13 +55,5 @@ This file contains overrides that are used for unit tests.
             <!--<property name="databasePlatform" value="org.hibernate.dialect.MySQL57InnoDBDialect"/>-->
             <property name="showSql" value="true" />
         </bean>
-
-        <bean class="feedback.register.free.services.DefaultFreeReservationWelcomeService">
-
-        </bean>
-
-        <!--<bean id="templatedEmailService" class="com.topspectrum.mail.MockTemplatedEmailServicee">-->
-
-        <!--</bean>-->
     </beans>
 </beans>

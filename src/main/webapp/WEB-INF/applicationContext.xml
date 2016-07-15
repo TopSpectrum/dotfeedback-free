@@ -30,11 +30,9 @@
             <constructor-arg index="1" type="boolean" value="false"/>
         </bean>
 
-        <bean class="com.topspectrum.mail.DefaultAuditedEmailService">
+        <bean id="auditedEmailService" class="com.topspectrum.mail.DefaultAuditedEmailService">
             <property name="productName" value="free.feedback"/>
         </bean>
-
-        <bean class="feedback.register.free.services.DefaultFreeReservationWelcomeService"/>
 
         <bean id="googleDocService" class="com.topspectrum.services.CachedGoogleDocService">
             <property name="googleDocService">
@@ -67,11 +65,11 @@
             </property>
         </bean>
 
-        <!--<bean id="service" class="feedback.web.data.services.SiteService">-->
-            <!---->
-        <!--</bean>-->
+        <bean id="freeReservationWelcomeService" class="feedback.register.free.services.DefaultFreeReservationWelcomeService">
+            <property name="templatedEmailService" ref="templatedEmailService"/>
+        </bean>
 
-        <bean class="feedback.services.DefaultVerificationService"/>
+        <bean id="verificationService" class="feedback.services.DefaultVerificationService"/>
 
         <bean id="currentIPServletFilter" class="feedback.peoplestats.CurrentIPServletFilter"/>
 

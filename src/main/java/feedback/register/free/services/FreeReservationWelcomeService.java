@@ -1,6 +1,7 @@
 package feedback.register.free.services;
 
 import feedback.register.free.data.FreeReservation;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.validation.constraints.NotNull;
 
@@ -11,5 +12,16 @@ import javax.validation.constraints.NotNull;
 public interface FreeReservationWelcomeService {
 
     void send(@NotNull FreeReservation reservation) throws Exception;
+
+    void sendCustomerConfirmationEmail(@NotNull FreeReservation reservation) throws Exception;
+    void sendOperationsConfirmationEmail(@NotNull FreeReservation reservation) throws Exception;
+
+    void sendCustomerSuggestionEmail(@NotNull FreeReservation reservation) throws Exception;
+    void sendOperationsSuggestionEmail(@NotNull FreeReservation reservation) throws Exception;
+    void sendOperationsSuggestionSlackEvent(@NotNull FreeReservation reservation) throws Exception;
+
+    void sendCustomerApprovalEmail(@NotNull FreeReservation reservation) throws Exception;
+    void sendOperationsApprovalSlackEvent(@NotNull FreeReservation reservation) throws Exception;
+    void sendOperationsApprovalEmail(@NotNull FreeReservation reservation) throws Exception;
 
 }

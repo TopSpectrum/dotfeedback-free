@@ -1,11 +1,13 @@
 package feedback.register.free.data;
 
+import com.google.common.base.Preconditions;
 import com.topspectrum.data.dto.AbstractDto;
 import com.topspectrum.registry.WhoisIdentity;
 import com.topspectrum.whois.WhoisRecord;
 import com.topspectrum.whois.WhoisRecordAccessor;
 import com.topspectrum.whois.WhoisRecordBuilder;
 import feedback.web.data.PendingVerificationToken;
+import org.apache.commons.lang.BooleanUtils;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
@@ -66,28 +68,34 @@ public class FreeReservation extends AbstractDto {
     PendingVerificationToken pendingVerificationToken;
 
     /**
-     * This is the Timestamp where the customer has actually been given the domain.
-     * It should be considered "taken" at this point.
-     */
-    @Column
-    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
-    DateTime purchaseDate;
-
-    /**
-     * This is the Timestamp where the customer has received approval to purchase the domain.
-     * It does not mean that the domain has been actually purchased yet.
-     */
-    @Column
-    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
-    DateTime verifiedDate;
-
-    /**
      * This is the Timestamp where the customer has decided to purchase the domain.
      * It means intent to purchase. It does not mean approval of purchase.
+     *
+     * THIS IS STEP 1
      */
     @Column
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     DateTime checkoutDate;
+
+    /**
+     * This is the Timestamp where the customer has received approval to purchase the domain.
+     * It does not mean that the domain has been actually purchased yet.
+     *
+     * THIS IS STEP 2
+     */
+    @Column
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    DateTime approvalDate;
+
+    /**
+     * This is the Timestamp where the customer has actually been given the domain.
+     * It should be considered "taken" at this point.
+     *
+     * THIS IS STEP 3
+     */
+    @Column
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    DateTime purchaseDate;
 
     @Column
     private boolean pendingPolicyApproval;
@@ -97,6 +105,24 @@ public class FreeReservation extends AbstractDto {
 
     @Column
     private boolean suggested;
+
+    @Column
+    @Nullable
+    private Boolean approved;
+
+    //region getter/setter
+    public boolean isApproved() {
+        return BooleanUtils.isTrue(approved);
+    }
+
+    @Nullable
+    public Boolean getApproved() {
+        return approved;
+    }
+
+    public void setApproved(@Nullable final Boolean approved) {
+        this.approved = approved;
+    }
 
     @Nullable
     public FreeReservationAccount getFreeReservationAccount() {
@@ -188,12 +214,12 @@ public class FreeReservation extends AbstractDto {
         this.pendingVerificationToken = pendingVerificationToken;
     }
 
-    public DateTime getVerifiedDate() {
-        return verifiedDate;
+    public DateTime getApprovalDate() {
+        return approvalDate;
     }
 
-    public void setVerifiedDate(DateTime verifiedDate) {
-        this.verifiedDate = verifiedDate;
+    public void setApprovalDate(DateTime verifiedDate) {
+        this.approvalDate = verifiedDate;
     }
 
     public void setPendingPolicyApproval(boolean pendingPolicyApproval) {
@@ -245,5 +271,134 @@ public class FreeReservation extends AbstractDto {
     public void setPurchaseDate(DateTime purchaseDate) {
         this.purchaseDate = purchaseDate;
     }
+    //endregion
 
+    @NotNull
+    public FreeReservation shouldBe() {
+
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation shouldBePurchased() {
+        shouldBeApproved();
+
+        return this;
+    }
+
+    /**
+     * Checkout signals the customer intent to purchase.
+     *
+     * @return
+     */
+    @NotNull
+    public FreeReservation shouldBeCheckout() {
+        shouldNotBeNew();
+
+        Preconditions.checkState(null != getCheckoutDate(), "Must be checked out before calling this.");
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation shouldNotBeCheckout() {
+        Preconditions.checkState(null == getCheckoutDate(), "Must not be checkout");
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation shouldNotBeNew() {
+        Preconditions.checkState(!isNew(), "Must be saved");
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation shouldNotBePurchased() {
+        Preconditions.checkState(null == getPurchaseDate(), "Must not be purchased before calling this.");
+
+        return this;
+    }
+
+    public boolean isCheckedOut() {
+        return null != checkoutDate;
+    }
+
+    @NotNull
+    public FreeReservation markApproved(boolean approved) {
+        shouldLackApprovalDecision();
+
+        if (!isCheckedOut()) {
+            markCheckout();
+        }
+
+        setApproved(approved);
+        setApprovalDate(DateTime.now());
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation shouldLackApprovalDecision() {
+        Preconditions.checkState(null == approvalDate, "Has approvalDate, should not.");
+        Preconditions.checkState(null == approved, "Is having approval");
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation shouldHaveApprovalDecision() {
+        Preconditions.checkState(null != approvalDate, "Is lacking approvalDate");
+        Preconditions.checkState(null != approved, "Is lacking approval");
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation shouldNotBeApproved() {
+        shouldHaveApprovalDecision();
+
+        Preconditions.checkState(!isApproved(), "Should not be approved.");
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation shouldBeApproved() {
+        shouldBeCheckout();
+        shouldHaveApprovalDecision();
+
+        Preconditions.checkState(isApproved(), "Is not approved.");
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation markSuggested() {
+        shouldNotBePurchased();
+
+        markApproved(true);
+        setSuggested(true);
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation markCheckout() {
+        shouldLackApprovalDecision();
+        shouldNotBePurchased();
+
+        setCheckoutDate(DateTime.now());
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation shouldBeSuggested() {
+        Preconditions.checkState(isSuggested(), "Should be suggested, was not.");
+
+        return this;
+    }
 }

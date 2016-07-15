@@ -2,8 +2,15 @@ package feedback.register.free.web.controllers;
 
 import com.topspectrum.data.dao.ApplicationContextAwareTestBase;
 import com.topspectrum.test.TestUtil;
+import com.topspectrum.whois.WhoisRecordBuilder;
+import com.topspectrum.whois.WhoisRecordRepository;
 import feedback.register.free.data.FreeReservation;
 import com.topspectrum.whois.WhoisRecord;
+import feedback.register.free.data.FreeReservationRepository;
+import feedback.register.free.services.FreeReservationWelcomeService;
+import feedback.register.free.web.model.FreeReservationToken;
+import feedback.register.free.web.model.FreeReservationTokenWrapper;
+import feedback.services.VerificationService;
 import feedback.web.data.PendingVerificationToken;
 import org.joda.time.DateTime;
 import org.junit.Before;
@@ -31,7 +38,16 @@ public class RootControllerTest extends ApplicationContextAwareTestBase {
     private static final Logger LOGGER = LoggerFactory.getLogger(RootControllerTest.class);
 
     @Autowired
+    WhoisRecordRepository whoisRecordRepository;
+
+    @Autowired
     RootController controller;
+
+    @Autowired
+    FreeReservationWelcomeService service;
+
+    @Autowired
+    FreeReservationRepository freeReservationRepository;
 
     @Before
     public void setUp() throws Exception {
@@ -39,95 +55,77 @@ public class RootControllerTest extends ApplicationContextAwareTestBase {
     }
 
     @Test
-    public void testCustomerVerificationEmail() throws Exception {
-        // This verification email does not consider the pending status
+    public void service_testCustomerSuggestionEmail() throws Exception {
+        FreeReservation reservation = reservation();
 
-        controller.sendCustomerSuggestionEmail(reservation());
+        reservation.markSuggested();
+
+        reservation = freeReservationRepository.save(reservation);
+
+        service.sendCustomerSuggestionEmail(reservation);
+        service.sendOperationsSuggestionEmail(reservation);
+        service.sendOperationsSuggestionSlackEvent(reservation);
+
+        //TODO Have assertions
     }
 
     @Test
-    public void testOperationsConfirmIdentity() throws Exception {
-        FreeReservation reservation = reservation();
+    public void service_testSuggestedDomain() throws Exception {
+        FreeReservationTokenWrapper wrapper = new FreeReservationTokenWrapper(new FreeReservationToken(reservation().markSuggested()));
 
-        controller.sendAdminAwarenessPreorderEmail(reservation);
-    }
+        FreeReservation reservation = controller.parseAndSaveReservationOrFail(wrapper);
 
-    @Test
-    public void testCompanyConfirmationEmail_confirmed() throws Exception {
-        FreeReservation reservation = reservation();
+        reservation = freeReservationRepository.save(reservation);
 
-        controller.sendCompanyConfirmationEmail(reservation);
-    }
-
-    @Test
-    public void testCustomerConfirmation_pending() throws Exception {
-        FreeReservation reservation = reservation();
-
-        reservation.setPendingPolicyApproval(true);
-
-        controller.sendCustomerConfirmationEmail(reservation);
-    }
-
-    @Test
-    public void testCustomerConfirmation_confirmed() throws Exception {
-        FreeReservation reservation = reservation();
-
-        reservation.setPendingPolicyApproval(false);
-
-        controller.sendCustomerConfirmationEmail(reservation);
-    }
-
-    @Test
-    public void testCompanyConfirmationEmail_pending() throws Exception {
-        FreeReservation reservation = reservation();
-
-        reservation.setPendingPolicyApproval(true);
-
-        controller.sendCompanyConfirmationEmail(reservation);
+        service.sendCustomerSuggestionEmail(reservation);
     }
 
     protected FreeReservation reservation() {
-        Long id = TestUtil.nextId();
-
-        FreeReservation reservation = new FreeReservation() {
-            public Long getId() {
-                return id;
-            }
-        };
+        FreeReservation reservation = new FreeReservation();
 
         {
-            reservation.setVerifiedDate(DateTime.now());
             reservation.setEmail(TestUtil.randomCustomerEmailAddress());
             reservation.setSourceFullDomainName(TestUtil.randomFullDomainName("com"));
             reservation.setDestinationFullDomainName(TestUtil.randomFullDomainName());
 
-
-            WhoisRecord record = new WhoisRecord();
-
             {
-                record.setAdminName("Johnny Testit");
-                record.setAdminOrganization("The mafia");
-                record.setAdminPhone("+1 (913) 980-2972");
-                record.setAdminEmail(TestUtil.randomCustomerEmailAddress("UnitTest", "randomer.com"));
-                record.setAdminStreet("1234 Fake St");
-                record.setAdminCity("Seattle");
-                record.setAdminPostal("90210");
-                record.setAdminState("Kansas");
-                record.setAdminCountry("Pakistan");
+                final WhoisRecord record = new WhoisRecordBuilder()
+                        .name("Johnny Testit")
+                        .organization("The mafia")
+                        .phone("+1 (913) 980-2972")
+                        .email(TestUtil.randomCustomerEmailAddress("UnitTest", "randomer.com"))
+                        .address("1234 Fake St", "Seattle", "WA", "98118", "USA")
+                        .fullDomainName(reservation.getDestinationFullDomainName())
+                        .build();
+
+                whoisRecordRepository.save(record);
+
+                reservation.setDestinationWhoisRecord(record);
             }
-
-            reservation.setDestinationWhoisRecord(record);
-
-            PendingVerificationToken pendingVerificationToken = new PendingVerificationToken();
-
-            {
-                pendingVerificationToken.setToken(UUID.randomUUID().toString());
-                pendingVerificationToken.setCode(TestUtil.random());
-            }
-
-            reservation.setPendingVerificationToken(pendingVerificationToken);
 
         }
+
+        return reservation;
+    }
+
+
+    protected FreeReservation approve(FreeReservation reservation) {
+        reservation.setApprovalDate(DateTime.now());
+
+        return reservation;
+    }
+
+    protected FreeReservation checkout(FreeReservation reservation) {
+        reservation.setCheckoutDate(DateTime.now());
+
+        return reservation;
+    }
+
+    @Autowired
+    VerificationService verificationService;
+
+    protected FreeReservation withPendingVerification(FreeReservation reservation) {
+        reservation.setPendingVerificationToken(verificationService.generate("free.feedback", reservation.getEmail()));
 
         return reservation;
     }

@@ -446,8 +446,6 @@ export default AbstractWizardStep.extend(EmberValidations, {
         },
 
         next() {
-            debugger;
-
             if (this.get('nextIsDisabled')) {
                 // enter was hit..
                 return false;

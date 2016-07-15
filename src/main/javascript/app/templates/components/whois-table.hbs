@@ -1,17 +1,23 @@
 <div class="whois-table form-horizontal">
 
     <div class="row">
-        {{validated-input value=email errors=errors.email name='admin_email' label='Email' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12"  disabled=emailOrAllDisabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors}}
+        {{validated-input value=email errors=errors.email name='admin_email' label='Email' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12"  disabled=disabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors}}
 
-        <div class="form-group" style="padding-bottom: 25px;">
+        <div class="form-group col-sm-12" style="padding-bottom: 25px;">
             <div class="col-sm-3">&nbsp;</div>
             <div class="col-sm-9">
                 <div class="row">
                     <label class="control-label col-sm-3">Suggestions</label>
                     <div class="col-sm-9" style="padding-top: 10px;">
-                        {{#each model.emails as | email | }}
-                            <a href="#" {{action 'selectEmailAlternative' email}}>{{email}}</a>
-                        {{/each}}
+                        {{#if model.emails}}
+                            {{#each model.emails as | email | }}
+                                <a href="#" {{action 'selectEmailAlternative' email}}>{{email}}</a>
+                            {{/each}}
+
+                            {{#if initialEmail}}
+                                <a href="#" {{action 'selectEmailAlternative' initialEmail}}>{{initialEmail}}</a>
+                            {{/if}}
+                        {{/if}}
                     </div>
                 </div>
             </div>

@@ -3,7 +3,9 @@
     "document",
     "window",
     "Cookies",
-    "-Promise"
+    "-Promise",
+    "jQuery",
+    "$"
   ],
   "browser": true,
   "boss": true,
@@ -22,7 +24,6 @@
   "nomen": false,
   "onevar": false,
   "plusplus": false,
-  "regexp": false,
   "undef": true,
   "sub": true,
   "strict": true,

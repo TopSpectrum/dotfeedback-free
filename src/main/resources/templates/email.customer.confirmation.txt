@@ -1,13 +1,5 @@
-$if(reservation.pendingPolicyApproval)$
-Thanks for your reservation.
-
-Your request for $reservation.destinationFullDomainName$ is being reviewed and will be active shortly. You'll receive another email when it's confirmed.
-
-Thanks for your interest in .feedback and may all your feedback be positive!
-$else$
 Thanks for your reservation.
 
 Your request for $reservation.destinationFullDomainName$ is being processed and will be active shortly.
 
 Thanks for your interest in .feedback and may all your feedback be positive!
-$endif$

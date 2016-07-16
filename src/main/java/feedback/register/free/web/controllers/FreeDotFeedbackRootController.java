@@ -4,8 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.topspectrum.data.PageUtils;
-import com.topspectrum.mail.AuditedEmailService;
-import com.topspectrum.mail.EmailTemplate;
+import com.topspectrum.mail.EmailAuditService;
 import com.topspectrum.mail.TemplatedEmailService;
 import com.topspectrum.registry.ParsedDomainParts;
 import com.topspectrum.registry.WhoisIdentity;
@@ -51,7 +50,6 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.annotation.Nullable;
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.Arrays;
@@ -69,9 +67,9 @@ import java.util.stream.Collectors;
  * @since 9/7/15
  */
 @Controller
-public class RootController implements InitializingBean {
+public class FreeDotFeedbackRootController implements InitializingBean {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RootController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FreeDotFeedbackRootController.class);
 
     @Autowired
     Environment environment;
@@ -125,7 +123,7 @@ public class RootController implements InitializingBean {
     ApprovalService approvalService;
 
     @Autowired
-    AuditedEmailService auditedEmailService;
+    EmailAuditService emailAuditService;
 
     @Autowired
     SlackService slackService;
@@ -167,25 +165,25 @@ public class RootController implements InitializingBean {
     }
     //endregion
 
-    @Transactional("freeTransactionManager")
-    @RequestMapping(value = "/checkout", method = RequestMethod.POST)
-    @ResponseBody
-    public Object checkout(HttpServletRequest request) throws Exception {
-        FreeReservation reservation = getSavedReservation(request);
-
-        // TOOD: validate the reservation.
-        // TODO: allow for modification of the WHOIS information
-
-        reservation.setPendingPolicyApproval(hasExistingReservationsForThisEmail(reservation.getEmail()));
-        reservation.setCheckoutDate(DateTime.now());
-
-        freeReservationRepository.save(reservation);
-
-        // Nuke it so no replays.
-        request.getSession().invalidate();
-
-        return null;
-    }
+//    @Transactional("freeTransactionManager")
+//    @RequestMapping(value = "/checkout", method = RequestMethod.POST)
+//    @ResponseBody
+//    public Object checkout(HttpServletRequest request) throws Exception {
+//        FreeReservation reservation = getSavedReservation(request);
+//
+//        // TOOD: validate the reservation.
+//        // TODO: allow for modification of the WHOIS information
+//
+//        reservation.setPendingPolicyApproval(hasExistingReservationsForThisEmail(reservation.getEmail()));
+//        reservation.setCheckoutDate(DateTime.now());
+//
+//        freeReservationRepository.save(reservation);
+//
+//        // Nuke it so no replays.
+//        request.getSession().invalidate();
+//
+//        return null;
+//    }
 
     /**
      * Called when Operations approves a reservation.
@@ -203,15 +201,33 @@ public class RootController implements InitializingBean {
                            @RequestParam("approved") Boolean approved,
                            @RequestParam("token") String token
     ) throws Exception {
+        Preconditions.checkNotNull(approved);
+
         FreeReservation reservation = RestExceptions.checkNotFound(approvalService.getByToken(token), "Token was invalid.");
 
+        reservation
+                .markApproved(approved);
+
+        if (approved) {
+            // TODO: we need to execute the purchase and send an email with the username/password
+            executeActualPurchase(reservation);t
+        }
+
+        // this service will send both the APPROVED/REJECTED email templates correctly.
+        freeReservationWelcomeService.send(reservation);
+
         return "yes: " + reservation.getId();
+    }
+
+    protected void executeActualPurchase(FreeReservation reservation) {
+        LOGGER.error("WE PRETENDED TO EXECUTE THE PURCHASE");
+
+        reservation.markPurchased();
     }
 
     /**
      * Called when the customer wants to claim a domain name.
      *
-     * @param request
      * @param reservationToken
      * @return
      * @throws Exception
@@ -286,16 +302,15 @@ public class RootController implements InitializingBean {
      * - Send email challenge (url with confirmation/token)
      *
      * @param wrapper
-     *
      * @return
-     *
      * @throws ExecutionException
      * @throws InterruptedException
      * @throws IOException
      * @throws MessagingException
      */
-    @RequestMapping(value = "/reservations", method = RequestMethod.POST)
     @ResponseBody
+    @RequestMapping(value = "/reservations", method = RequestMethod.POST)
+    @Transactional("freeTransactionManager")
     public FreeReservationTokenWrapper submit_reservation(
             @RequestBody FreeReservationTokenWrapper wrapper
     ) throws Exception {
@@ -305,7 +320,8 @@ public class RootController implements InitializingBean {
         // This will throw a BadRequest exception if it's not fully valid.
         FreeReservation reservation = parseAndSaveReservationOrFail(wrapper);
 
-        reservation = freeReservationRepository.save(reservation);
+        // Step 2, in this new design, we auto checkout.
+        checkout(reservation);
 
         freeReservationWelcomeService.send(reservation);
 
@@ -318,6 +334,41 @@ public class RootController implements InitializingBean {
         return wrapper;
     }
     //endregion
+
+    @NotNull
+    protected FreeReservation checkout(@NotNull final FreeReservation reservation) {
+
+        //preconditions
+        {
+            reservation
+                    .shouldBeReady()
+                    .shouldNotBeCheckout()
+                    .shouldLackApprovalDecision()
+                    .shouldNotBePurchased();
+        }
+
+        // business logic
+        {
+            reservation
+                    .markCheckout();
+
+            if (reservation.isSuggested()) {
+                reservation
+                        .markApproved()
+                        .markSuggested(verificationService.generate("free.feedback", reservation.getEmail()));
+            } else {
+                boolean hasExisting = hasExistingReservationsForThisEmail(reservation.getEmail());
+
+                if (hasExisting) {
+                    reservation.markPendingApproval();
+                } else {
+                    reservation.markApproved();
+                }
+            }
+        }
+
+        return freeReservationRepository.save(reservation);
+    }
 
     //region /checkout
 
@@ -439,15 +490,6 @@ public class RootController implements InitializingBean {
     }
     //endregion
 
-    //region Emails
-//    public void sendAdminAwarenessPreorderEmail(FreeReservation reservation) throws Exception {
-//        EmailTemplate template = emailTemplateService.getTemplateByName("email.operations.confirm-identity");
-//        Parameters parameters = parameters(reservation);
-//
-//        templatedEmailService.send(internalCompanyEmail, template, parameters);
-//    }
-    //endregion
-
     @VisibleForTesting
     protected boolean hasExistingReservationsForThisEmail(@NotNull final String email) {
         RestExceptions.checkBadRequest(email, StringUtils::isNotBlank);
@@ -458,48 +500,28 @@ public class RootController implements InitializingBean {
     @NotNull
     @VisibleForTesting
     protected FreeReservation parseAndSaveReservationOrFail(@NotNull final FreeReservationTokenWrapper wrapper) {
-        final FreeReservationToken token = wrapper.getReservation();
-        final WhoisRecord record = parseWhoisRecordOrFail(token);
-
         final FreeReservation reservation = new FreeReservation();
 
         {
-            reservation.setAffiliateCode(wrapper.getReservation().getAffiliateCode());
+            final FreeReservationToken token = wrapper.getReservation();
 
             reservation.setDestinationFullDomainName(token.getDestinationFullDomainName());
+            reservation.setDestinationWhoisRecord(parseWhoisRecordOrFail(token));
+
             reservation.setSourceFullDomainName(token.getSourceFullDomainName());
+            reservation.setSourceWhoisRecord(findMostRecentWhoisRecord(reservation.getSourceFullDomainName()));
 
             reservation.setEmail(token.getEmail());
 
+            reservation.setAffiliateCode(wrapper.getReservation().getAffiliateCode());
             reservation.setRemoteHost(SecurityUtil.currentRemoteHost());
             reservation.setFingerprint(SecurityUtil.currentFingerprint());
 
-            if (token.isSuggested()) {
-                reservation.markSuggested();
-            } else {
-                reservation.setPendingPolicyApproval(hasExistingReservationsForThisEmail(reservation.getEmail()));
-            }
-
-            reservation.setDestinationWhoisRecord(record);
-
-            reservation.setPendingVerificationToken(verificationService.generate("free.feedback", token.getEmail()));
+            reservation.setPendingPolicyApproval(true);
         }
-
-        // Save the customer WHOIS.
-        whoisRecordRepository.save(reservation.getDestinationWhoisRecord());
 
         // The return value will have the ID set.
         return freeReservationRepository.save(reservation);
-    }
-
-    @VisibleForTesting
-    protected FreeReservation getSavedReservation(HttpServletRequest request) {
-        Preconditions.checkNotNull(request);
-        HttpSession session = RestExceptions.checkBadRequest(request.getSession());
-        Object data = RestExceptions.checkBadRequest(session.getAttribute("DATA"));
-        FreeReservation reservation = RestExceptions.checkBadRequest(ConversionUtils.cast(data, FreeReservation.class));
-
-        return RestExceptions.checkNotFound(contextHelper.get(RestExceptions.checkNotFound(reservation)));
     }
 
     @NotNull
@@ -687,17 +709,18 @@ public class RootController implements InitializingBean {
     }
 
     @VisibleForTesting
-    protected static WhoisRecord parseWhoisRecordOrFail(FreeReservationToken token) {
-        return new WhoisRecordBuilder()
-                .sourceStrategy("FreeReservationDestination")
-                .name(token.getName())
-                .address(token.getStreet(), token.getCity(), token.getState(), token.getPostal(), token.getCountry())
-                .email(token.getEmail())
-                .fullDomainName(token.getDestinationFullDomainName())
-                .phone(token.getPhone(), token.getPhoneExt())
-                .fax(token.getFax(), token.getFaxExt())
-                .registrar(token.getRegistrar())
-                .build();
+    protected WhoisRecord parseWhoisRecordOrFail(FreeReservationToken token) {
+        return whoisRecordRepository.save(
+                new WhoisRecordBuilder()
+                        .sourceStrategy("FreeReservationDestination")
+                        .name(token.getName())
+                        .address(token.getStreet(), token.getCity(), token.getState(), token.getPostal(), token.getCountry())
+                        .email(token.getEmail())
+                        .fullDomainName(token.getDestinationFullDomainName())
+                        .phone(token.getPhone(), token.getPhoneExt())
+                        .fax(token.getFax(), token.getFaxExt())
+                        .registrar(token.getRegistrar())
+                        .build());
     }
 
     protected static boolean isSuccess(@Nullable final WhoisRecord record) {

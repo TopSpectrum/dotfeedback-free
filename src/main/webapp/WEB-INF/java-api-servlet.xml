@@ -41,7 +41,7 @@
 
     <bean class="com.topspectrum.controllers.VersionController"/>
 
-    <bean class="feedback.register.free.web.controllers.RootController"/>
+    <bean class="feedback.register.free.web.controllers.FreeDotFeedbackRootController"/>
 
     <bean id="compositeExceptionResolver"
           class="org.springframework.web.servlet.handler.HandlerExceptionResolverComposite">

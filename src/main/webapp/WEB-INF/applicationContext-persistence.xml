@@ -49,6 +49,7 @@
                           entity-manager-factory-ref="entityManagerFactory"
                           base-package="feedback.web.data.repositories">
 
+            <repository:exclude-filter type="regex" expression=".*EmailLogRepository" />
             <repository:exclude-filter type="regex" expression=".*PendingVerificationTokenRepository" />
         </jpa:repositories>
 
@@ -56,12 +57,23 @@
                           entity-manager-factory-ref="freeEntityManagerFactory"
                           base-package="feedback.web.data.repositories">
 
+            <repository:include-filter type="regex" expression=".*EmailLogRepository" />
             <repository:include-filter type="regex" expression=".*PendingVerificationTokenRepository" />
         </jpa:repositories>
 
         <jpa:repositories transaction-manager-ref="transactionManager"
                           entity-manager-factory-ref="entityManagerFactory"
-                          base-package="com.topspectrum.data.dao"/>
+                          base-package="com.topspectrum.data.dao">
+
+            <repository:exclude-filter type="regex" expression=".*EmailLogRepository" />
+        </jpa:repositories>
+
+        <jpa:repositories transaction-manager-ref="freeTransactionManager"
+                          entity-manager-factory-ref="entityManagerFactory"
+                          base-package="com.topspectrum.data.dao">
+
+            <repository:include-filter type="regex" expression=".*EmailLogRepository" />
+        </jpa:repositories>
 
         <jpa:repositories transaction-manager-ref="transactionManager"
                           entity-manager-factory-ref="entityManagerFactory"
@@ -74,6 +86,7 @@
         <jpa:repositories transaction-manager-ref="freeTransactionManager"
                           entity-manager-factory-ref="freeEntityManagerFactory"
                           base-package="feedback.register.free.data"/>
+
         <jpa:repositories transaction-manager-ref="freeTransactionManager"
                           entity-manager-factory-ref="freeEntityManagerFactory"
                           base-package="com.topspectrum.cache"/>

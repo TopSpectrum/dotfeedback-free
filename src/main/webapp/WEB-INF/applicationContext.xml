@@ -21,7 +21,7 @@
             <property name="password" value="testpass"/>
         </bean>
 
-        <bean class="feedback.register.free.services.SlackApprovalService">
+        <bean class="feedback.register.free.services.DefaultApprovalService">
 
         </bean>
 
@@ -30,7 +30,11 @@
             <constructor-arg index="1" type="boolean" value="false"/>
         </bean>
 
-        <bean id="auditedEmailService" class="com.topspectrum.mail.DefaultAuditedEmailService">
+        <bean id="fullDomainNameProvider" class="com.topspectrum.util.StaticFullDomainNameProvider">
+            <property name="fullDomainNameWithSlug" value="free.feedback"/>
+        </bean>
+
+        <bean id="auditedEmailService" class="com.topspectrum.mail.DefaultEmailAuditService">
             <property name="productName" value="free.feedback"/>
         </bean>
 
@@ -69,7 +73,7 @@
             <property name="templatedEmailService" ref="templatedEmailService"/>
         </bean>
 
-        <bean id="verificationService" class="feedback.services.DefaultVerificationService"/>
+        <bean id="verificationService" class="feedback.services.DefaultVerificationService" />
 
         <bean id="currentIPServletFilter" class="feedback.peoplestats.CurrentIPServletFilter"/>
 

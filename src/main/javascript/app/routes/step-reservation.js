@@ -29,10 +29,8 @@ export default WizardStepRoute.extend({
     },
 
     actions: {
-
+        
         next() {
-            debugger;
-
             this.transitionTo('step-registrar');
         },
 

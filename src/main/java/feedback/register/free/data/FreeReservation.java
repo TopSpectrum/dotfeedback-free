@@ -3,6 +3,8 @@ package feedback.register.free.data;
 import com.google.common.base.Preconditions;
 import com.topspectrum.data.dto.AbstractDto;
 import com.topspectrum.registry.WhoisIdentity;
+import com.topspectrum.util.DomainNameUtils;
+import com.topspectrum.util.StringUtils;
 import com.topspectrum.whois.WhoisRecord;
 import com.topspectrum.whois.WhoisRecordAccessor;
 import com.topspectrum.whois.WhoisRecordBuilder;
@@ -63,6 +65,10 @@ public class FreeReservation extends AbstractDto {
     @Column
     String affiliateCode;
 
+    /**
+     * Used in the process of suggestion (the customer sees this 'code').
+     * It is NOT used for "pending approval via ops".
+     */
     @ManyToOne
     @JoinColumn(name = "pending_verification_token_id")
     PendingVerificationToken pendingVerificationToken;
@@ -98,23 +104,19 @@ public class FreeReservation extends AbstractDto {
     DateTime purchaseDate;
 
     @Column
-    private boolean pendingPolicyApproval;
+    private boolean pendingPolicyApproval = false;
 
     @Column
-    private boolean deleted;
+    private boolean deleted = false;
 
     @Column
-    private boolean suggested;
+    private boolean suggested = false;
 
     @Column
     @Nullable
-    private Boolean approved;
+    private Boolean approved = null;
 
     //region getter/setter
-    public boolean isApproved() {
-        return BooleanUtils.isTrue(approved);
-    }
-
     @Nullable
     public Boolean getApproved() {
         return approved;
@@ -274,15 +276,11 @@ public class FreeReservation extends AbstractDto {
     //endregion
 
     @NotNull
-    public FreeReservation shouldBe() {
-
-
-        return this;
-    }
-
-    @NotNull
     public FreeReservation shouldBePurchased() {
+        shouldBeCheckout();
         shouldBeApproved();
+
+        Preconditions.checkState(isPurchased(), "Should be purchased");
 
         return this;
     }
@@ -294,7 +292,7 @@ public class FreeReservation extends AbstractDto {
      */
     @NotNull
     public FreeReservation shouldBeCheckout() {
-        shouldNotBeNew();
+        shouldBeReady();
 
         Preconditions.checkState(null != getCheckoutDate(), "Must be checked out before calling this.");
 
@@ -322,20 +320,43 @@ public class FreeReservation extends AbstractDto {
         return this;
     }
 
+    public boolean isApproved() {
+        return BooleanUtils.isTrue(approved);
+    }
+
+    public boolean isPurchased() {
+        return null != purchaseDate;
+    }
+
     public boolean isCheckedOut() {
         return null != checkoutDate;
     }
 
     @NotNull
+    public FreeReservation markApproved() {
+        return markApproved(true);
+    }
+
+    @NotNull
     public FreeReservation markApproved(boolean approved) {
+        shouldBeCheckout();
+        shouldBePendingApproval();
         shouldLackApprovalDecision();
+        shouldLackPendingVerificationToken();
 
-        if (!isCheckedOut()) {
-            markCheckout();
-        }
-
+        setPendingPolicyApproval(false);
         setApproved(approved);
         setApprovalDate(DateTime.now());
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation shouldBePendingApproval() {
+        shouldBeCheckout();
+        shouldLackApprovalDecision();
+
+        Preconditions.checkState(isPendingPolicyApproval(), "Should be pending approval");
 
         return this;
     }
@@ -376,10 +397,11 @@ public class FreeReservation extends AbstractDto {
     }
 
     @NotNull
-    public FreeReservation markSuggested() {
+    public FreeReservation markSuggested(@NotNull final PendingVerificationToken token) {
         shouldNotBePurchased();
 
-        markApproved(true);
+        markApproved();
+        setPendingVerificationToken(token);
         setSuggested(true);
 
         return this;
@@ -398,6 +420,60 @@ public class FreeReservation extends AbstractDto {
     @NotNull
     public FreeReservation shouldBeSuggested() {
         Preconditions.checkState(isSuggested(), "Should be suggested, was not.");
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation shouldNotBeSuggested() {
+        Preconditions.checkState(!isSuggested(), "Should not be suggested, was not.");
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation markPendingApproval() {
+        shouldBeCheckout();
+        shouldLackApprovalDecision();
+        shouldLackPendingVerificationToken();
+
+        this.setPendingPolicyApproval(true);
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation shouldLackPendingVerificationToken() {
+        Preconditions.checkState(null == pendingVerificationToken, "Should not have a verification token, but does.");
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation markPurchased() {
+        shouldBeApproved();
+
+        this.purchaseDate = DateTime.now();
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation shouldBeReady() {
+        shouldNotBeNew();
+        shouldNotBeDeleted();
+
+        Preconditions.checkNotNull(getDestinationWhoisRecord());
+        Preconditions.checkState(DomainNameUtils.isOurTopLevelDomainName(getDestinationWhoisRecord().getFullDomainName()), "The fullDomainName must be ours: " + getDestinationWhoisRecord().getFullDomainName());
+        Preconditions.checkState(DomainNameUtils.isOurTopLevelDomainName(getDestinationFullDomainName()));
+        Preconditions.checkState(StringUtils.equals(getDestinationWhoisRecord().getFullDomainName(), getDestinationFullDomainName()));
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation shouldNotBeDeleted() {
+        Preconditions.checkState(!isDeleted(), "Should not be deleted");
 
         return this;
     }

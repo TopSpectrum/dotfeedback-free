@@ -1,14 +1,18 @@
 "use strict";
 
 import Ember from "ember";
+import DS from "ember-data";
 
-var ObjectPromiseProxy = Ember.ObjectProxy.extend(Ember.PromiseProxyMixin);
-
+/**
+ * @class ContextModel
+ * @extends Ember.Object
+ */
 let ContextModel = window.ContextModel = Ember.Object.extend({
 
     suggestedReservationMode: Ember.computed('affiliateCode', function () {
         return -1 != (this.get('affiliateCode') || '').indexOf(':');
     })
+
 });
 
 export default Ember.Service.extend({
@@ -21,30 +25,25 @@ export default Ember.Service.extend({
     init() {
         this._super(...arguments);
 
-        this.reset();
-
-        var scope = this;
-
-        Ember.RSVP.Promise
-            .resolve(Ember.$.ajax({
+        this.set('intro', DS.PromiseObject.create({
+            promise: Ember.RSVP.Promise.resolve(Ember.$.ajax({
                 url: '/api/v1/intro'
             }))
-            .then(function (text) {
-                scope.set('introMessage', text);
-            });
+        }));
 
-        this.set('termsAndConditions', ObjectPromiseProxy
-            .create({
-                promise: Ember.$
-                    .ajax({
-                        url: '/api/v1/terms'
-                    })
-                    .then((string) => {
-                        return {
-                            value: string
-                        }
-                    })
-            }));
+        this.set('termsAndConditions', DS.PromiseObject.create({
+            promise: Ember.RSVP.Promise.resolve(Ember.$.ajax({
+                url: '/api/v1/terms'
+            }))
+                .then((string) => {
+                    return {
+                        value: string
+                    }
+                })
+        }));
+
+        this.reset();
+
         this.set('termsAndConditionsUrl', '/api/v1/terms');
     },
 
@@ -102,18 +101,18 @@ export default Ember.Service.extend({
         });
 
         return promise.catch(function (err) {
-                //if (console) {
-                //  console.log(err);
-                //}
-                debugger;
-                // alert('There was an unknown server error. Please try again.');
-                Ember.Logger.error(err);
-                console.error(err);
+            //if (console) {
+            //  console.log(err);
+            //}
+            debugger;
+            // alert('There was an unknown server error. Please try again.');
+            Ember.Logger.error(err);
+            console.error(err);
 
-                Ember.set(model, 'sourceFullDomainNameRecord', new Ember.Object());
-                Ember.set(model, 'sourceFullDomainNameRecord.failedToResolve', true);
-                Ember.set(model, 'fetchingSourceFullDomainNameRecord', false);
-            });
+            Ember.set(model, 'sourceFullDomainNameRecord', new Ember.Object());
+            Ember.set(model, 'sourceFullDomainNameRecord.failedToResolve', true);
+            Ember.set(model, 'fetchingSourceFullDomainNameRecord', false);
+        });
     },
 
     /**
@@ -166,15 +165,11 @@ export default Ember.Service.extend({
 
     }).readOnly(),
 
-    introMessageDidChange: Ember.observer('introMessage', function () {
-        this.set('model.intro', this.get('introMessage'));
-    }),
-
 
     reset() {
         this.set('model', new ContextModel());
 
-        this.set('model.intro');
+        this.set('model.intro', this.get('intro'));
         this.set('model.skipReferralCode', true);
         this.set('model.allowAnyReferralCode', true);
         this.set('model.referralCodeState', this._fetchReferralCodeState());

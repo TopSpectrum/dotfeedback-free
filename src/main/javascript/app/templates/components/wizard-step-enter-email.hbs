@@ -1,7 +1,14 @@
 <div class="steps col-xs-12 col-sm-8 col-sm-offset-2 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3">
-    <div class="alert alert-info">
-        {{ model.intro }}
-    </div>
+
+    {{#unless model.intro.isRejected}}
+        <div class="alert alert-info">
+            {{#if model.intro.isPending}}
+                Loading...
+            {{else}}
+                {{ model.intro.content }}
+            {{/if}}
+        </div>
+    {{/unless}}
 
     <div class="step active row">
         <h1 class="label-free-domain-name">

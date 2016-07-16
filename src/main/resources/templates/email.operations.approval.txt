@@ -1,0 +1,7 @@
+$identity.name$ ($reservation.email$) needs approval to register $reservation.destinationFullDomainName$
+
+This email has $numberOfPendingReservations$ pending reservations and $numberOfActiveReservations$ approved reservations
+
+Approve: $approveUrl$
+
+Deny: $denyUrl$

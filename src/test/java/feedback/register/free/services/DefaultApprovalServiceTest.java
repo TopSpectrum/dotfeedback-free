@@ -22,10 +22,10 @@ import static org.junit.Assert.assertNotNull;
  * @since 7/12/16
  */
 @Component
-public class SlackApprovalServiceTest extends ApplicationContextAwareTestBase {
+public class DefaultApprovalServiceTest extends ApplicationContextAwareTestBase {
 
     @Autowired
-    SlackApprovalService slackApprovalService;
+    DefaultApprovalService defaultApprovalService;
 
     @Autowired
     FreeReservationRepository freeReservationRepository;
@@ -39,7 +39,7 @@ public class SlackApprovalServiceTest extends ApplicationContextAwareTestBase {
 
     @Before
     public void setUp() throws Exception {
-        assertNotNull(slackApprovalService);
+        assertNotNull(defaultApprovalService);
 
         record1 = new WhoisRecordBuilder()
                 .fullDomainName(TestUtil.randomFullDomainName())
@@ -83,12 +83,12 @@ public class SlackApprovalServiceTest extends ApplicationContextAwareTestBase {
             freeReservationRepository.save(reservation2);
         }
 
-        FutureUtils.getUnchecked(slackApprovalService.requestApproval(reservation1));
+//        defaultApprovalService.requestApproval(reservation1);
 
-        String token = slackApprovalService.generateToken(reservation1);
+        String token = defaultApprovalService.generateToken(reservation1);
 
         assertNotNull(token);
-        assertNotNull(slackApprovalService.getByToken(token));
-        assertEquals(reservation1, slackApprovalService.getByToken(token));
+        assertNotNull(defaultApprovalService.getByToken(token));
+        assertEquals(reservation1, defaultApprovalService.getByToken(token));
     }
 }

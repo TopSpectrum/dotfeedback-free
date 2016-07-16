@@ -14,7 +14,7 @@ Can you confirm that I have the right registration for you?
   - Country: $identity.country$
   - Phone: $identity.phone$
 
-Click here to claim moderator status: $claimUrl$
+Click here to review and claim moderator status: $claimUrl$
 
 (To be appointed the moderator and registrant, please confirm that your contact information is accurate for ICANN)
 

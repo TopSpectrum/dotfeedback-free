@@ -9,16 +9,16 @@ import com.topspectrum.test.TestUtil;
 import com.topspectrum.util.ConversionUtils;
 import com.topspectrum.util.FutureUtils;
 import com.topspectrum.util.StringUtils;
-import com.zipwhip.concurrent.ObservableFuture;
-import feedback.register.free.data.*;
+import feedback.register.free.data.FreeReservation;
+import feedback.register.free.data.FreeReservationAccount;
+import feedback.register.free.data.FreeReservationAccountRepository;
+import feedback.register.free.data.FreeReservationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nonnull;
 import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 
@@ -60,9 +60,10 @@ public class DefaultDomainRegistrationService implements DomainRegistrationServi
         String lastName = StringUtils.defaultString(named.getFirstName());
         String username = DefaultInternetBSClient.getUsernameFromEmail(email);
 
-        ApiResult result = FutureUtils.getUnchecked(
-                client.createAccount(username, email, password, firstName, lastName, "US")
-                , 30, TimeUnit.SECONDS);
+        ApiResult result = Preconditions.checkNotNull(
+                FutureUtils.getUnchecked(
+                        client.createAccount(username, email, password, firstName, lastName, "US")
+                        , 30, TimeUnit.SECONDS));
 
         @Nonnull
         String transactionId = ConversionUtils.defaultString(ConversionUtils.toString(result.getTransactionId()));
@@ -83,7 +84,7 @@ public class DefaultDomainRegistrationService implements DomainRegistrationServi
         return account;
     }
 
-    protected void notifyCustomer(FreeReservationAccount account, List<ReservationDomain> domains ) {
+    protected void notifyCustomer(FreeReservationAccount account, List<ReservationDomain> domains) {
 
     }
 

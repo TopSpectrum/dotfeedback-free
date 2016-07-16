@@ -1,1 +1,1 @@
-Suggested $reservation.destinationFullDomainName$ to $reservation.destinationWhoisRecord.adminName$ ($reservation.email$)
+[free.feedback] Suggested $reservation.destinationFullDomainName$ to $reservation.email$

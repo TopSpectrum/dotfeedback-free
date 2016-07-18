@@ -44,7 +44,11 @@ export default {
             let suffix = string.substring(index);
             let parsedObject = domainParser(suffix);
 
-            return parsedObject.fullDomainName;
+            if (!parsedObject) {
+                return null;
+            } else {
+                return parsedObject.fullDomainName;
+            }
         }
 
         if (~string.indexOf('//')) {

@@ -14,6 +14,7 @@ import com.topspectrum.template.EmailTemplateService;
 import com.topspectrum.util.ConversionUtils;
 import com.topspectrum.util.DomainNameUtils;
 import com.topspectrum.util.StringUtils;
+import com.topspectrum.web.util.ExceptionUtils;
 import com.topspectrum.whois.WhoisConnection;
 import com.topspectrum.whois.WhoisRecord;
 import com.topspectrum.whois.WhoisRecordBuilder;
@@ -200,23 +201,27 @@ public class FreeDotFeedbackRootController implements InitializingBean {
     public Object approval(HttpServletRequest request,
                            @RequestParam("approved") Boolean approved,
                            @RequestParam("token") String token
-    ) throws Exception {
-        Preconditions.checkNotNull(approved);
+    ) {
+        try {
+            Preconditions.checkNotNull(approved);
 
-        FreeReservation reservation = RestExceptions.checkNotFound(approvalService.getByToken(token), "Token was invalid.");
+            FreeReservation reservation = RestExceptions.checkNotFound(approvalService.getByToken(token), "Token was invalid.");
 
-        reservation
-                .markApproved(approved);
+            reservation
+                    .markApproved(approved);
 
-        if (approved) {
-            // TODO: we need to execute the purchase and send an email with the username/password
-            executeActualPurchase(reservation);t
+            if (approved) {
+                // TODO: we need to execute the purchase and send an email with the username/password
+                executeActualPurchase(reservation);
+
+                // this service will send both the APPROVED/REJECTED email templates correctly.
+                freeReservationWelcomeService.send(reservation);
+            }
+
+            return "yes: " + reservation.getId();
+        } catch (Throwable e) {
+            return "no:<pre>" + ExceptionUtils.getStackTrace(e) + "</pre>";
         }
-
-        // this service will send both the APPROVED/REJECTED email templates correctly.
-        freeReservationWelcomeService.send(reservation);
-
-        return "yes: " + reservation.getId();
     }
 
     protected void executeActualPurchase(FreeReservation reservation) {
@@ -354,8 +359,7 @@ public class FreeDotFeedbackRootController implements InitializingBean {
 
             if (reservation.isSuggested()) {
                 reservation
-                        .markApproved()
-                        .markSuggested(verificationService.generate("free.feedback", reservation.getEmail()));
+                        .markSuggested(verificationService.generate("free.feedback/suggestion", reservation.getEmail()));
             } else {
                 boolean hasExisting = hasExistingReservationsForThisEmail(reservation.getEmail());
 
@@ -369,6 +373,46 @@ public class FreeDotFeedbackRootController implements InitializingBean {
 
         return freeReservationRepository.save(reservation);
     }
+
+    //region /protected-registrations
+
+    /**
+     * This is accessed via the browser when they click the link.
+     *
+     * @param website
+     * @param protectedFor
+     * @param approvedBy
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "/protected-registrations", method = RequestMethod.GET)
+    @ResponseBody
+    public Object find_protected_registration(
+            @RequestParam(value = "website") String website,
+            @RequestParam(value = "protectedFor") String protectedFor,
+            @RequestParam(value = "approvedBy") String approvedBy
+    ) throws Exception {
+        final String code = RestExceptions.badRequestIfBlank(approvedBy.replace("lauren", ""));
+        final String email = RestExceptions.checkBadRequest(StringUtils.ifValidEmail(protectedFor));
+        final PendingVerificationToken pendingVerificationToken = RestExceptions.checkNotFound(verificationService.getByCode("free.feedback/suggestion", email, code));
+        final FreeReservation reservation = RestExceptions.checkNotFound(freeReservationRepository.findByPendingVerificationToken(pendingVerificationToken));
+
+        reservation.shouldBeSuggested();
+
+        return new FreeReservationToken(reservation);
+    }
+
+    @RequestMapping(value = "/reservations/{id}", method=RequestMethod.PUT)
+    @ResponseBody
+    public Object finish_protected_registration(@RequestBody FreeReservationTokenWrapper wrapper) {
+        // Step 1, gather the info.
+        // This will throw a BadRequest exception if it's not fully valid.
+        FreeReservation reservation = parseAndSaveReservationOrFail(wrapper);
+
+
+    }
+
+    //endregion
 
     //region /checkout
 
@@ -517,11 +561,16 @@ public class FreeDotFeedbackRootController implements InitializingBean {
             reservation.setRemoteHost(SecurityUtil.currentRemoteHost());
             reservation.setFingerprint(SecurityUtil.currentFingerprint());
 
-            reservation.setPendingPolicyApproval(true);
+            reservation.setSuggested(wrapper.getReservation().isSuggested());
         }
 
         // The return value will have the ID set.
         return freeReservationRepository.save(reservation);
+    }
+
+    @NotNull
+    protected FreeReservation reinforce(@NotNull final FreeReservation reservation, @NotNull final FreeReservationTokenWrapper wrapper) {
+
     }
 
     @NotNull
@@ -542,15 +591,13 @@ public class FreeDotFeedbackRootController implements InitializingBean {
                     .filter((reservation1) -> {
                         if (null == reservation1) {
                             return false;
-                        } else if (reservation1.isSuggested()) {
-                            return true;
-                        } else if (reservation1.isPendingPolicyApproval()) {
-                            return false;
                         } else if (reservation1.isDeleted()) {
+                            return false;
+                        } else if (reservation1.isPendingPolicyApproval()) {
                             return false;
                         }
 
-                        return true;
+                        return reservation1.isPurchased();
                     })
                     .findFirst()
                     .orElse(null);

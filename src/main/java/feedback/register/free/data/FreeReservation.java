@@ -400,6 +400,7 @@ public class FreeReservation extends AbstractDto {
     public FreeReservation markSuggested(@NotNull final PendingVerificationToken token) {
         shouldNotBePurchased();
 
+        markPendingApproval();
         markApproved();
         setPendingVerificationToken(token);
         setSuggested(true);

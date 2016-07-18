@@ -1,0 +1,58 @@
+<div class="steps col-xs-12 col-sm-8 col-sm-offset-2 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3">
+    <div class="step active">
+        <div>
+            <h1>Review Free Registration</h1>
+
+            <p>
+                You have been granted permission to reserve <code>{{model.reservation.destinationFullDomainName}}</code> for free by <code>Lauren</code>. Your domain name will be registered with <code>Internet.BS</code> and you will
+                receive your generated account information at {{#if validatedEmail}}<code>{{validatedEmail}}</code>{{else}}your email{{/if}}.
+            </p>
+
+            <div class="ui horizontal divider">WHOIS information for {{model.destinationFullDomainName}}</div>
+
+            {{whois-table model=model.reservation email=model.email errors=errors muteInitialErrors=muteInitialWhoisErrors muteErrors=muteWhoisErrors disabled=preventEdits}}
+
+            <div class="ui horizontal divider">Terms of Service</div>
+
+            <textarea class="form-control mt normal textarea-terms-and-conditions" style="overflow-y: scroll; width: 100%;">{{#if contextService.termsAndConditions.isPending}}Loading...{{/if}}{{#if contextService.termsAndConditions.isRejected}}Failed to load!{{/if}}{{#if contextService.termsAndConditions.isFulfilled}}{{contextService.termsAndConditions.value}}{{/if}}</textarea>
+
+            <a style="margin-left: 15px;" target="_blank" href="{{contextService.termsAndConditionsUrl}}">Expand Terms and Conditions</a>
+
+            <div class="mt">
+                {{input type='checkbox' name='acceptedTerms' class='labelauty' id='acceptedTerms' checked=acceptedTerms disabled=spinning }}
+                <label for="acceptedTerms">
+                    <span class="labelauty-image labelauty-checked-image"></span>
+                    <span class="labelauty-image labelauty-unchecked-image"></span>
+                    <span class="labelauty-label">I agree to the terms of service for <b>Internet.BS</b></span>
+                </label>
+            </div>
+
+            <div class="ui horizontal divider mt">&nbsp;</div>
+
+            <div>
+                <div class="alert alert-default">The domain will be registered with <code>Internet.BS</code>, and your temporary account information will be mailed to {{#if validatedEmail}}<code>{{validatedEmail}}</code>{{else}}your email{{/if}}.</div>
+
+                {{#if error}}
+                    <div class="alert alert-danger">
+                        <h3>Oops, the request failed. Please try again or contact support.</h3>
+
+                        <div>
+                            <h4>Message</h4>
+
+                            <p><code>{{error}}</code>.</p>
+                        </div>
+                    </div>
+                {{/if}}
+
+
+                {{#if contextService.termsAndConditions.isPending}}Please wait while the TOS downloads...{{/if}}
+                {{#if contextService.termsAndConditions.isRejected}}The TOS failed to download. Please refresh the page.{{/if}}
+                {{#if contextService.termsAndConditions.isFulfilled}}
+                    {{#ladda-button class='btn btn-primary' action='attemptNext' spinning=spinning disabled=disabled}}
+                        Finish
+                    {{/ladda-button}}
+                {{/if}}
+            </div>
+        </div>
+    </div>
+</div>

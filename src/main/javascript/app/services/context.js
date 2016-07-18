@@ -129,7 +129,7 @@ export default Ember.Service.extend({
             debugger;
             throw new Error('The recordId must be defined');
         }
-
+        
         return Ember.RSVP.Promise
             .resolve(store.peekRecord(recordType, recordId))
             .then(function (record) {

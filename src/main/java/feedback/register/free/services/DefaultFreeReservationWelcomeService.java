@@ -126,7 +126,6 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
             }
 
 
-
         } else if (reservation.isPendingPolicyApproval()) {
             // We need to send out a pending email
             try {
@@ -146,7 +145,6 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
             } catch (Exception e) {
                 LOGGER.error("Failed to send", e);
             }
-
 
 
         } else if (reservation.isPurchased()) {
@@ -257,7 +255,6 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
 
         {
             withReservation(params, reservation);
-            withApproval(params, reservation);
             withClaim(params, reservation);
         }
 
@@ -288,7 +285,7 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
         {
             withReservation(params, reservation);
             withApproval(params, reservation);
-            withClaim(params, reservation);
+//            withClaim(params, reservation);
         }
 
         auditedSendEmail(customerEmail, template, params);
@@ -298,8 +295,26 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
     public void sendOperationsApprovalEmail(@NotNull final FreeReservation reservation) throws Exception {
         final EmailTemplate template = emailTemplateService.getTemplateByName("email.operations.approval");
         final String email = getOperationsEmail(reservation);
+        final Parameters params = parameters(reservation);
 
-        auditedSendEmail(email, template, withApproval(parameters(reservation), reservation));
+        {
+            final UriComponentsBuilder actionUrl = getUrlForApproval(reservation);
+
+            withApproval(params, reservation)
+                    .put("numberOfPendingReservations", numberOfPendingReservations(reservation))
+                    .put("numberOfActiveReservations", numberOfActiveReservations(reservation))
+                    .put("customerName", reservation.getDestinationWhoisRecord().getRegistrantName())
+                    .put("fullDomainName", reservation.getDestinationFullDomainName())
+                    .put("approveUrl", actionUrl
+                            .buildAndExpand(Parameters.single("approved", true))
+                            .toUriString())
+                    .put("denyUrl", actionUrl
+                            .buildAndExpand(Parameters.single("approved", false))
+                            .toUriString());
+        }
+
+
+        auditedSendEmail(email, template, params);
 
 //        return new FakeObservableFuture<>(this, null);
     }
@@ -330,14 +345,13 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
                                                 .buildAndExpand(Parameters.single("approved", true))
                                                 .toUriString())
                                         .put("denyUrl", actionUrl
-                                                .buildAndExpand(Parameters.single("approved", true))
+                                                .buildAndExpand(Parameters.single("approved", false))
                                                 .toUriString())
                         ))
                 .execute();
 
 //        return FutureUtils.wrapFailureObserver(future, LOGGER);
     }
-
     //endregion
 
     @NotNull
@@ -347,17 +361,28 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
 
     @NotNull
     protected String getUrlForSuggestion(@NotNull FreeReservation reservation) {
-        String email = reservation.getEmail();
-        PendingVerificationToken token = verificationService.generate("free.feedback/suggestion", email);
-
-        reservation.setPendingVerificationToken(token);
+        PendingVerificationToken token = getValidTokenOrFail(reservation);
 
         freeReservationRepository.save(reservation);
 
         return urlFactory.toBuilder("/protected-registrations/review")
                 .queryParam("website", reservation.getDestinationFullDomainName())
+                .queryParam("protectedFor", reservation.getEmail())
                 .queryParam("approvedBy", "lauren" + token.getCode())
                 .toUriString();
+    }
+
+    @NotNull
+    protected PendingVerificationToken getValidTokenOrFail(@NotNull final FreeReservation reservation) {
+        PendingVerificationToken token = reservation.getPendingVerificationToken();
+
+        if (null != token) {
+            if (token.isValid()) {
+                return token;
+            }
+        }
+
+        throw new IllegalStateException("Unable to continue: Does not have a valid pendingVerificationToken. Has: " + token);
     }
 
     @NotNull
@@ -378,6 +403,8 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
 
     @NotNull
     protected Parameters withReservation(Parameters params, FreeReservation reservation) {
+        reservation.shouldBeCheckout();
+
         params.put("reservation", reservation);
         params.put("identity", reservation.toWhoisIdentity());
 
@@ -386,6 +413,8 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
 
     @NotNull
     protected Parameters withApproval(@NotNull final Parameters params, @NotNull FreeReservation reservation) throws Exception {
+        reservation.shouldBePendingApproval();
+
         final UriComponentsBuilder actionUrl = getUrlForApproval(reservation);
 
         params.put("approveUrl", actionUrl.buildAndExpand(true));
@@ -396,6 +425,7 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
 
     @NotNull
     protected Parameters withClaim(@NotNull final Parameters params, @NotNull FreeReservation reservation) {
+        reservation.shouldBeSuggested();
 
         params.put("claimUrl", getUrlForSuggestion(reservation));
 

@@ -339,10 +339,7 @@ public class FreeReservation extends AbstractDto {
 
     @NotNull
     public FreeReservation markApproved(boolean approved) {
-        shouldBeCheckout();
         shouldBePendingApproval();
-        shouldLackApprovalDecision();
-        shouldLackPendingVerificationToken();
 
         setPendingPolicyApproval(false);
         setApproved(approved);
@@ -398,12 +395,11 @@ public class FreeReservation extends AbstractDto {
 
     @NotNull
     public FreeReservation markSuggested(@NotNull final PendingVerificationToken token) {
-        shouldNotBePurchased();
-
         markPendingApproval();
         markApproved();
-        setPendingVerificationToken(token);
+
         setSuggested(true);
+        setPendingVerificationToken(token);
 
         return this;
     }
@@ -436,7 +432,6 @@ public class FreeReservation extends AbstractDto {
     public FreeReservation markPendingApproval() {
         shouldBeCheckout();
         shouldLackApprovalDecision();
-        shouldLackPendingVerificationToken();
 
         this.setPendingPolicyApproval(true);
 
@@ -446,6 +441,13 @@ public class FreeReservation extends AbstractDto {
     @NotNull
     public FreeReservation shouldLackPendingVerificationToken() {
         Preconditions.checkState(null == pendingVerificationToken, "Should not have a verification token, but does.");
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation shouldHavePendingVerificationToken() {
+        Preconditions.checkState(null != pendingVerificationToken, "Should have a verification token, but does not.");
 
         return this;
     }

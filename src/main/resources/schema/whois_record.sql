@@ -20,7 +20,7 @@ CREATE TABLE whois_record (
   sponsoring_registrar          VARCHAR(50),
   sponsoring_iana               INT,
   domain_status                 VARCHAR(30),
-  mocked                        BOOLEAN,
+  record_type                   VARCHAR(20),
 
   billing_state                 VARCHAR(20),
   billing_id                    VARCHAR(20),

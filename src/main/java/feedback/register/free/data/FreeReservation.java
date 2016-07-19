@@ -455,6 +455,7 @@ public class FreeReservation extends AbstractDto {
     @NotNull
     public FreeReservation markPurchased() {
         shouldBeApproved();
+        shouldNotBePurchased();
 
         this.purchaseDate = DateTime.now();
 

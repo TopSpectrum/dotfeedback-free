@@ -7,6 +7,7 @@ import com.topspectrum.mail.EmailAuditService;
 import com.topspectrum.mail.EmailReceipt;
 import com.topspectrum.mail.EmailTemplate;
 import com.topspectrum.mail.TemplatedEmailService;
+import com.topspectrum.registry.ParsedDomainParts;
 import com.topspectrum.slack.SlackNotificationBuilder;
 import com.topspectrum.slack.SlackService;
 import com.topspectrum.template.EmailTemplateService;
@@ -15,6 +16,7 @@ import com.topspectrum.template.Parameters;
 import com.topspectrum.template.TemplateUtil;
 import com.topspectrum.util.MorePreconditions;
 import com.topspectrum.util.StringUtils;
+import com.topspectrum.web.util.DefaultUrlFactory;
 import com.topspectrum.web.util.UrlFactory;
 import com.topspectrum.whois.WhoisRecordRepository;
 import com.zipwhip.concurrent.ObservableFuture;
@@ -106,7 +108,21 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
     public void send(@NotNull final FreeReservation reservation) throws Exception {
         shouldBeReadyForTheBasics(reservation);
 
-        if (reservation.isSuggested()) {
+        if (reservation.isPurchased()) {
+            try {
+                sendCustomerConfirmationEmail(reservation);
+            } catch (Exception e) {
+                LOGGER.error("Failed to send", e);
+            }
+
+            try {
+                sendOperationsConfirmationEmail(reservation);
+            } catch (Exception e) {
+                LOGGER.error("Failed to send", e);
+            }
+
+
+        } else if (reservation.isSuggested()) {
             try {
                 sendCustomerSuggestionEmail(reservation);
             } catch (Exception e) {
@@ -147,18 +163,6 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
             }
 
 
-        } else if (reservation.isPurchased()) {
-            try {
-                sendCustomerConfirmationEmail(reservation);
-            } catch (Exception e) {
-                LOGGER.error("Failed to send", e);
-            }
-
-            try {
-                sendOperationsConfirmationEmail(reservation);
-            } catch (Exception e) {
-                LOGGER.error("Failed to send", e);
-            }
         } else {
             throw new IllegalArgumentException("Not sure what to do with: " + reservation);
         }
@@ -198,7 +202,7 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
 
         final String customerEmail = getCustomerEmail(reservation);
         final EmailTemplate template = emailTemplateService.getTemplateByName("email.customer.confirmation");
-        final String url = getUrlForSuggestion(reservation);
+        final String url = new DefaultUrlFactory(ParsedDomainParts.fromFullDomainNameWithSlug(reservation.getDestinationFullDomainName()), false).absoluteInsecure().toUriString();
         final Parameters params = parameters(reservation);
 
         {
@@ -206,7 +210,6 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
             params.put("reservation", reservation);
             params.put("url", url);
         }
-
 
         auditedSendEmail(customerEmail, template, params);
     }
@@ -217,7 +220,7 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
 
         final String email = getOperationsEmail(reservation);
         final EmailTemplate template = emailTemplateService.getTemplateByName("email.operations.confirmation");
-        final String url = getUrlForSuggestion(reservation);
+        final String url = new DefaultUrlFactory(ParsedDomainParts.fromFullDomainNameWithSlug(reservation.getDestinationFullDomainName()), false).absoluteInsecure().toUriString();
         final Parameters params = parameters(reservation);
 
         {

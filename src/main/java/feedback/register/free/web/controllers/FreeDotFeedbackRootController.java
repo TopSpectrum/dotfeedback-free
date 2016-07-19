@@ -35,7 +35,6 @@ import feedback.web.data.PendingVerificationToken;
 import feedback.web.data.Site;
 import feedback.web.data.services.SiteService;
 import feedback.web.security.SecurityUtil;
-import org.apache.commons.lang3.BooleanUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +42,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.env.Environment;
-import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,7 +59,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -346,7 +343,7 @@ public class FreeDotFeedbackRootController implements InitializingBean {
 
     @NotNull
     protected FreeReservation checkout(@NotNull final FreeReservation reservation) throws Exception {
-        Preconditions.checkState(isAvailable(reservation.getDestinationFullDomainName()));
+        RestExceptions.checkBadRequest(isAvailable(reservation.getDestinationFullDomainName()));
 
         //preconditions
         {
@@ -410,19 +407,25 @@ public class FreeDotFeedbackRootController implements InitializingBean {
         return new FreeReservationToken(reservation);
     }
 
-    @RequestMapping(value = "/reservations/{id}", method = RequestMethod.PUT)
     @ResponseBody
-    public Object finish_protected_registration(@RequestBody FreeReservationTokenWrapper wrapper) throws Exception {
+    @RequestMapping(value = "/reservations/{id}", method = RequestMethod.PUT)
+    @Transactional("freeTransactionManager")
+    public Object finish_protected_registration(
+            @NotNull @PathVariable("id") Long id,
+            @RequestBody FreeReservationTokenWrapper wrapper
+    ) throws Exception {
         // Step 1, gather the info.
         // This will throw a BadRequest exception if it's not fully valid.
+        RestExceptions.checkNotFound(id);
+
         @Nonnull
-        FreeReservation reservation = update(RestExceptions.checkNotFound(freeReservationRepository.findOne(wrapper.getReservation().getId())), wrapper);
+        FreeReservation reservation = update(RestExceptions.checkNotFound(freeReservationRepository.findOne(id)), wrapper);
 
-        reservation
-                .shouldBeSuggested()
-                .markPurchased();
-
-        freeReservationRepository.save(reservation);
+//        reservation
+//                .shouldBeSuggested()
+//                .markPurchased();
+//
+//        freeReservationRepository.save(reservation);
         freeReservationWelcomeService.send(reservation);
 
         return new FreeReservationTokenWrapper(new FreeReservationToken(reservation));
@@ -554,7 +557,7 @@ public class FreeDotFeedbackRootController implements InitializingBean {
     protected boolean hasExistingReservationsForThisEmail(@NotNull final String email) {
         RestExceptions.checkBadRequest(email, StringUtils::isNotBlank);
 
-        return PageUtils.isNotEmpty(freeReservationRepository.findByEmailAndCheckoutDateIsNullAndDeletedIsFalse(email, PageUtils.singleResult()));
+        return PageUtils.isNotEmpty(freeReservationRepository.findByEmailAndPurchaseDateIsNotNullAndDeletedIsFalse(email, PageUtils.singleResult()));
     }
 
     @NotNull
@@ -612,6 +615,12 @@ public class FreeDotFeedbackRootController implements InitializingBean {
     @VisibleForTesting
     protected String availability(@NotNull final String dotfeedbackFullDomainName) throws Exception {
         RestExceptions.checkBadRequest(dotfeedbackFullDomainName, DomainNameUtils::isValidDotFeedbackFullDomainName);
+
+        if (DomainNameUtils.isValidDotFeedbackFullDomainName(dotfeedbackFullDomainName)) {
+            if (!PageUtils.isEmpty(freeReservationRepository.findByDestinationFullDomainNameAndPurchaseDateIsNotNull(dotfeedbackFullDomainName, PageUtils.newest()))) {
+                return "registered";
+            }
+        }
 
         WhoisRecord record = findAndSaveMostRecentWhoisRecord(dotfeedbackFullDomainName);
 
@@ -747,21 +756,7 @@ public class FreeDotFeedbackRootController implements InitializingBean {
     public WhoisRecord findMostRecentWhoisRecord(@NotNull final String fullDomainName) {
         DateTime createdDate = DateTime.now().minusDays(30);
 
-        Page<WhoisRecord> list = whoisRecordRepository.findByFullDomainNameAndCreatedDateAfter(fullDomainName, createdDate, PageUtils.sortedNewestFirst(500));
-
-        return ConversionUtils.toStream(list)
-                .filter(new Predicate<WhoisRecord>() {
-                    @Override
-                    public boolean test(WhoisRecord record) {
-                        if ("FreeReservationDestination".equalsIgnoreCase(record.getSourceStrategy())) {
-                            return false;
-                        }
-
-                        return true;
-                    }
-                })
-                .findFirst()
-                .orElse(null);
+        return PageUtils.first(whoisRecordRepository.findWhoisRecord(fullDomainName, createdDate, "whois", "FreeReservationDestination", PageUtils.newest()));
     }
 
 //    @VisibleForTesting

@@ -18,6 +18,8 @@ import java.util.List;
  */
 public interface FreeReservationRepository extends JpaRepository<FreeReservation, Long> {
 
+    Page<FreeReservation> findByDestinationFullDomainNameAndPurchaseDateIsNotNull(String fullDomainName, @NotNull Pageable pageable);
+
     FreeReservation findByPendingVerificationToken(PendingVerificationToken pendingVerificationToken);
 
     Page<FreeReservation> findByEmailAndCheckoutDateIsNullAndDeletedIsFalse(String email, Pageable pageable);
@@ -54,4 +56,6 @@ public interface FreeReservationRepository extends JpaRepository<FreeReservation
      */
     @Override
     void delete(Iterable<? extends FreeReservation> entities);
+
+
 }

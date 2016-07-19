@@ -35,6 +35,7 @@ import feedback.web.data.PendingVerificationToken;
 import feedback.web.data.Site;
 import feedback.web.data.services.SiteService;
 import feedback.web.security.SecurityUtil;
+import org.apache.commons.lang3.BooleanUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,12 +43,14 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.env.Environment;
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
@@ -58,6 +61,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -224,10 +228,10 @@ public class FreeDotFeedbackRootController implements InitializingBean {
         }
     }
 
-    protected void executeActualPurchase(FreeReservation reservation) {
+    protected FreeReservation executeActualPurchase(FreeReservation reservation) {
         LOGGER.error("WE PRETENDED TO EXECUTE THE PURCHASE");
 
-        reservation.markPurchased();
+        return reservation.markPurchased();
     }
 
     /**
@@ -341,7 +345,8 @@ public class FreeDotFeedbackRootController implements InitializingBean {
     //endregion
 
     @NotNull
-    protected FreeReservation checkout(@NotNull final FreeReservation reservation) {
+    protected FreeReservation checkout(@NotNull final FreeReservation reservation) throws Exception {
+        Preconditions.checkState(isAvailable(reservation.getDestinationFullDomainName()));
 
         //preconditions
         {
@@ -366,7 +371,10 @@ public class FreeDotFeedbackRootController implements InitializingBean {
                 if (hasExisting) {
                     reservation.markPendingApproval();
                 } else {
+                    reservation.markPendingApproval();
                     reservation.markApproved();
+
+                    executeActualPurchase(reservation);
                 }
             }
         }
@@ -402,14 +410,22 @@ public class FreeDotFeedbackRootController implements InitializingBean {
         return new FreeReservationToken(reservation);
     }
 
-    @RequestMapping(value = "/reservations/{id}", method=RequestMethod.PUT)
+    @RequestMapping(value = "/reservations/{id}", method = RequestMethod.PUT)
     @ResponseBody
-    public Object finish_protected_registration(@RequestBody FreeReservationTokenWrapper wrapper) {
+    public Object finish_protected_registration(@RequestBody FreeReservationTokenWrapper wrapper) throws Exception {
         // Step 1, gather the info.
         // This will throw a BadRequest exception if it's not fully valid.
-        FreeReservation reservation = parseAndSaveReservationOrFail(wrapper);
+        @Nonnull
+        FreeReservation reservation = update(RestExceptions.checkNotFound(freeReservationRepository.findOne(wrapper.getReservation().getId())), wrapper);
 
+        reservation
+                .shouldBeSuggested()
+                .markPurchased();
 
+        freeReservationRepository.save(reservation);
+        freeReservationWelcomeService.send(reservation);
+
+        return new FreeReservationTokenWrapper(new FreeReservationToken(reservation));
     }
 
     //endregion
@@ -568,9 +584,28 @@ public class FreeDotFeedbackRootController implements InitializingBean {
         return freeReservationRepository.save(reservation);
     }
 
+    /**
+     * Called during finalization of the 'suggested mode' flow
+     *
+     * @param reservation
+     * @param wrapper
+     * @return
+     */
     @NotNull
-    protected FreeReservation reinforce(@NotNull final FreeReservation reservation, @NotNull final FreeReservationTokenWrapper wrapper) {
+    protected FreeReservation update(@NotNull final FreeReservation reservation, @NotNull final FreeReservationTokenWrapper wrapper) {
+        WhoisRecord record = parseWhoisRecordOrFail(wrapper.getReservation(), Preconditions.checkNotNull(reservation.getDestinationWhoisRecord()));
 
+        whoisRecordRepository.save(reservation.getDestinationWhoisRecord());
+
+        reservation.setEmail(record.getRegistrantEmail());
+
+        return reservation;
+    }
+
+    protected boolean isAvailable(@NotNull final String dotfeedbackFullDomainName) throws Exception {
+        String availability = availability(dotfeedbackFullDomainName);
+
+        return "available".equalsIgnoreCase(availability);
     }
 
     @NotNull
@@ -587,7 +622,9 @@ public class FreeDotFeedbackRootController implements InitializingBean {
         } else if (record.isReserved()) {
             return "reserved";
         } else if ("FreeReservationDestination".equalsIgnoreCase(record.getSourceStrategy())) {
-            FreeReservation reservation = ConversionUtils.toStream(freeReservationRepository.findByDestinationWhoisRecord(record))
+            List<FreeReservation> records = freeReservationRepository.findByDestinationWhoisRecord(record);
+
+            FreeReservation reservation = ConversionUtils.toStream(records)
                     .filter((reservation1) -> {
                         if (null == reservation1) {
                             return false;
@@ -710,13 +747,27 @@ public class FreeDotFeedbackRootController implements InitializingBean {
     public WhoisRecord findMostRecentWhoisRecord(@NotNull final String fullDomainName) {
         DateTime createdDate = DateTime.now().minusDays(30);
 
-        return PageUtils.first(whoisRecordRepository.findByFullDomainNameAndCreatedDateAfter(fullDomainName, createdDate, PageUtils.newest()));
+        Page<WhoisRecord> list = whoisRecordRepository.findByFullDomainNameAndCreatedDateAfter(fullDomainName, createdDate, PageUtils.sortedNewestFirst(500));
+
+        return ConversionUtils.toStream(list)
+                .filter(new Predicate<WhoisRecord>() {
+                    @Override
+                    public boolean test(WhoisRecord record) {
+                        if ("FreeReservationDestination".equalsIgnoreCase(record.getSourceStrategy())) {
+                            return false;
+                        }
+
+                        return true;
+                    }
+                })
+                .findFirst()
+                .orElse(null);
     }
 
-    @VisibleForTesting
-    public static boolean isMocked(@NotNull final WhoisRecord record) {
-        return (record.isMocked() || "FreeReservationDestination".equalsIgnoreCase(record.getSourceStrategy()));
-    }
+//    @VisibleForTesting
+//    public static boolean isMocked(@NotNull final WhoisRecord record) {
+//        return (record.isMocked() || "FreeReservationDestination".equalsIgnoreCase(record.getSourceStrategy()));
+//    }
 
     @VisibleForTesting
     protected static boolean isHealthy(WhoisRecord record) {
@@ -755,19 +806,27 @@ public class FreeDotFeedbackRootController implements InitializingBean {
         return count;
     }
 
+    @NotNull
     @VisibleForTesting
-    protected WhoisRecord parseWhoisRecordOrFail(FreeReservationToken token) {
+    protected WhoisRecord parseWhoisRecordOrFail(@NotNull final FreeReservationToken token) {
         return whoisRecordRepository.save(
-                new WhoisRecordBuilder()
-                        .sourceStrategy("FreeReservationDestination")
-                        .name(token.getName())
-                        .address(token.getStreet(), token.getCity(), token.getState(), token.getPostal(), token.getCountry())
-                        .email(token.getEmail())
-                        .fullDomainName(token.getDestinationFullDomainName())
-                        .phone(token.getPhone(), token.getPhoneExt())
-                        .fax(token.getFax(), token.getFaxExt())
-                        .registrar(token.getRegistrar())
-                        .build());
+                parseWhoisRecordOrFail(token, new WhoisRecord())
+        );
+    }
+
+    @VisibleForTesting
+    protected WhoisRecord parseWhoisRecordOrFail(@NotNull final FreeReservationToken token, @Nullable final WhoisRecord record) {
+        return new WhoisRecordBuilder(record)
+                .sourceStrategy("FreeReservationDestination")
+                .name(token.getName())
+                .address(token.getStreet(), token.getCity(), token.getState(), token.getPostal(), token.getCountry())
+                .email(token.getEmail())
+                .fullDomainName(token.getDestinationFullDomainName())
+                .phone(token.getPhone(), token.getPhoneExt())
+                .fax(token.getFax(), token.getFaxExt())
+                .registrar(token.getRegistrar())
+                .type("reservation")
+                .build();
     }
 
     protected static boolean isSuccess(@Nullable final WhoisRecord record) {

@@ -39,6 +39,12 @@ export default Ember.Route.extend({
                 model.set('email', record.get('email'));
                 model.set('reservation', record);
 
+                if (record.get('purchaseDate')) {
+                    // already purchased!
+                    self.transitionTo('protected-registrations.finished');
+                    return;
+                }
+
                 return model;
             });
     }

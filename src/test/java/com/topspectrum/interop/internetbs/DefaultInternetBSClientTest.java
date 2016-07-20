@@ -5,11 +5,11 @@ import com.topspectrum.registry.WhoisIdentity;
 import com.zipwhip.concurrent.ObservableFuture;
 import feedback.register.free.interop.internetbs.*;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
  * @author msmyers
  * @since 6/20/16
  */
+@Ignore
 public class DefaultInternetBSClientTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultInternetBSClientTest.class);

@@ -22,8 +22,14 @@ export default DS.Model.extend({
     'registrar': DS.attr('string'),
     'affiliateCode': DS.attr('string'),
     'checkoutDate': DS.attr('date'),
+    'approvalDate': DS.attr('date'),
+    'purchaseDate': DS.attr('date'),
     'suggested': DS.attr(),
     'pendingPolicyApproval': DS.attr('boolean'),
+
+    'externalAccountVendor': DS.attr('string'),
+    'externalAccountVendorUsername': DS.attr('string'),
+    'externalAccountVendorPassword': DS.attr('string'),
 
     //region Protected Registration Mode
     // this is used to verify that the caller has authority to execute the request.

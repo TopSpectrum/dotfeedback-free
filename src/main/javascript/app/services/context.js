@@ -129,7 +129,7 @@ export default Ember.Service.extend({
             debugger;
             throw new Error('The recordId must be defined');
         }
-        
+
         return Ember.RSVP.Promise
             .resolve(store.peekRecord(recordType, recordId))
             .then(function (record) {
@@ -142,7 +142,7 @@ export default Ember.Service.extend({
     },
 
     hasActiveOrder: Ember.computed('model.emailOrDomainNameOrUrl', function () {
-        return !Ember.isBlank(this.get('model.emailOrDomainNameOrUrl'));
+        return !Ember.isBlank(this.get('model.emailOrDomainNameOrUrl')) || this.get('model.reservation');
     }).readOnly(),
 
     hasValidReferralCode: Ember.computed('model.referralCodeState.accepted', function () {

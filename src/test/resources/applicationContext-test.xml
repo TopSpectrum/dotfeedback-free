@@ -16,9 +16,6 @@ This file contains overrides that are used for unit tests.
     <import resource="common-mail.xml"/>
 
     <beans profile="test">
-
-        <context:annotation-config/>
-
         <bean id="slackServiceExecutor"
               class="com.topspectrum.executors.ExecutorUtils" factory-method="newScheduledExecutorService"/>
 
@@ -46,7 +43,6 @@ This file contains overrides that are used for unit tests.
             <jdbc:script location="classpath:schema/reservation.schema"/>
             <jdbc:script location="classpath:schema/site.schema"/>
             <jdbc:script location="classpath:schema/reservation_customer.schema"/>
-            <jdbc:script location="classpath:schema/email_log.sql"/>
         </jdbc:embedded-database>
 
         <bean id="jpaAdapter" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">

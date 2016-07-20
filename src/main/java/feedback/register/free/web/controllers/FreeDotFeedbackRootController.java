@@ -44,6 +44,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -225,11 +226,19 @@ public class FreeDotFeedbackRootController implements InitializingBean {
         }
     }
 
-    protected FreeReservation executeActualPurchase(FreeReservation reservation) {
+    @NotNull
+    protected FreeReservation executeActualPurchase(FreeReservation reservation) throws Exception {
         LOGGER.error("WE PRETENDED TO EXECUTE THE PURCHASE");
 
+        @Nonnull
+        WhoisIdentity whoisIdentity = Preconditions.checkNotNull(reservation.toWhoisIdentity());
 
-        return reservation.markPurchased();
+        @Nonnull
+        FreeReservationAccount account = domainRegistrationService.getOrCreateAccount(whoisIdentity);
+
+        return freeReservationRepository.save(
+                reservation
+                        .markPurchased(account));
     }
 
     /**
@@ -410,7 +419,7 @@ public class FreeDotFeedbackRootController implements InitializingBean {
 
     @ResponseBody
     @RequestMapping(value = "/reservations/{id}", method = RequestMethod.PUT)
-    @Transactional("freeTransactionManager")
+    @Transactional(value = "freeTransactionManager", propagation = Propagation.REQUIRES_NEW)
     public Object finish_protected_registration(
             @NotNull @PathVariable("id") Long id,
             @RequestBody FreeReservationTokenWrapper wrapper

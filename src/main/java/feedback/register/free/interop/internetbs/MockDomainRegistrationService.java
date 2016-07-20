@@ -29,11 +29,13 @@ public class MockDomainRegistrationService implements DomainRegistrationService 
             account = new FreeReservationAccount();
 
             account.setDisplayName(identity.getName());
-            account.setUsername(DefaultInternetBSClient.getUsernameFromEmail(identity.getEmail()));
             account.setEmail(identity.getEmail());
+
+            account.setUsername(DefaultInternetBSClient.getUsernameFromEmail(identity.getEmail()));
+            account.setPassword(DefaultInternetBSClient.getTemporaryPassword());
+
             account.setExternalAccountId(UUID.randomUUID().toString());
             account.setExternalAccountVendor("Mock");
-            account.setPassword(DefaultInternetBSClient.getTemporaryPassword());
 
             freeReservationAccountRepository.save(account);
         }

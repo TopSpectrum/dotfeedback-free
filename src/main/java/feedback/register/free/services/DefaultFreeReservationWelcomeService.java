@@ -91,6 +91,12 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
     @Value("${feedback.free.internalCompanyEmail}")
     String internalCompanyEmail;
 
+    @Value("${feedback.free.externalSuggestionEmail}")
+    String externalSuggestionEmail;
+
+    @Value("${feedback.free.externalCompanyEmail}")
+    String externalCompanyEmail;
+
     @Value("${feedback.free.url}")
     String baseUrl;
     //endregion
@@ -229,7 +235,7 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
             params.put("url", url);
         }
 
-        auditedSendEmail(customerEmail, template, params);
+        auditedSendEmail(customerEmail, externalCompanyEmail, template, params);
     }
 
     @Override
@@ -247,7 +253,7 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
             params.put("url", url);
         }
 
-        auditedSendEmail(email, template, params);
+        auditedSendEmail(email, externalCompanyEmail, template, params);
     }
     //endregion
 
@@ -263,7 +269,7 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
             withClaim(params, reservation);
         }
 
-        auditedSendEmail(internalCompanyEmail, template, params);
+        auditedSendEmail(internalCompanyEmail, externalSuggestionEmail, template, params);
     }
 
     @Override
@@ -279,7 +285,7 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
             withClaim(params, reservation);
         }
 
-        auditedSendEmail(customerEmail, template, params);
+        auditedSendEmail(customerEmail, externalSuggestionEmail, template, params);
     }
 
     @Override
@@ -309,7 +315,7 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
 //            withClaim(params, reservation);
         }
 
-        auditedSendEmail(customerEmail, template, params);
+        auditedSendEmail(customerEmail, externalCompanyEmail, template, params);
     }
 
     @Override
@@ -335,7 +341,7 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
         }
 
 
-        auditedSendEmail(email, template, params);
+        auditedSendEmail(email, externalCompanyEmail, template, params);
 
 //        return new FakeObservableFuture<>(this, null);
     }
@@ -491,8 +497,10 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
         return internalCompanyEmail;
     }
 
-    protected void auditedSendEmail(@NotNull final String customerEmail, @NotNull final EmailTemplate template, @NotNull final Parameters params) throws Exception {
-        EmailReceipt receipt = templatedEmailService.send(customerEmail, template, params);
+    protected void auditedSendEmail(@NotNull final String customerEmail, @NotNull final String from, @NotNull final EmailTemplate template, @NotNull final Parameters params) throws Exception {
+        EmailReceipt receipt = templatedEmailService.send(customerEmail, from, template, params);
+
+        LOGGER.debug("Recorded email: {}", receipt);
 
         emailAuditService.record(receipt, "");
     }

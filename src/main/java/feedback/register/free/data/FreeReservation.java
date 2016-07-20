@@ -395,8 +395,17 @@ public class FreeReservation extends AbstractDto {
 
     @NotNull
     public FreeReservation markSuggested(@NotNull final PendingVerificationToken token) {
-        markPendingApproval();
-        markApproved();
+        if (!isCheckedOut()) {
+            markCheckout();
+        }
+
+        if (!isApproved()) {
+            if (!isPendingPolicyApproval()) {
+                markPendingApproval();
+            }
+
+            markApproved();
+        }
 
         setSuggested(true);
         setPendingVerificationToken(token);
@@ -453,11 +462,20 @@ public class FreeReservation extends AbstractDto {
     }
 
     @NotNull
-    public FreeReservation markPurchased() {
+    public FreeReservation markPurchased(@NotNull final FreeReservationAccount account) {
         shouldBeApproved();
         shouldNotBePurchased();
+        shouldLackAccount();
 
+        this.freeReservationAccount = Preconditions.checkNotNull(account, "FreeReservationAccount");
         this.purchaseDate = DateTime.now();
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation shouldLackAccount() {
+        Preconditions.checkState(null == freeReservationAccount, "Should not have an account. Has: " + freeReservationAccount);
 
         return this;
     }

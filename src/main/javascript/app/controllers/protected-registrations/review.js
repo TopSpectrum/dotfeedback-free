@@ -81,24 +81,26 @@ export default Ember.Controller.extend(EmberValidations, {
     actions: {
         attemptNext() {
             let self = this;
+            
+            this.transitionToRoute('protected-registrations.finished');
 
-            self.set('spinning', true);
-
-            Ember.RSVP.Promise.resolve()
-                .then(() => {
-                    let record = self.get('model.reservation');
-
-                    return record.save();
-                })
-                .then(() => {
-                    self.transitionToRoute('protected-registrations.finished');
-                })
-                .catch((err) => {
-                    self.set('error', err);
-                })
-                .finally(() => {
-                    self.set('spinning', false);
-                });
+            // self.set('spinning', true);
+            //
+            // Ember.RSVP.Promise.resolve()
+            //     .then(() => {
+            //         let record = self.get('model.reservation');
+            //
+            //         return record.save();
+            //     })
+            //     .then(() => {
+            //         self.transitionToRoute('protected-registrations.finished');
+            //     })
+            //     .catch((err) => {
+            //         self.set('error', err);
+            //     })
+            //     .finally(() => {
+            //         self.set('spinning', false);
+            //     });
 
 
 

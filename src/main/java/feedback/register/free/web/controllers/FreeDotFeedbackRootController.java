@@ -228,6 +228,7 @@ public class FreeDotFeedbackRootController implements InitializingBean {
     protected FreeReservation executeActualPurchase(FreeReservation reservation) {
         LOGGER.error("WE PRETENDED TO EXECUTE THE PURCHASE");
 
+
         return reservation.markPurchased();
     }
 
@@ -421,11 +422,11 @@ public class FreeDotFeedbackRootController implements InitializingBean {
         @Nonnull
         FreeReservation reservation = update(RestExceptions.checkNotFound(freeReservationRepository.findOne(id)), wrapper);
 
-//        reservation
-//                .shouldBeSuggested()
-//                .markPurchased();
-//
-//        freeReservationRepository.save(reservation);
+        reservation
+                .shouldBeSuggested();
+
+        executeActualPurchase(reservation);
+
         freeReservationWelcomeService.send(reservation);
 
         return new FreeReservationTokenWrapper(new FreeReservationToken(reservation));

@@ -121,6 +121,12 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
                 LOGGER.error("Failed to send", e);
             }
 
+            try {
+                sendOperationsConfirmationSlackEvent(reservation);
+            } catch (Exception e) {
+                LOGGER.error("Failed to send", e);
+            }
+
 
         } else if (reservation.isSuggested()) {
             try {
@@ -168,6 +174,17 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
         }
     }
 
+    private void sendOperationsConfirmationSlackEvent(FreeReservation reservation) throws Exception {
+        reservation.shouldBePurchased();
+
+        slackService.builder()
+                .username("free.feedback")
+                .text(TemplateUtil.inlineStringTemplate("$reservation.destinationWhoisRecord.registrantName$ ($reservation.email$) just finalized the purchase of $reservation.destinationWhoisRecord.fullDomainName$!", new Parameters()
+                        .put("reservation", reservation)))
+                .execute()
+                .addObserver((o, future) -> LOGGER.error("Conclusion: " + future.toString()));
+    }
+
 //    public void sendCompanyConfirmationEmail(@NotNull final FreeReservation reservation) throws Exception {
 //        EmailTemplate template = emailTemplateService.getTemplateByName("email.operations.confirmation");
 //
@@ -190,6 +207,7 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
 //    }
 
     //region confirmation
+
     /**
      * Should be called when "Agree To Terms" is submitted.
      *
@@ -452,8 +470,8 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
     @NotNull
     protected FreeReservation shouldBeReadyForSuggestion(@NotNull final FreeReservation reservation) {
         return shouldBeReadyForTheBasics(reservation)
-            .shouldBeApproved()
-            .shouldNotBePurchased();
+                .shouldBeApproved()
+                .shouldNotBePurchased();
     }
 
     @NotNull

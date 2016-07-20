@@ -88,7 +88,10 @@ export default Ember.Controller.extend(EmberValidations, {
                 .then(() => {
                     let record = self.get('model.reservation');
 
-                    return record.save()
+                    return record.save();
+                })
+                .then(() => {
+                    self.transitionToRoute('protected-registrations.finished');
                 })
                 .catch((err) => {
                     self.set('error', err);

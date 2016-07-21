@@ -21,6 +21,8 @@ import org.springframework.http.HttpStatus;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import java.util.Map;
+import java.util.regex.MatchResult;
+import java.util.regex.Pattern;
 
 /**
  * @author msmyers
@@ -52,6 +54,7 @@ public class DefaultInternetBSClient implements InternetBSClient {
         AsyncHttpClient.BoundRequestBuilder builder = prepareGet("/Domain/Create");
 
         builder.addQueryParam("domain", fullDomainName);
+
         AsyncHttpClientUtil.addQueryParam(builder, request);
 
         return execute(builder, CreateDomainResult.class);
@@ -157,6 +160,17 @@ public class DefaultInternetBSClient implements InternetBSClient {
         if (StringUtils.containsIgnoreCase(bodyAsString, "\"status\":\"FAILURE\"") && StringUtils.containsIgnoreCase(bodyAsString, "\"code\":")) {
             // It's an error
             ErrorResult result = Preconditions.checkNotNull(JsonUtils.fromJson(bodyAsString, ErrorResult.class));
+
+            if (Integer.valueOf(100002).equals(result.getCode())) {
+                MatchResult m = StringUtils.toMatchResult(Pattern.compile("^(?:.*?)\"(.*?)\"(?:.*?)\"(.*?)\"(?:.*?)?"), result.getMessage());
+
+                if (null != m) {
+                    String parameterValue = m.group(1);
+                    String parameterName = m.group(2);
+
+                    throw new InvalidParamterRequestFailedException(result, parameterName, parameterValue);
+                }
+            }
 
             throw new RequestFailedException(result);
         }
@@ -276,7 +290,7 @@ public class DefaultInternetBSClient implements InternetBSClient {
     public static String getUsernameFromEmail(@NotNull final String email) {
         MorePreconditions.checkNotBlank(email);
 
-        return org.apache.commons.lang3.StringUtils.replaceEach(email, new String[]{"@", "."}, new String[]{"", ""});
+        return org.apache.commons.lang3.StringUtils.replaceEach(email, new String[]{"@", ".", "-", "+"}, new String[]{"", "", "", ""});
     }
 
     @Nullable

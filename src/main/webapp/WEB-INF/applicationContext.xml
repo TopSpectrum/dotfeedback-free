@@ -13,14 +13,16 @@
 
         <import resource="applicationContext-persistence.xml"/>
 
-        <bean class="feedback.register.free.interop.internetbs.MockDomainRegistrationService"/>
+        <!--<bean class="feedback.register.free.services.MockDomainRegistrationService"/>-->
 
-        <!--<bean class="feedback.register.free.interop.internetbs.DefaultInternetBSClient">-->
-            <!--<property name="client" ref="client"/>-->
-            <!--<property name="apiKey" value="testapi"/>-->
-            <!--<property name="baseUrl" value="https://testapi.internet.bs"/>-->
-            <!--<property name="password" value="testpass"/>-->
-        <!--</bean>-->
+        <bean id="domainRegistrationService" class="feedback.register.free.services.DefaultDomainRegistrationService"/>
+
+        <bean id="internetBSClient" class="feedback.register.free.interop.internetbs.DefaultInternetBSClient">
+            <property name="client" ref="client"/>
+            <property name="apiKey" value="testapi"/>
+            <property name="baseUrl" value="https://testapi.internet.bs"/>
+            <property name="password" value="testpass"/>
+        </bean>
 
         <bean class="feedback.register.free.services.DefaultApprovalService">
 

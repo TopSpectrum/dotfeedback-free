@@ -7,7 +7,6 @@ import com.topspectrum.data.PageUtils;
 import com.topspectrum.mail.EmailAuditService;
 import com.topspectrum.mail.TemplatedEmailService;
 import com.topspectrum.registry.ParsedDomainParts;
-import com.topspectrum.registry.WhoisIdentity;
 import com.topspectrum.services.GoogleDocService;
 import com.topspectrum.slack.SlackService;
 import com.topspectrum.template.EmailTemplateService;
@@ -20,11 +19,10 @@ import com.topspectrum.whois.WhoisRecord;
 import com.topspectrum.whois.WhoisRecordBuilder;
 import com.topspectrum.whois.WhoisRecordRepository;
 import feedback.register.free.data.FreeReservation;
-import feedback.register.free.data.FreeReservationAccount;
 import feedback.register.free.data.FreeReservationRepository;
 import feedback.register.free.data.ReferralCodeRepository;
-import feedback.register.free.interop.internetbs.DomainRegistrationService;
 import feedback.register.free.services.ApprovalService;
+import feedback.register.free.services.DomainRegistrationService;
 import feedback.register.free.services.FreeReservationWelcomeService;
 import feedback.register.free.web.model.FreeReservationToken;
 import feedback.register.free.web.model.FreeReservationTokenWrapper;
@@ -228,57 +226,46 @@ public class FreeDotFeedbackRootController implements InitializingBean {
 
     @NotNull
     protected FreeReservation executeActualPurchase(FreeReservation reservation) throws Exception {
-        LOGGER.error("WE PRETENDED TO EXECUTE THE PURCHASE");
+        LOGGER.error("WE EXECUTED THE PURCHASE");
 
-        @Nonnull
-        WhoisIdentity whoisIdentity = Preconditions.checkNotNull(reservation.toWhoisIdentity());
+        domainRegistrationService.getOrCreateAccount(reservation);
 
-        @Nonnull
-        FreeReservationAccount account = domainRegistrationService.getOrCreateAccount(whoisIdentity);
+        domainRegistrationService.register(reservation);
 
-        return freeReservationRepository.save(
-                reservation
-                        .markPurchased(account));
+        return reservation;
     }
 
-    /**
-     * Called when the customer wants to claim a domain name.
-     *
-     * @param reservationToken
-     * @return
-     * @throws Exception
-     */
-    @Transactional("freeTransactionManager")
-    @RequestMapping(value = "/claim", method = RequestMethod.GET)
-    @ResponseBody
-    public Object claim(
-            @RequestParam("reservation") String reservationToken
-    ) throws Exception {
-        @Nullable
-        final PendingVerificationToken pendingVerificationToken = verificationService.getByToken("free.feedback/suggestion", reservationToken);
-
-        if (null == pendingVerificationToken) {
-            return "redirect:/claim/error";
-        }
-
-        @Nullable
-        final FreeReservation reservation = freeReservationRepository.findByPendingVerificationToken(pendingVerificationToken);
-
-        if (null == reservation) {
-            return "redirect:/claim/error";
-        }
-
-        @Nullable
-        WhoisIdentity identity = reservation.toWhoisIdentity();
-
-        if (null == identity) {
-            return "redirect:/claim/error";
-        }
-
-        FreeReservationAccount account = domainRegistrationService.getOrCreateAccount(identity);
-
-        return "redirect:/claim";
-    }
+//    /**
+//     * Called when the customer wants to claim a domain name.
+//     *
+//     * @param reservationToken
+//     * @return
+//     * @throws Exception
+//     */
+//    @Transactional("freeTransactionManager")
+//    @RequestMapping(value = "/claim", method = RequestMethod.GET)
+//    @ResponseBody
+//    public Object claim(
+//            @RequestParam("reservation") String reservationToken
+//    ) throws Exception {
+//        @Nullable
+//        final PendingVerificationToken pendingVerificationToken = verificationService.getByToken("free.feedback/suggestion", reservationToken);
+//
+//        if (null == pendingVerificationToken) {
+//            return "redirect:/claim/error";
+//        }
+//
+//        @Nullable
+//        final FreeReservation reservation = freeReservationRepository.findByPendingVerificationToken(pendingVerificationToken);
+//
+//        if (null == reservation) {
+//            return "redirect:/claim/error";
+//        }
+//
+//        FreeReservationAccount account = domainRegistrationService.getOrCreateAccount(reservation);
+//
+//        return "redirect:/claim";
+//    }
 
     //region /referralCodes
     @RequestMapping("/referralCodes")

@@ -116,7 +116,18 @@ public class FreeReservation extends AbstractDto {
     @Nullable
     private Boolean approved = null;
 
+    @Column
+    private String externalAccountVendorTransactionId;
+
     //region getter/setter
+    public String getExternalAccountVendorTransactionId() {
+        return externalAccountVendorTransactionId;
+    }
+
+    public void setExternalAccountVendorTransactionId(String externalAccountVendorTransactionId) {
+        this.externalAccountVendorTransactionId = externalAccountVendorTransactionId;
+    }
+
     @Nullable
     public Boolean getApproved() {
         return approved;
@@ -275,6 +286,7 @@ public class FreeReservation extends AbstractDto {
     }
     //endregion
 
+    // checks
     @NotNull
     public FreeReservation shouldBePurchased() {
         shouldBeCheckout();
@@ -462,13 +474,29 @@ public class FreeReservation extends AbstractDto {
     }
 
     @NotNull
-    public FreeReservation markPurchased(@NotNull final FreeReservationAccount account) {
+    public FreeReservation markPurchased(@NotNull final String externalAccountVendorTransactionId) {
         shouldBeApproved();
         shouldNotBePurchased();
-        shouldLackAccount();
+        shouldHaveAccount();
+        shouldLackTransactionId();
 
-        this.freeReservationAccount = Preconditions.checkNotNull(account, "FreeReservationAccount");
-        this.purchaseDate = DateTime.now();
+        Preconditions.checkState(StringUtils.isNotBlank(externalAccountVendorTransactionId), "The transactionId is null");
+
+        this.externalAccountVendorTransactionId = externalAccountVendorTransactionId;
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation shouldLackTransactionId() {
+        Preconditions.checkState(StringUtils.isBlank(externalAccountVendorTransactionId), "TransactionId should not exist. Was: " + externalAccountVendorTransactionId);
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation shouldHaveAccount() {
+        Preconditions.checkState(null != freeReservationAccount, "Account must exist. Was null.");
 
         return this;
     }
@@ -499,4 +527,5 @@ public class FreeReservation extends AbstractDto {
 
         return this;
     }
+    //endregion
 }

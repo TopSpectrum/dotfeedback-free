@@ -1,6 +1,5 @@
 package feedback.register.free.web.controllers;
 
-import com.google.common.base.Preconditions;
 import com.topspectrum.data.dao.ApplicationContextAwareTestBase;
 import com.topspectrum.data.dao.EmailLogRepository;
 import com.topspectrum.mail.EmailAuditService;
@@ -10,8 +9,8 @@ import com.topspectrum.whois.WhoisRecordBuilder;
 import com.topspectrum.whois.WhoisRecordRepository;
 import feedback.register.free.data.FreeReservation;
 import feedback.register.free.data.FreeReservationRepository;
-import feedback.register.free.interop.internetbs.DomainRegistrationService;
 import feedback.register.free.services.ApprovalService;
+import feedback.register.free.services.DomainRegistrationService;
 import feedback.register.free.services.FreeReservationWelcomeService;
 import feedback.services.VerificationService;
 import org.joda.time.DateTime;
@@ -198,8 +197,7 @@ public class FreeDotFeedbackRootControllerTest extends ApplicationContextAwareTe
                 .markPendingApproval()
                 .markApproved(true);
 
-        reservation
-                .markPurchased(domainRegistrationService.getOrCreateAccount(Preconditions.checkNotNull(reservation.toWhoisIdentity())));
+        reservation = domainRegistrationService.getOrCreateAccount(reservation);
 
         service.sendCustomerConfirmationEmail(reservation);
 
@@ -216,9 +214,12 @@ public class FreeDotFeedbackRootControllerTest extends ApplicationContextAwareTe
                 .markPendingApproval()
                 .markApproved(true);
 
-        reservation
-                .markPurchased(
-                        domainRegistrationService.getOrCreateAccount(Preconditions.checkNotNull(reservation.toWhoisIdentity())));
+        reservation = domainRegistrationService.getOrCreateAccount(reservation);
+
+//        domainRegistrationService.
+
+//        reservation
+//                .markPurchased();
 
         service.sendOperationsConfirmationEmail(reservation);
 

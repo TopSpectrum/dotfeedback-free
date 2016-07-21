@@ -32,7 +32,6 @@ export default Ember.Route.extend({
                 let hasActiveOrder = self.get('contextService.hasActiveOrder');
 
                 if (!hasActiveOrder) {
-                    debugger;
                     self.transitionTo('step-welcome');
                 }
             });

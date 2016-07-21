@@ -10,7 +10,9 @@
 
             <div class="ui horizontal divider">WHOIS information for {{model.destinationFullDomainName}}</div>
 
-            {{whois-table model=model.reservation email=model.email errors=errors muteInitialErrors=muteInitialWhoisErrors muteErrors=muteWhoisErrors disabled=preventEdits}}
+            {{whois-table model=model.reservation email=model.email errors=errors muteInitialErrors=muteInitialWhoisErrors muteErrors=muteWhoisErrors disabled=preventEdits isValidNumber=isValidNumber}}
+
+            v:{{isValidNumber}}
 
             <div class="ui horizontal divider">Terms of Service</div>
 

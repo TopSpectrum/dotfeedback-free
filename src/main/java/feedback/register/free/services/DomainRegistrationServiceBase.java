@@ -8,6 +8,7 @@ import feedback.register.free.data.FreeReservationAccount;
 import feedback.register.free.data.FreeReservationAccountRepository;
 import feedback.register.free.data.FreeReservationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ import javax.validation.constraints.NotNull;
  * @version 1.0.0
  * @since 7/21/16
  */
+@Component
 public abstract class DomainRegistrationServiceBase implements DomainRegistrationService {
 
     @Autowired
@@ -31,26 +33,19 @@ public abstract class DomainRegistrationServiceBase implements DomainRegistratio
     FreeReservationRepository freeReservationRepository;
 
     @Override
-    public boolean isAvailable(@NotNull String fullDomainName) {
-        return false;
-    }
+    @Transactional(propagation = Propagation.MANDATORY, transactionManager = "freeTransactionManager")
+    public void getOrCreateAccount(@NotNull Long reservationId) throws Exception {
+        FreeReservation reservation = Preconditions.checkNotNull(freeReservationRepository.findOne(reservationId), "Must exist: " + reservationId);
 
-    @NotNull
-    @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public FreeReservation getOrCreateAccount(@NotNull FreeReservation reservation) throws Exception {
         reservation = checkExistingAccount(reservation);
 
         if (null != reservation.getFreeReservationAccount()) {
             // Already has an account.
-            return reservation;
+            return;
         }
 
-        return createAccount(reservation);
+        executeCreateAccount(reservation);
     }
-
-    @NotNull
-    protected abstract FreeReservation createAccount(@NotNull final FreeReservation reservation) throws Exception;
 
     @NotNull
     protected FreeReservation checkExistingAccount(@NotNull final FreeReservation reservation) {
@@ -67,7 +62,7 @@ public abstract class DomainRegistrationServiceBase implements DomainRegistratio
         @Nonnull
         String email = Preconditions.checkNotNull(identity.getEmail());
 
-        account = freeReservationAccountRepository.findByEmail(email);
+        account = freeReservationAccountRepository.findByEmailAndExternalAccountVendor(email, getVendorId());
 
         if (null != account) {
             reservation.setFreeReservationAccount(account);
@@ -78,18 +73,20 @@ public abstract class DomainRegistrationServiceBase implements DomainRegistratio
         return reservation;
     }
 
-    @NotNull
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public FreeReservation register(@NotNull FreeReservation reservation) throws Exception {
-            reservation
+    @Transactional(propagation = Propagation.MANDATORY, transactionManager = "freeTransactionManager")
+    public void register(@NotNull Long reservationId) throws Exception {
+        FreeReservation reservation = freeReservationRepository.findOne(reservationId);
+
+        reservation
                     .shouldBeApproved()
                     .shouldHaveAccount()
                     .shouldNotBeDeleted()
                     .shouldNotBePurchased();
 
-            final FreeReservationAccount account = Preconditions.checkNotNull(reservation.getFreeReservationAccount());
-            final WhoisIdentity identity = Preconditions.checkNotNull(reservation.toWhoisIdentity(), "Must have identity");
+            Preconditions.checkNotNull(reservation.getFreeReservationAccount());
+            Preconditions.checkNotNull(reservation.toWhoisIdentity(), "Must have identity");
+
             final String fullDomainName = MorePreconditions.checkValidFullDomainName(reservation.getDestinationFullDomainName());
 
             {
@@ -102,9 +99,16 @@ public abstract class DomainRegistrationServiceBase implements DomainRegistratio
             reservation
                     .markPurchased(transactionId);
 
-            return freeReservationRepository.saveAndFlush(reservation);
+            freeReservationRepository.saveAndFlush(reservation);
         }
+
+    @NotNull
+    protected abstract FreeReservation executeCreateAccount(@NotNull final FreeReservation reservation) throws Exception;
 
     @Nullable
     protected abstract String executeRegister(@NotNull final FreeReservation reservation) throws Exception;
+
+    @NotNull
+    protected abstract String getVendorId();
+
 }

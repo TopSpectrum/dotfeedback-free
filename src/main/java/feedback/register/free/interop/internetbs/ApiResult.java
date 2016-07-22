@@ -1,7 +1,8 @@
 package feedback.register.free.interop.internetbs;
 
+import com.topspectrum.util.StringUtils;
+
 import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
 import java.io.Serializable;
 
 /**
@@ -31,6 +32,10 @@ public class ApiResult implements Serializable {
     @Nullable
     public String getTransactionId() {
         return transactid;
+    }
+
+    public boolean isFailed() {
+        return (StringUtils.equalsIgnoreCase(status, "FAILURE"));
     }
 
 }

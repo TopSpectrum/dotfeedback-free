@@ -9,8 +9,32 @@ import DS from "ember-data";
  */
 let ContextModel = window.ContextModel = Ember.Object.extend({
 
-    suggestedReservationMode: Ember.computed('affiliateCode', function () {
+    /**
+     * Set manually via a checkbox.
+     */
+    suggestedReservationModeAggressive: false,
+
+    /**
+     * @returns {boolean}
+     */
+    suggestedReservationModePassive: Ember.computed('affiliateCode', function () {
         return -1 != (this.get('affiliateCode') || '').indexOf(':');
+    }),
+
+    /**
+     * @return {String|null}
+     */
+    suggestedReservationMode: Ember.computed('suggestedReservationModePassive', 'suggestedReservationModeAggressive', function () {
+        let passive = this.get('suggestedReservationModePassive');
+        let aggressive = this.get('suggestedReservationModeAggressive');
+
+        if (aggressive) {
+            return 'aggressive';
+        } else if (passive) {
+            return 'passive';
+        } else {
+            return null;
+        }
     })
 
 });
@@ -165,7 +189,6 @@ export default Ember.Service.extend({
 
     }).readOnly(),
 
-
     reset() {
         this.set('model', new ContextModel());
 
@@ -247,6 +270,4 @@ export default Ember.Service.extend({
                 .catch(reject);
         });
     }
-
-})
-;
+});

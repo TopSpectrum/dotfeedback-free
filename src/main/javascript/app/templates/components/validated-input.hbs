@@ -4,36 +4,18 @@
     <label class="control-label {{ labelWidthClasses }} sr-only"></label>
 {{/if}}
 
-{{#if isTextarea}}
-  {{textarea value=value focus-in='focused' focus-out='blurred' type=type class=inputClass placeholder=placeholder autocomplete=autocomplete enter='enter' readonly=readonly disabled=disabled}}
-{{else}}
-      <div class="{{ inputWidthClasses }}">
-          {{#if isPhone}}
-              {{intl-tel-input
-                    value=value
-                    focus-in='focused'
-                    focus-out='blurred'
-                    class=inputClass
-                    placeholder=placeholder
-                    autocomplete=autocomplete
-                    enter='enter'
-                    readonly=readonly
-                    disabled=disabled
-                    mask=mask
-                    numberFormat=numberFormat
-                    nationalMode=false
-                    isValidNumber=isValidPhoneNumber}}
 
-                v{{value}}
-                f{{numberFormat}}
-                p{{phoneNumber}}
-                i{{isValidPhoneNumber}}
-          {{else}}
-              {{input value=value focus-in='focused' focus-out='blurred' type=type class=inputClass placeholder=placeholder autocomplete=autocomplete enter='enter' readonly=readonly disabled=disabled mask=mask}}
-          {{/if}}
-      </div>
-
-{{/if}}
+<div class="{{ inputWidthClasses }}">
+    {{#if isTextarea}}
+        {{textarea value=value focus-in='focused' focus-out='blurred' type=type class=inputClass placeholder=placeholder autocomplete=autocomplete enter='enter' readonly=readonly disabled=disabled}}
+    {{else}}
+        {{#if isPhoneNumber}}
+            {{input value=value focus-in='focused' focus-out='blurred' type=type class=inputClass placeholder=placeholder autocomplete=autocomplete enter='enter' readonly=readonly disabled=disabled mask=mask}}
+        {{else}}
+            {{input value=value focus-in='focused' focus-out='blurred' type=type class=inputClass placeholder=placeholder autocomplete=autocomplete enter='enter' readonly=readonly disabled=disabled mask=mask}}
+        {{/if}}
+    {{/if}}
+</div>
 
 {{#if hasSubtext}}
     <span class="subtext muted text-muted">{{ subtext }}</span>

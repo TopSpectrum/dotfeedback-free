@@ -5,6 +5,11 @@ import EmberValidations, {validator} from "ember-validations";
 import DomainNameUtil from '../../utils/domain-name-util';
 import CountryUtil from '../../utils/country-util';
 
+import libphonenumber from 'npm:google-libphonenumber';
+
+let PhoneNumberFormat = libphonenumber.PhoneNumberFormat;
+let PhoneNumberUtil = libphonenumber.PhoneNumberUtil.getInstance();
+
 export default Ember.Controller.extend(EmberValidations, {
 
     contextService: Ember.inject.service('context'),
@@ -46,7 +51,27 @@ export default Ember.Controller.extend(EmberValidations, {
                 }
             })
         },
-        'phone': {presence: true}
+        'phone': {
+            presence: true,
+
+            inline: validator(function() {
+                let value = this.get('phone');
+
+                if (!value) {
+                    return;
+                }
+
+                // Parse number with country code.
+                var phoneNumber = PhoneNumberUtil.parse(value, 'US');
+
+                // Print number in the international format.
+                if (!PhoneNumberUtil.isValidNumber(phoneNumber)) {
+                    return 'Please enter a valid phone number.'
+                }
+            })
+
+
+        }
     },
 
     focused: false,

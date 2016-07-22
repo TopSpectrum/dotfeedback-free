@@ -108,6 +108,12 @@
             <property name="propagationBehavior" value="3"/>
         </bean>
 
+        <bean id="freeTransactionTemplate" class="org.springframework.transaction.support.TransactionTemplate">
+            <property name="transactionManager" ref="freeTransactionManager"/>
+            <!--PROPAGATION_REQUIRES_NEW-->
+            <property name="propagationBehavior" value="3"/>
+        </bean>
+
         <bean id="springSecurityAuditorAwareBean" class="feedback.web.data.SpringSecurityAuditorAwareBean"/>
 
         <bean id="jpaDialect" class="org.springframework.orm.jpa.vendor.HibernateJpaDialect"/>

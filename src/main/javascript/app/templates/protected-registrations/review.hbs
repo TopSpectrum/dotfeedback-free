@@ -10,9 +10,7 @@
 
             <div class="ui horizontal divider">WHOIS information for {{model.destinationFullDomainName}}</div>
 
-            {{whois-table model=model.reservation email=model.email errors=errors muteInitialErrors=muteInitialWhoisErrors muteErrors=muteWhoisErrors disabled=preventEdits isValidNumber=isValidNumber}}
-
-            v:{{isValidNumber}}
+            {{whois-table model=model.reservation email=model.email errors=errors muteInitialErrors=muteInitialWhoisErrors muteErrors=muteWhoisErrors disabled=preventEdits}}
 
             <div class="ui horizontal divider">Terms of Service</div>
 
@@ -45,7 +43,6 @@
                         </div>
                     </div>
                 {{/if}}
-
 
                 {{#if contextService.termsAndConditions.isPending}}Please wait while the TOS downloads...{{/if}}
                 {{#if contextService.termsAndConditions.isRejected}}The TOS failed to download. Please refresh the page.{{/if}}

@@ -44,6 +44,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -129,6 +130,10 @@ public class FreeDotFeedbackRootController implements InitializingBean {
     @Autowired
     SlackService slackService;
 
+    @Autowired
+    @Qualifier("freeTransactionTemplate")
+    TransactionTemplate freeTransactionTemplate;
+
     @Override
     public void afterPropertiesSet() throws Exception {
 
@@ -166,6 +171,20 @@ public class FreeDotFeedbackRootController implements InitializingBean {
     }
     //endregion
 
+    @ResponseBody
+    @Transactional("freeTransactionManager")
+    @RequestMapping(value = "/test", method = RequestMethod.GET)
+    public Object test() throws Exception {
+
+        List<FreeReservation> reservations = PageUtils.toList(freeReservationRepository.findByDestinationFullDomainNameAndPurchaseDateIsNotNull("nintendo.feedback", PageUtils.defaultPageable()));
+
+        for (FreeReservation reservation : reservations) {
+            freeReservationWelcomeService.sendCustomerSuggestionEmail(reservation);
+        }
+
+        return null;
+    }
+
 //    @Transactional("freeTransactionManager")
 //    @RequestMapping(value = "/checkout", method = RequestMethod.POST)
 //    @ResponseBody
@@ -195,44 +214,118 @@ public class FreeDotFeedbackRootController implements InitializingBean {
      * @return
      * @throws Exception
      */
-    @Transactional("freeTransactionManager")
     @RequestMapping(value = "/approval", method = RequestMethod.GET)
     @ResponseBody
+    @Transactional(propagation = Propagation.NEVER)
     public Object approval(HttpServletRequest request,
-                           @RequestParam("approved") Boolean approved,
+                           @RequestParam("approved") @NotNull final Boolean approved,
                            @RequestParam("token") String token
-    ) {
-        try {
-            Preconditions.checkNotNull(approved);
+    ) throws Exception {
+        Preconditions.checkNotNull(approved);
 
-            FreeReservation reservation = RestExceptions.checkNotFound(approvalService.getByToken(token), "Token was invalid.");
+        final Throwable[] errors = new Throwable[1];
 
-            reservation
-                    .markApproved(approved);
+        Long reservationId = freeTransactionTemplate.execute(status -> {
+            try {
+                FreeReservation r = RestExceptions.checkNotFound(approvalService.getByToken(token), "Token was invalid.");
 
-            if (approved) {
-                // TODO: we need to execute the purchase and send an email with the username/password
-                executeActualPurchase(reservation);
+                if (!r.isApproved()) {
+                    r.markApproved(approved);
+                } else {
+                    r.shouldNotBePurchased();
+                }
 
-                // this service will send both the APPROVED/REJECTED email templates correctly.
-                freeReservationWelcomeService.send(reservation);
+                r = freeReservationRepository.saveAndFlush(r);
+
+                return r.getId();
+            } catch (Exception e) {
+                errors[0] = e;
+
+                return null;
             }
+        });
 
-            return "yes: " + reservation.getId();
-        } catch (Throwable e) {
-            return "no:<pre>" + ExceptionUtils.getStackTrace(e) + "</pre>";
+        if (null != errors[0]) {
+            // Must have failed...
+            LOGGER.error("Failed", errors[0]);
+            return "no:<pre>" + ExceptionUtils.getStackTrace(errors[0]) + "</pre>";
         }
+
+        if (approved) {
+            // TODO: we need to execute the purchase and send an email with the username/password
+            executeActualPurchase(reservationId)
+                    .shouldBePurchased();
+
+        }
+
+        return "yes: " + reservationId;
     }
 
-    @NotNull
-    protected FreeReservation executeActualPurchase(FreeReservation reservation) throws Exception {
+    protected FreeReservation executeActualPurchase(@NotNull final Long reservationId) throws Exception {
         LOGGER.error("WE EXECUTED THE PURCHASE");
 
-        domainRegistrationService.getOrCreateAccount(reservation);
+        Exception t;
 
-        domainRegistrationService.register(reservation);
+        t = freeTransactionTemplate.execute(status -> {
+            try {
+                domainRegistrationService.getOrCreateAccount(reservationId);
 
-        return reservation;
+                status.flush();
+
+                return null;
+            } catch (Exception e) {
+                status.setRollbackOnly();
+
+                return e;
+            }
+        });
+
+        if (null != t) {
+            throw t;
+        }
+
+        t = freeTransactionTemplate.execute(status -> {
+            try {
+                domainRegistrationService.register(reservationId);
+
+                status.flush();
+
+                return null;
+            } catch (Exception e) {
+                status.setRollbackOnly();
+
+                return e;
+            }
+        });
+
+        if (null != t) {
+            throw t;
+        }
+
+        t = freeTransactionTemplate.execute(status -> {
+            try {
+                FreeReservation reservation = freeReservationRepository.findOne(reservationId);
+
+                reservation
+                        .shouldBePurchased();
+
+                freeReservationWelcomeService.send(reservation);
+
+                status.flush();
+
+                return null;
+            } catch (Exception e) {
+                return e;
+            }
+        });
+
+        if (null != t) {
+            throw t;
+        }
+
+        return freeReservationRepository
+                .findOne(reservationId)
+                .shouldBePurchased();
     }
 
 //    /**
@@ -313,20 +406,47 @@ public class FreeDotFeedbackRootController implements InitializingBean {
      */
     @ResponseBody
     @RequestMapping(value = "/reservations", method = RequestMethod.POST)
-    @Transactional("freeTransactionManager")
+    @Transactional(value = "freeTransactionManager", propagation = Propagation.NEVER)
     public FreeReservationTokenWrapper submit_reservation(
             @RequestBody FreeReservationTokenWrapper wrapper
     ) throws Exception {
+        // Step 2, in this new design, we auto checkout.
+        RestExceptions.checkBadRequest(isAvailable(wrapper.getReservation().getDestinationFullDomainName()), "Must be available - was not.");
+
         // The flow: https://docs.google.com/drawings/d/1YE0mzFSdsrmQTeHtIu97vRD3dLKUK3AXCY6_QJGNAww
 
-        // Step 1, gather the info.
-        // This will throw a BadRequest exception if it's not fully valid.
-        FreeReservation reservation = parseAndSaveReservationOrFail(wrapper);
+        FreeReservation reservation;
 
-        // Step 2, in this new design, we auto checkout.
-        checkout(reservation);
+        reservation = freeTransactionTemplate.execute(status -> {
+            // Step 1, gather the info.
 
-        freeReservationWelcomeService.send(reservation);
+            FreeReservation r =
+                    parseAndSaveReservationOrFail(wrapper)
+                            .markCheckout();
+
+            if (wrapper.getReservation().isSuggestedAggressively()) {
+                r.markSuggestedAggressively();
+            } else if (wrapper.getReservation().isSuggestedPassively()) {
+                r.markSuggestedPassively(verificationService.generate("free.feedback/suggestion", r.getEmail()));
+            } else {
+                boolean hasExisting = hasExistingReservationsForThisEmail(r.getEmail());
+
+                if (hasExisting) {
+                    r.markPendingApproval();
+                } else {
+                    r.markApproved();
+                }
+            }
+
+            // This will throw a BadRequest exception if it's not fully valid.
+            return freeReservationRepository.saveAndFlush(r);
+        });
+
+        if (reservation.isApproved() && (!reservation.isSuggested() || reservation.isSuggestedAggressively())) {
+            reservation = executeActualPurchase(Preconditions.checkNotNull(reservation.getId()));
+        } else {
+            sendWelcomeEmail(Preconditions.checkNotNull(reservation.getId()));
+        }
 
         // The customer wants to know the ID? Not exactly sure how valuable it is to tell the customer this info.
         // My understanding is that they can close the window after making this call, since we are sending an email.
@@ -336,45 +456,24 @@ public class FreeDotFeedbackRootController implements InitializingBean {
 
         return wrapper;
     }
-    //endregion
 
-    @NotNull
-    protected FreeReservation checkout(@NotNull final FreeReservation reservation) throws Exception {
-        RestExceptions.checkBadRequest(isAvailable(reservation.getDestinationFullDomainName()));
+    private void sendWelcomeEmail(long reservationId) {
+        freeTransactionTemplate.execute((status) -> {
+            FreeReservation reservation = freeReservationRepository.findOne(reservationId);
 
-        //preconditions
-        {
-            reservation
-                    .shouldBeReady()
-                    .shouldNotBeCheckout()
-                    .shouldLackApprovalDecision()
-                    .shouldNotBePurchased();
-        }
+            try {
+                freeReservationWelcomeService.send(reservation);
+            } catch (Exception e) {
+                LOGGER.error("Failed ot send email!");
 
-        // business logic
-        {
-            reservation
-                    .markCheckout();
-
-            if (reservation.isSuggested()) {
-                reservation
-                        .markSuggested(verificationService.generate("free.feedback/suggestion", reservation.getEmail()));
-            } else {
-                boolean hasExisting = hasExistingReservationsForThisEmail(reservation.getEmail());
-
-                if (hasExisting) {
-                    reservation.markPendingApproval();
-                } else {
-                    reservation.markPendingApproval();
-                    reservation.markApproved();
-
-                    executeActualPurchase(reservation);
-                }
+                throw new RuntimeException(e);
             }
-        }
 
-        return freeReservationRepository.save(reservation);
+            return null;
+        });
+
     }
+    //endregion
 
     //region /protected-registrations
 
@@ -406,24 +505,26 @@ public class FreeDotFeedbackRootController implements InitializingBean {
 
     @ResponseBody
     @RequestMapping(value = "/reservations/{id}", method = RequestMethod.PUT)
-    @Transactional(value = "freeTransactionManager", propagation = Propagation.REQUIRES_NEW)
+    @Transactional(value = "freeTransactionManager", propagation = Propagation.NEVER)
     public Object finish_protected_registration(
             @NotNull @PathVariable("id") Long id,
             @RequestBody FreeReservationTokenWrapper wrapper
-    ) throws Exception {
+    ) throws Throwable {
         // Step 1, gather the info.
         // This will throw a BadRequest exception if it's not fully valid.
         RestExceptions.checkNotFound(id);
 
-        @Nonnull
-        FreeReservation reservation = update(RestExceptions.checkNotFound(freeReservationRepository.findOne(id)), wrapper);
+        freeTransactionTemplate.execute(status -> {
+            @Nonnull
+            FreeReservation r = RestExceptions.checkNotFound(freeReservationRepository.findOne(id));
 
-        reservation
-                .shouldBeSuggested();
+            update(r, wrapper)
+                    .shouldBeSuggested();
 
-        executeActualPurchase(reservation);
+            return r;
+        });
 
-        freeReservationWelcomeService.send(reservation);
+        FreeReservation reservation = executeActualPurchase(id);
 
         return new FreeReservationTokenWrapper(new FreeReservationToken(reservation));
     }
@@ -577,7 +678,7 @@ public class FreeDotFeedbackRootController implements InitializingBean {
             reservation.setRemoteHost(SecurityUtil.currentRemoteHost());
             reservation.setFingerprint(SecurityUtil.currentFingerprint());
 
-            reservation.setSuggested(wrapper.getReservation().isSuggested());
+            reservation.setSuggestedMode(wrapper.getReservation().getSuggestionMode());
         }
 
         // The return value will have the ID set.
@@ -810,15 +911,20 @@ public class FreeDotFeedbackRootController implements InitializingBean {
     protected WhoisRecord parseWhoisRecordOrFail(@NotNull final FreeReservationToken token, @Nullable final WhoisRecord record) {
         return new WhoisRecordBuilder(record)
                 .sourceStrategy("FreeReservationDestination")
-                .name(token.getName())
-                .address(token.getStreet(), token.getCity(), token.getState(), token.getPostal(), token.getCountry())
-                .email(token.getEmail())
-                .fullDomainName(token.getDestinationFullDomainName())
-                .phone(token.getPhone(), token.getPhoneExt())
-                .fax(token.getFax(), token.getFaxExt())
-                .registrar(token.getRegistrar())
+                .name(sanitize(token.getName()))
+                .address(sanitize(token.getStreet()), sanitize(token.getCity()), sanitize(token.getState()), sanitize(token.getPostal()), CountryCodes.convert(token.getCountry()))
+                .email(sanitize(token.getEmail()))
+                .fullDomainName(sanitize(token.getDestinationFullDomainName()))
+                .phone(sanitize(token.getPhone()), sanitize(token.getPhoneExt()))
+                .fax(sanitize(token.getFax()), sanitize(token.getFaxExt()))
+                .registrar(sanitize(token.getRegistrar()))
                 .type("reservation")
                 .build();
+    }
+
+    @Nullable
+    protected String sanitize(@Nullable final String string) {
+        return StringUtils.trimToNull(StringUtils.defaultString(string).replace("\n", "").replace("\r", ""));
     }
 
     protected static boolean isSuccess(@Nullable final WhoisRecord record) {

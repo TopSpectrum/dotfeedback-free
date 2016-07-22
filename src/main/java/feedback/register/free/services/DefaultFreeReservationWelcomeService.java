@@ -19,7 +19,6 @@ import com.topspectrum.util.StringUtils;
 import com.topspectrum.web.util.DefaultUrlFactory;
 import com.topspectrum.web.util.UrlFactory;
 import com.topspectrum.whois.WhoisRecordRepository;
-import com.zipwhip.concurrent.ObservableFuture;
 import feedback.register.free.data.FreeReservation;
 import feedback.register.free.data.FreeReservationRepository;
 import feedback.services.VerificationService;
@@ -101,12 +100,8 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
     String baseUrl;
     //endregion
 
-    EmailTemplate suggestedReservationEmailTemplate;
-
     @Override
     public void afterPropertiesSet() throws Exception {
-        suggestedReservationEmailTemplate = emailTemplateService.getTemplateByName("email.customer.suggestion");
-
         RestExceptions.checkServerError(baseUrl, StringUtils::isNotBlank);
     }
 
@@ -115,6 +110,15 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
         shouldBeReadyForTheBasics(reservation);
 
         if (reservation.isPurchased()) {
+            if (reservation.isSuggestedAggressively()) {
+                // In aggressive mode, we register AND suggest at the same time.
+                try {
+                    sendCustomerSuggestionEmail(reservation);
+                } catch (Exception e) {
+                    LOGGER.error("Failed to send", e);
+                }
+            }
+
             try {
                 sendCustomerConfirmationEmail(reservation);
             } catch (Exception e) {
@@ -183,12 +187,17 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
     private void sendOperationsConfirmationSlackEvent(FreeReservation reservation) throws Exception {
         reservation.shouldBePurchased();
 
-        slackService.builder()
-                .username("free.feedback")
+        builder()
                 .text(TemplateUtil.inlineStringTemplate("$reservation.destinationWhoisRecord.registrantName$ ($reservation.email$) just finalized the purchase of $reservation.destinationWhoisRecord.fullDomainName$!", new Parameters()
                         .put("reservation", reservation)))
                 .execute()
                 .addObserver((o, future) -> LOGGER.error("Conclusion: " + future.toString()));
+    }
+
+    protected SlackNotificationBuilder builder() {
+        return slackService.builder()
+                .username("free.feedback")
+                .channel("free.feedback");
     }
 
 //    public void sendCompanyConfirmationEmail(@NotNull final FreeReservation reservation) throws Exception {
@@ -276,7 +285,7 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
     public void sendCustomerSuggestionEmail(@NotNull final FreeReservation reservation) throws Exception {
         shouldBeReadyForSuggestion(reservation);
 
-        final EmailTemplate template = emailTemplateService.getTemplateByName("email.customer.suggestion");
+        final EmailTemplate template = emailTemplateService.getTemplateByName("email.customer.suggestion-" + reservation.getSuggestedMode());
         final Parameters params = parameters();
         final String customerEmail = getCustomerEmail(reservation);
 
@@ -292,8 +301,7 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
     public void sendOperationsSuggestionSlackEvent(@NotNull final FreeReservation reservation) throws Exception {
         Preconditions.checkState(reservation.isSuggested(), "This method can only be called if the reservation is suggested");
 
-        slackService.builder()
-                .username("free.feedback")
+        builder()
                 .text(TemplateUtil.inlineStringTemplate("We suggested $reservation.destinationWhoisRecord.fullDomainName$ to $reservation.email$!", new Parameters()
                         .put("reservation", reservation)))
                 .execute();
@@ -348,11 +356,11 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
 
     @Override
     public void sendOperationsApprovalSlackEvent(@NotNull final FreeReservation reservation) throws Exception {
-        SlackNotificationBuilder builder = slackService.builder();
+        SlackNotificationBuilder builder = builder();
 
         UriComponentsBuilder actionUrl = getUrlForApproval(reservation);
 
-        ObservableFuture<Void> future = builder
+        builder
                 .username("free.feedback")
                 .channel("events")
                 .text(
@@ -454,7 +462,9 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
     protected Parameters withClaim(@NotNull final Parameters params, @NotNull FreeReservation reservation) {
         reservation.shouldBeSuggested();
 
-        params.put("claimUrl", getUrlForSuggestion(reservation));
+        if (reservation.isSuggestedPassively()) {
+            params.put("claimUrl", getUrlForSuggestion(reservation));
+        }
 
         return params;
     }
@@ -475,9 +485,14 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
 
     @NotNull
     protected FreeReservation shouldBeReadyForSuggestion(@NotNull final FreeReservation reservation) {
-        return shouldBeReadyForTheBasics(reservation)
-                .shouldBeApproved()
-                .shouldNotBePurchased();
+        shouldBeReadyForTheBasics(reservation)
+                .shouldBeApproved();
+
+        if (!reservation.isSuggestedAggressively()) {
+            reservation.shouldNotBePurchased();
+        }
+
+        return reservation;
     }
 
     @NotNull

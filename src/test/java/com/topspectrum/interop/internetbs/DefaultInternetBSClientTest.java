@@ -72,7 +72,7 @@ public class DefaultInternetBSClientTest {
     @Test
     public void testListAccount() throws Exception {
 //        https://api.internet.bs/Domain/List?apiKey=I1C3K5U1Q3A3O9U8L8H1&password=d%7D%402b5m%26%7BuZ7L%5DmQ
-//        switchToProduction();
+        switchToProduction();
 
         ObservableFuture<ListDomainsResult> future = client.listDomains();
 
@@ -105,6 +105,13 @@ public class DefaultInternetBSClientTest {
 
         assertTrue(account.isSuccess());
     }
+
+//    @Test
+//    public void testAssignDomain() throws Exception {
+//        switchToProduction();
+//
+//        ApiResult hostmastermarshallscouk = client.assignDomain("hostmastermarshallscouk", "marshalls.feedback").get();
+//    }
 
     protected void switchToProduction() {
         client.setBaseUrl("https://api.internet.bs");
@@ -163,10 +170,10 @@ public class DefaultInternetBSClientTest {
 
         RequestFailedException e = (RequestFailedException) t;
 
-        assertNotNull(e.getResponse());
-        assertEquals((Integer) 107002, e.getResponse().getCode());
-        assertEquals("Invalid API key and/or Password", e.getResponse().getMessage());
-        assertEquals("FAILURE", e.getResponse().getStatus());
+        assertNotNull(e.getResult());
+        assertEquals((Integer) 107002, e.getResult().getCode());
+        assertEquals("Invalid API key and/or Password", e.getResult().getMessage());
+        assertEquals("FAILURE", e.getResult().getStatus());
     }
 
     @Test

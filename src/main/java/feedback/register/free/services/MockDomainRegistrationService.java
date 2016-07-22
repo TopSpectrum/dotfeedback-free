@@ -7,10 +7,7 @@ import feedback.register.free.data.FreeReservationAccount;
 import feedback.register.free.data.FreeReservationAccountRepository;
 import feedback.register.free.interop.internetbs.DefaultInternetBSClient;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import java.util.UUID;
@@ -35,25 +32,13 @@ public class MockDomainRegistrationService extends DomainRegistrationServiceBase
 
     @NotNull
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public FreeReservation getOrCreateAccount(@NotNull FreeReservation reservation) throws Exception {
-        @Nonnull
-        WhoisIdentity identity = Preconditions.checkNotNull(reservation.toWhoisIdentity());
-
-        String email = Preconditions.checkNotNull(identity.getEmail());
-
-        FreeReservationAccount account = freeReservationAccountRepository.findByEmail(email);
-
-        if (null == account) {
-
-        }
-
-        return reservation;
+    protected String getVendorId() {
+        return "Mock";
     }
 
     @NotNull
     @Override
-    protected FreeReservation createAccount(@NotNull FreeReservation reservation) throws Exception {
+    protected FreeReservation executeCreateAccount(@NotNull FreeReservation reservation) throws Exception {
         WhoisIdentity identity = Preconditions.checkNotNull(reservation.toWhoisIdentity());
         FreeReservationAccount account = new FreeReservationAccount();
 
@@ -64,7 +49,7 @@ public class MockDomainRegistrationService extends DomainRegistrationServiceBase
         account.setPassword(DefaultInternetBSClient.getTemporaryPassword());
 
         account.setExternalAccountId(UUID.randomUUID().toString());
-        account.setExternalAccountVendor("Mock");
+        account.setExternalAccountVendor(getVendorId());
 
         freeReservationAccountRepository.saveAndFlush(account);
 

@@ -12,5 +12,5 @@ import javax.validation.constraints.NotNull;
 public interface FreeReservationAccountRepository extends JpaRepository<FreeReservationAccount, Long> {
 
     @Nullable
-    FreeReservationAccount findByEmail(@NotNull String email);
+    FreeReservationAccount findByEmailAndExternalAccountVendor(@NotNull String email, @NotNull String externalAccountVendor);
 }

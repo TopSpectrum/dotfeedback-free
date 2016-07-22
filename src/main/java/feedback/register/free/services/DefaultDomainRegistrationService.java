@@ -8,10 +8,14 @@ import com.topspectrum.util.ConversionUtils;
 import com.topspectrum.util.FutureUtils;
 import com.topspectrum.util.MorePreconditions;
 import com.topspectrum.util.StringUtils;
+import com.zipwhip.concurrent.ObservableFuture;
 import feedback.register.free.data.FreeReservation;
 import feedback.register.free.data.FreeReservationAccount;
 import feedback.register.free.interop.internetbs.*;
+import feedback.web.util.Exceptions;
 import org.apache.commons.lang.BooleanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +31,8 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 public class DefaultDomainRegistrationService extends DomainRegistrationServiceBase {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDomainRegistrationService.class);
 
     @Autowired
     InternetBSClient client;
@@ -49,7 +55,7 @@ public class DefaultDomainRegistrationService extends DomainRegistrationServiceB
 
     @NotNull
     @Override
-    public FreeReservation createAccount(@NotNull FreeReservation reservation) throws Exception {
+    public FreeReservation executeCreateAccount(@NotNull FreeReservation reservation) throws Exception {
         Preconditions.checkNotNull(reservation);
 
         reservation.setFreeReservationAccount(getOrCreateAccount(Preconditions.checkNotNull(reservation.toWhoisIdentity())));
@@ -65,7 +71,18 @@ public class DefaultDomainRegistrationService extends DomainRegistrationServiceB
         final String fullDomainName = MorePreconditions.checkValidFullDomainName(reservation.getDestinationFullDomainName());
         final CreateDomainResult result = Preconditions.checkNotNull(FutureUtils.getUnchecked(client.registerDomain(identity, fullDomainName), 1, TimeUnit.MINUTES));
 
-        return result.getTransactionId();
+        final String registrationTransactionId = result.getTransactionId();
+
+        ApiResult assignmentResult = Preconditions.checkNotNull(FutureUtils.getUnchecked(client.assignDomain(account.getUsername(), fullDomainName), 1, TimeUnit.MINUTES), "Was not successful?");
+        LOGGER.error("Assignment? {}", assignmentResult);
+
+        return registrationTransactionId;
+    }
+
+    @NotNull
+    @Override
+    protected String getVendorId() {
+        return client.getVendorId();
     }
 
     @NotNull
@@ -73,7 +90,7 @@ public class DefaultDomainRegistrationService extends DomainRegistrationServiceB
         Preconditions.checkNotNull(identity, "identity");
         String email = MorePreconditions.checkIsValidEmail(identity.getEmail());
 
-        FreeReservationAccount account = freeReservationAccountRepository.findByEmail(email);
+        FreeReservationAccount account = freeReservationAccountRepository.findByEmailAndExternalAccountVendor(email, getVendorId());
 
         if (null != account) {
             return account;
@@ -83,22 +100,39 @@ public class DefaultDomainRegistrationService extends DomainRegistrationServiceB
         String displayName = StringUtils.defaultString(StringUtils.defaultIfBlank(identity.getName(), "Guest"));
         Named named = NameUtil.parse(displayName);
 
-        String password = "password";
+        String password = DefaultInternetBSClient.getTemporaryPassword();
         String firstName = Preconditions.checkNotNull(named.getFirstName());
-        String lastName = StringUtils.defaultString(named.getFirstName());
+        String lastName = StringUtils.defaultString(named.getLastName());
         String username = DefaultInternetBSClient.getUsernameFromEmail(email);
+        String country = Preconditions.checkNotNull(identity.getCountry(), "country cannot be null");
 
-        ApiResult result = Preconditions.checkNotNull(
-                FutureUtils.getUnchecked(
-                        client.createAccount(username, email, password, firstName, lastName, "US")
-                        , 30, TimeUnit.SECONDS));
+
+        ObservableFuture<ApiResult> future = client.createAccount(username, email, password, firstName, lastName, country);
+
+        FutureUtils.await(future, 45, TimeUnit.SECONDS);
+
+        ApiResult result;
+
+        if (future.isFailed()) {
+            Throwable cause = future.getCause();
+
+            if (cause instanceof RequestFailedException) {
+                result = ((RequestFailedException) cause).getResult();
+            } else {
+                return Exceptions.throwAsException(cause);
+            }
+        } else if (future.isSuccess()) {
+            result = future.getResult();
+        } else {
+            throw new IllegalStateException("Unknown state");
+        }
 
         @Nonnull
         String transactionId = ConversionUtils.defaultString(ConversionUtils.toString(result.getTransactionId()));
 
         account = new FreeReservationAccount();
 
-        account.setExternalAccountVendor(client.getVendorId());
+        account.setExternalAccountVendor(getVendorId());
         account.setExternalAccountId(username);
         account.setExternalTransactionId(transactionId);
 
@@ -111,4 +145,15 @@ public class DefaultDomainRegistrationService extends DomainRegistrationServiceB
 
         return account;
     }
+
+    //region getter/setters
+    public InternetBSClient getClient() {
+        return client;
+    }
+
+    public void setClient(InternetBSClient client) {
+        this.client = client;
+    }
+
+    //endregion
 }

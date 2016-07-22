@@ -26,7 +26,7 @@ CREATE TABLE free_reservation (
   purchase_date                          TIMESTAMP,
 
   deleted                                BOOLEAN,
-  suggested                              BOOLEAN,
+  suggested_mode                         VARCHAR(20),
   approved                               BOOLEAN,
   pending_policy_approval                BOOLEAN,
 

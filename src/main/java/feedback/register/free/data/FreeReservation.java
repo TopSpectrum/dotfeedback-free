@@ -110,7 +110,7 @@ public class FreeReservation extends AbstractDto {
     private boolean deleted = false;
 
     @Column
-    private boolean suggested = false;
+    private String suggestedMode = null;
 
     @Column
     @Nullable
@@ -269,12 +269,32 @@ public class FreeReservation extends AbstractDto {
         return toWhoisIdentity(WhoisRecordBuilder.CommonAgent.Registrant);
     }
 
+    public String getSuggestedMode() {
+        return suggestedMode;
+    }
+
+    public void setSuggestedMode(String suggestedMode) {
+        this.suggestedMode = suggestedMode;
+    }
+
+    public boolean isSuggestedPassively() {
+        return StringUtils.equalsIgnoreCase("passive", suggestedMode);
+    }
+
+    public boolean isSuggestedAggressively() {
+        return StringUtils.equalsIgnoreCase("aggressive", suggestedMode);
+    }
+
     public boolean isSuggested() {
-        return suggested;
+        return StringUtils.isNotBlank(suggestedMode);
     }
 
     public void setSuggested(boolean suggested) {
-        this.suggested = suggested;
+        if (suggested) {
+            this.suggestedMode = "passive";
+        } else {
+            this.suggestedMode = null;
+        }
     }
 
     public DateTime getPurchaseDate() {
@@ -351,7 +371,7 @@ public class FreeReservation extends AbstractDto {
 
     @NotNull
     public FreeReservation markApproved(boolean approved) {
-        shouldBePendingApproval();
+        shouldLackApprovalDecision();
 
         setPendingPolicyApproval(false);
         setApproved(approved);
@@ -406,7 +426,25 @@ public class FreeReservation extends AbstractDto {
     }
 
     @NotNull
-    public FreeReservation markSuggested(@NotNull final PendingVerificationToken token) {
+    public FreeReservation markSuggestedAggressively() {
+        markSuggested();
+
+        setSuggestedMode("aggressive");
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation markSuggestedPassively(@NotNull final PendingVerificationToken token) {
+        markSuggested();
+
+        setSuggestedMode("passive");
+        setPendingVerificationToken(token);
+
+        return this;
+    }
+
+    private void markSuggested() {
         if (!isCheckedOut()) {
             markCheckout();
         }
@@ -418,15 +456,12 @@ public class FreeReservation extends AbstractDto {
 
             markApproved();
         }
-
-        setSuggested(true);
-        setPendingVerificationToken(token);
-
-        return this;
     }
 
     @NotNull
     public FreeReservation markCheckout() {
+        shouldBeReady();
+        shouldNotBeCheckout();
         shouldLackApprovalDecision();
         shouldNotBePurchased();
 
@@ -482,7 +517,8 @@ public class FreeReservation extends AbstractDto {
 
         Preconditions.checkState(StringUtils.isNotBlank(externalAccountVendorTransactionId), "The transactionId is null");
 
-        this.externalAccountVendorTransactionId = externalAccountVendorTransactionId;
+        this.setPurchaseDate(DateTime.now());
+        this.setExternalAccountVendorTransactionId(externalAccountVendorTransactionId);
 
         return this;
     }

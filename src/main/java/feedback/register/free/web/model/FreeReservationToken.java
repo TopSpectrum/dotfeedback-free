@@ -36,7 +36,7 @@ public class FreeReservationToken implements Serializable {
     private DateTime approvalDate;
     private DateTime purchaseDate;
     private String affiliateCode;
-    private boolean suggested;
+    private String suggestionMode;
     private boolean pendingPolicyApproval;
 
     private String externalAccountVendor;
@@ -66,7 +66,7 @@ public class FreeReservationToken implements Serializable {
         this.email = reservation.getDestinationWhoisRecord().getAdminEmail();
         this.registrar = reservation.getDestinationWhoisRecord().getRegistrar();
         this.affiliateCode = reservation.getAffiliateCode();
-        this.suggested = reservation.isSuggested();
+        this.suggestionMode = reservation.getSuggestedMode();
         this.pendingPolicyApproval = reservation.isPendingPolicyApproval();
 
         this.purchaseDate = reservation.getPurchaseDate();
@@ -104,12 +104,12 @@ public class FreeReservationToken implements Serializable {
         this.pendingPolicyApproval = pendingPolicyApproval;
     }
 
-    public boolean isSuggested() {
-        return suggested;
+    public String getSuggestionMode() {
+        return suggestionMode;
     }
 
-    public void setSuggested(boolean suggested) {
-        this.suggested = suggested;
+    public void setSuggestionMode(String suggestionMode) {
+        this.suggestionMode = suggestionMode;
     }
 
     public DateTime getCheckoutDate() {
@@ -286,5 +286,13 @@ public class FreeReservationToken implements Serializable {
 
     public void setExternalAccountVendorPassword(String externalAccountVendorPassword) {
         this.externalAccountVendorPassword = externalAccountVendorPassword;
+    }
+
+    public boolean isSuggestedAggressively() {
+        return "aggressive".equalsIgnoreCase(getSuggestionMode());
+    }
+
+    public boolean isSuggestedPassively() {
+        return "passive".equalsIgnoreCase(getSuggestionMode());
     }
 }

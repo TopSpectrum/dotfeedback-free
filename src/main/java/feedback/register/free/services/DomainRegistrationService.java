@@ -1,7 +1,5 @@
 package feedback.register.free.services;
 
-import feedback.register.free.data.FreeReservation;
-
 import javax.validation.constraints.NotNull;
 
 /**
@@ -10,12 +8,10 @@ import javax.validation.constraints.NotNull;
  */
 public interface DomainRegistrationService {
 
-    boolean isAvailable(@NotNull String fullDomainName);
+    boolean isAvailable(@NotNull String fullDomainName) throws Exception;
 
-    @NotNull
-    FreeReservation getOrCreateAccount(@NotNull FreeReservation reservation) throws Exception;
+    void getOrCreateAccount(@NotNull Long reservationId) throws Exception;
 
-    @NotNull
-    FreeReservation register(@NotNull FreeReservation reservation) throws Exception;
+    void register(@NotNull Long reservationId) throws Exception;
 
 }

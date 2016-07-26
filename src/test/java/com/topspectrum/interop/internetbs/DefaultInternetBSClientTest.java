@@ -193,4 +193,9 @@ public class DefaultInternetBSClientTest {
         assertFalse(result.isAvailable());
         assertNotEquals("ERROR", result.getStatus());
     }
+
+    @Test
+    public void testTrim() throws Exception {
+        assertEquals("6F, Tower B, Chuangxin Building, Xiamen Torch High-tech Zone", DefaultInternetBSClient.ninjaTrim("6F, Tower B, Chuangxin Building, Xiamen Torch High-tech Zone Software Park, Xiamen, Fujian, China.", "xiamen"));
+    }
 }

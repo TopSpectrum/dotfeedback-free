@@ -8,6 +8,16 @@
                     You are in <b>Suggested Registration</b> mode. An email will be sent to <b>{{model.email}}</b> with
                     more information.
                 </div>
+
+                <div class="mt mb">
+                    {{input type='checkbox' name='registerDomainAutomatically' class='labelauty' id='registerDomainAutomatically' checked=model.suggestedReservationModeAggressive disabled=spinning }}
+                    <label for="registerDomainAutomatically">
+                        <span class="labelauty-image labelauty-checked-image"></span>
+                        <span class="labelauty-image labelauty-unchecked-image"></span>
+                        <span class="labelauty-label">Register the domain automatically.</span>
+                    </label>
+                </div>
+
             {{else}}
                 <div class="ui horizontal divider">Terms of Service</div>
 

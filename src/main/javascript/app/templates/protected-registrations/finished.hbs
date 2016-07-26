@@ -1,0 +1,38 @@
+<div class="steps col-xs-12 col-sm-8 col-sm-offset-2 col-md-8 col-md-offset-2 col-lg-6 col-lg-offset-3">
+    <div class="step active">
+        <div class="text-body">
+
+            <h1>Registration success!</h1>
+
+            <h4 class="text-headline">Here's what to expect next</h4>
+
+            <div>
+                <!--<table cellpadding="0" cellspacing="0" style="border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; background: #2ab27b; border-bottom: 2px solid #1F8B5F; border-radius: 4px; padding: 14px 32px; display: inline-block;"><tbody><tr><td style="border-collapse: collapse;"><a href="http://www.$reservation.destinationFullDomainName$" target="_blank" style="color: white; font-weight: normal; text-decoration: none; word-break: break-word; display: inline-block; letter-spacing: 1px; font-size: 20px; line-height: 26px; text-shadow: 0 1px 1px rgba(0,0,0,0.25);" align="center">Visit your site</a></td>-->
+                <!--</tr></tbody></table>-->
+
+                <ol style="text-align: left;">
+                    <li>
+                        <b>(done!)</b> <span style="text-decoration: line-through;" class="text-muted">Register <b><u>{{model.reservation.destinationFullDomainName}}</u></b></span>
+                    </li>
+
+                    <li>
+                        Receive e-mail from <b>free.feedback</b> with confirmation information.
+                    </li>
+
+                    <li>
+                        Receive e-mail from <b>{{model.reservation.externalAccountVendor}}</b> to verify the purchase. <br>
+
+                        <div style="margin-top: 10px; margin-left: 40px; margin-bottom: 10px; font-weight: bold;">Your {{model.reservation.externalAccountVendor}} account credentials will be in the email.</div>
+                    </li>
+
+                    <li>
+                        Receive e-mail from <b>myservice.feedback</b> with information on how to start collecting feedback.
+
+                        <div style="margin-top: 10px; margin-left: 40px; margin-bottom: 10px; font-weight: bold;">Your myservice.feedback account credentials will be in the email.</div>
+                    </li>
+                </ol>
+
+            </div>
+        </div>
+    </div>
+</div>

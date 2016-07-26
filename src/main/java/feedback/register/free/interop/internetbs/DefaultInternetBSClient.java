@@ -14,6 +14,7 @@ import com.topspectrum.registry.WhoisIdentity;
 import com.topspectrum.util.MorePreconditions;
 import com.topspectrum.util.StringUtils;
 import com.zipwhip.concurrent.ObservableFuture;
+import feedback.register.free.web.controllers.CountryCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,8 @@ import org.springframework.http.HttpStatus;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import java.util.Map;
+import java.util.regex.MatchResult;
+import java.util.regex.Pattern;
 
 /**
  * @author msmyers
@@ -47,11 +50,13 @@ public class DefaultInternetBSClient implements InternetBSClient {
     @NotNull
     @Override
     public ObservableFuture<CreateDomainResult> registerDomain(@NotNull final WhoisIdentity identity, @NotNull final String fullDomainName) {
-        Map<String, Object> request = (new CreateDomainRequest(identity, fullDomainName)).toMap();
+        Map<String, Object> request = new CreateDomainRequest(identity, fullDomainName)
+                .toMap();
 
         AsyncHttpClient.BoundRequestBuilder builder = prepareGet("/Domain/Create");
 
         builder.addQueryParam("domain", fullDomainName);
+
         AsyncHttpClientUtil.addQueryParam(builder, request);
 
         return execute(builder, CreateDomainResult.class);
@@ -85,7 +90,7 @@ public class DefaultInternetBSClient implements InternetBSClient {
 
     @NotNull
     @Override
-    public ObservableFuture<ApiResult> createAccount(String username, String email, String password, String firstName, String lastName, String countryCode) {
+    public ObservableFuture<ApiResult> createAccount(@NotNull String username, @NotNull String email, @NotNull String password, @NotNull String firstName, @NotNull String lastName, @NotNull String countryCode) {
         AsyncHttpClient.BoundRequestBuilder builder = prepareGet("/subaccount/create");
 
         // TODO: further sanitize it?
@@ -100,6 +105,20 @@ public class DefaultInternetBSClient implements InternetBSClient {
         return execute(builder, ApiResult.class);
     }
 
+    @NotNull
+    @Override
+    public ObservableFuture<ApiResult> assignDomain(@NotNull String username, @NotNull String fullDomainName) {
+        AsyncHttpClient.BoundRequestBuilder builder = prepareGet("/subaccount/delegate/domains");
+
+        // TODO: further sanitize it?
+
+        builder.addQueryParam("username", username);
+        builder.addQueryParam("domains", fullDomainName);
+
+        return execute(builder, ApiResult.class);
+    }
+
+    @NotNull
     @Override
     public String getVendorId() {
         return "internet.bs";
@@ -157,6 +176,17 @@ public class DefaultInternetBSClient implements InternetBSClient {
         if (StringUtils.containsIgnoreCase(bodyAsString, "\"status\":\"FAILURE\"") && StringUtils.containsIgnoreCase(bodyAsString, "\"code\":")) {
             // It's an error
             ErrorResult result = Preconditions.checkNotNull(JsonUtils.fromJson(bodyAsString, ErrorResult.class));
+
+            if (Integer.valueOf(100002).equals(result.getCode())) {
+                MatchResult m = StringUtils.toMatchResult(Pattern.compile("^(?:.*?)\"(.*?)\"(?:.*?)\"(.*?)\"(?:.*?)?"), result.getMessage());
+
+                if (null != m) {
+                    String parameterValue = m.group(1);
+                    String parameterName = m.group(2);
+
+                    throw new InvalidParameterRequestFailedException(result, parameterName, parameterValue);
+                }
+            }
 
             throw new RequestFailedException(result);
         }
@@ -223,8 +253,13 @@ public class DefaultInternetBSClient implements InternetBSClient {
             return identity;
         }
 
+        @NotNull
+        private String serializeCountryCode(@Nullable final String country) {
+            return Preconditions.checkNotNull(CountryCodes.convert(country), "Country code did not validate: " + country);
+        }
+
         @Nullable
-        private String serialize(String phoneNumber) {
+        private String serializePhoneNumber(@Nullable final String phoneNumber) {
             if (StringUtils.isBlank(phoneNumber)) {
                 return null;
             }
@@ -251,18 +286,18 @@ public class DefaultInternetBSClient implements InternetBSClient {
             for (IdentityPart part : IdentityPart.values()) {
                 Named parse = NameUtil.parse(identity.getName());
 
-                result.put(part.name() + "_" + "FirstName", parse.getLastName());
+                result.put(part.name() + "_" + "FirstName", parse.getFirstName());
                 result.put(part.name() + "_" + "LastName", parse.getLastName());
 
                 result.put(part.name() + "_" + "Email", identity.getEmail());
-                result.put(part.name() + "_" + "PhoneNumber", serialize(identity.getPhone()));
+                result.put(part.name() + "_" + "PhoneNumber", serializePhoneNumber(identity.getPhone()));
                 result.put(part.name() + "_" + "Organization", identity.getOrganization());
 
                 result.put(part.name() + "_" + "Street", identity.getStreet());
                 result.put(part.name() + "_" + "Street2", "");
                 result.put(part.name() + "_" + "Street3", identity.getState());
                 result.put(part.name() + "_" + "City", identity.getCity());
-                result.put(part.name() + "_" + "CountryCode", identity.getCountry());
+                result.put(part.name() + "_" + "CountryCode", serializeCountryCode(identity.getCountry()));
                 result.put(part.name() + "_" + "PostalCode", identity.getPostal());
             }
 
@@ -276,7 +311,7 @@ public class DefaultInternetBSClient implements InternetBSClient {
     public static String getUsernameFromEmail(@NotNull final String email) {
         MorePreconditions.checkNotBlank(email);
 
-        return org.apache.commons.lang3.StringUtils.replaceEach(email, new String[]{"@", "."}, new String[]{"", ""});
+        return org.apache.commons.lang3.StringUtils.replaceEach(email, new String[]{"@", ".", "-", "+"}, new String[]{"", "", "", ""});
     }
 
     @Nullable
@@ -299,7 +334,7 @@ public class DefaultInternetBSClient implements InternetBSClient {
             return false;
         }
 
-        ErrorResult response = e.getResponse();
+        ErrorResult response = e.getResult();
 
         return (Integer.valueOf(100039).equals(response.getCode()));
     }

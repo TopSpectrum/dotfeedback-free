@@ -10,16 +10,21 @@
 
     <beans>
         <import resource="classpath:common-applicationContext.xml"/>
+
         <import resource="applicationContext-persistence.xml"/>
 
-        <bean class="feedback.register.free.interop.internetbs.DefaultDomainRegistrationService"/>
-
-        <bean class="feedback.register.free.interop.internetbs.DefaultInternetBSClient">
-            <property name="client" ref="client"/>
-            <property name="apiKey" value="testapi"/>
-            <property name="baseUrl" value="https://testapi.internet.bs"/>
-            <property name="password" value="testpass"/>
+        <bean id="domainRegistrationService" class="feedback.register.free.services.DefaultDomainRegistrationService">
+            <property name="client" ref="internetBSClient"/>
         </bean>
+
+        <bean id="internetBSClient" class="feedback.register.free.interop.internetbs.DefaultInternetBSClient">
+            <property name="client" ref="client"/>
+            <property name="baseUrl" value="${internetbs.baseUrl}"/>
+            <property name="apiKey" value="${internetbs.apiKey}"/>
+            <property name="password" value="${internetbs.password}"/>
+        </bean>
+
+        <!--<bean id="domainRegistrationService" class="feedback.register.free.services.MockDomainRegistrationService"/>-->
 
         <bean class="feedback.register.free.services.DefaultApprovalService">
 

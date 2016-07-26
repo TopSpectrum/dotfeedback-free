@@ -8,10 +8,10 @@
 
     <import resource="classpath:common-properties.xml"/>
 
-    <tx:annotation-driven/>
     <context:annotation-config/>
+    <tx:annotation-driven transaction-manager="transactionManager"/>
 
-    <mvc:annotation-driven content-negotiation-manager="contentNegotiationManager">
+    <mvc:annotation-driven content-negotiation-manager="contentNegotiationManager" >
         <mvc:path-matching registered-suffixes-only="true" />
 
         <mvc:message-converters>

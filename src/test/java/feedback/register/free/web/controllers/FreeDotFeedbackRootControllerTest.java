@@ -10,6 +10,7 @@ import com.topspectrum.whois.WhoisRecordRepository;
 import feedback.register.free.data.FreeReservation;
 import feedback.register.free.data.FreeReservationRepository;
 import feedback.register.free.services.ApprovalService;
+import feedback.register.free.services.DomainRegistrationService;
 import feedback.register.free.services.FreeReservationWelcomeService;
 import feedback.services.VerificationService;
 import org.joda.time.DateTime;
@@ -18,13 +19,18 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.validation.constraints.NotNull;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  * {discussion here}
@@ -60,20 +66,45 @@ public class FreeDotFeedbackRootControllerTest extends ApplicationContextAwareTe
     @Autowired
     ApprovalService approvalService;
 
+    @Autowired
+    @Qualifier("freeTransactionManager")
+    JpaTransactionManager transactionManager;
+
+    @Autowired
+    DomainRegistrationService domainRegistrationService;
+
+    @Autowired
+    @Qualifier("freeTransactionTemplate")
+    TransactionTemplate freeTransactionTemplate;
+
     @Before
     public void setUp() throws Exception {
         assertNotNull(controller);
+    }
+
+    @Test
+    @Transactional("freeTransactionManager")
+    public void testTransaction() throws Exception {
+
+
     }
 
     //region suggestion
     @Test
     @Transactional("freeTransactionManager")
     public void service_testCustomerSuggestionEmail() throws Exception {
+        assertTrue(TransactionSynchronizationManager.isActualTransactionActive());
+        assertFalse(TransactionSynchronizationManager.isCurrentTransactionReadOnly());
+
+//        assertEquals(Status.STATUS_ACTIVE, transactionManager.);
+
         assertEquals(0, emailLogRepository.count());
 
         FreeReservation reservation = reservation();
 
-        reservation.markSuggested(verificationService.generate("free.feedback", reservation.getEmail()));
+        reservation
+                .markCheckout()
+                .markSuggestedPassively(verificationService.generate("free.feedback", reservation.getEmail()));
 
         reservation = freeReservationRepository.save(reservation);
 
@@ -89,7 +120,7 @@ public class FreeDotFeedbackRootControllerTest extends ApplicationContextAwareTe
 
         FreeReservation reservation = reservation();
 
-        reservation.markSuggested(verificationService.generate("free.feedback", reservation.getEmail()));
+        reservation.markSuggestedPassively(verificationService.generate("free.feedback", reservation.getEmail()));
 
         reservation = freeReservationRepository.save(reservation);
 
@@ -106,7 +137,7 @@ public class FreeDotFeedbackRootControllerTest extends ApplicationContextAwareTe
 
         FreeReservation reservation = reservation();
 
-        reservation.markSuggested(verificationService.generate("free.feedback", reservation.getEmail()));
+        reservation.markSuggestedPassively(verificationService.generate("free.feedback", reservation.getEmail()));
 
         reservation = freeReservationRepository.save(reservation);
 
@@ -125,6 +156,7 @@ public class FreeDotFeedbackRootControllerTest extends ApplicationContextAwareTe
         assertEquals(0, emailLogRepository.count());
 
         FreeReservation reservation = freeReservationRepository.save(reservation())
+                .markCheckout()
                 .markPendingApproval();
 
         service.sendCustomerApprovalEmail(reservation);
@@ -138,6 +170,7 @@ public class FreeDotFeedbackRootControllerTest extends ApplicationContextAwareTe
         assertEquals(0, emailLogRepository.count());
 
         FreeReservation reservation = freeReservationRepository.save(reservation())
+                .markCheckout()
                 .markPendingApproval();
 
         service.sendOperationsApprovalEmail(reservation);
@@ -151,6 +184,7 @@ public class FreeDotFeedbackRootControllerTest extends ApplicationContextAwareTe
         assertEquals(0, emailLogRepository.count());
 
         FreeReservation reservation = freeReservationRepository.save(reservation())
+                .markCheckout()
                 .markPendingApproval();
 
         service.sendOperationsApprovalSlackEvent(reservation);
@@ -161,17 +195,65 @@ public class FreeDotFeedbackRootControllerTest extends ApplicationContextAwareTe
 
     //region confirmation
     @Test
-    @Transactional("freeTransactionManager")
     public void service_testCustomerConfirmationEmail() throws Exception {
         assertEquals(0, emailLogRepository.count());
 
-        FreeReservation reservation = reservation()
-                .markCheckout()
-                .markPendingApproval()
-                .markApproved(true)
-                .markPurchased();
+        long reservationId = freeTransactionTemplate.execute((status) -> {
+            return freeReservationRepository.saveAndFlush(reservation()
+                    .markCheckout()
+                    .markPendingApproval()
+                    .markApproved(true))
+                    .getId();
+        });
 
-        service.sendCustomerConfirmationEmail(reservation);
+        freeTransactionTemplate.execute((status) -> {
+            try {
+                domainRegistrationService.getOrCreateAccount(reservationId);
+            } catch (Exception e) {
+                status.setRollbackOnly();
+
+                throw new RuntimeException(e);
+            }
+
+            return null;
+        });
+
+        freeTransactionTemplate.execute(new TransactionCallback<FreeReservation>() {
+            @Override
+            public FreeReservation doInTransaction(TransactionStatus status) {
+                try {
+                    domainRegistrationService.register(reservationId);
+
+                    status.flush();
+
+                    freeReservationRepository.findOne(reservationId).shouldBePurchased();
+
+                    status.flush();
+                } catch (Exception e) {
+                    status.setRollbackOnly();
+
+                    throw new RuntimeException(e);
+                }
+
+
+                return null;
+            }
+        });
+
+        freeReservationRepository.findOne(reservationId).shouldBePurchased();
+
+        freeTransactionTemplate.execute((status) -> {
+            FreeReservation r = freeReservationRepository.findOne(reservationId);
+
+            try {
+                service.sendCustomerConfirmationEmail(r);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            return null;
+        });
+
 
         assertEquals(1, emailLogRepository.count());
     }
@@ -184,8 +266,15 @@ public class FreeDotFeedbackRootControllerTest extends ApplicationContextAwareTe
         FreeReservation reservation = reservation()
                 .markCheckout()
                 .markPendingApproval()
-                .markApproved(true)
-                .markPurchased();
+                .markApproved(true);
+
+        long reservationId = freeReservationRepository.saveAndFlush(reservation).getId();
+
+        domainRegistrationService.getOrCreateAccount(reservationId);
+
+        domainRegistrationService.register(reservationId);
+
+        reservation = freeReservationRepository.findOne(reservationId);
 
         service.sendOperationsConfirmationEmail(reservation);
 

@@ -1,0 +1,29 @@
+Hello $identity.name$,
+
+I noticed that that $reservation.destinationFullDomainName$ is currently pending registration. Since this is such an important domain name for you, I went ahead and protected the domain on your behalf. You have four days on protected status to act before this express setup expires.
+
+The ".feedback" domains are on a first-come first-served basis and come preinstalled with a complimentary free speech forum. The best part is they are free for the first year. I have reached out to you so that you may secure this registration during the protected status. Your registration is queued so that you can setup a site in less than 45 seconds.
+
+Can you confirm that I have the right registration for you?
+
+  - Email: $identity.email$
+  - Name: $identity.name$
+  - Organization: $identity.organization$
+  - Street: $identity.street$
+  - City: $identity.city$
+  - State/Prov: $identity.state$
+  - Postal: $identity.postal$
+  - Country: $identity.country$
+  - Phone: $identity.phone$
+
+Click here to review what I've reserved for you: $claimUrl$
+
+Anyone can register this domain! Trademark protection doesn't block free speech websites. The first person to register $reservation.destinationFullDomainName$ will control it.  Anyone can start leaving reviews within minutes of a registration as the complementary hosting is already setup for this domain. If you don't wish to be the moderator, there is no action that is required.
+
+Our goal for .feedback is to host reviews on every business in the world using easy to remember domains. Just type in the "businessname" + ".feedback" and if the site doesn't resolve the domain is available for free at www.free.feedback.  We want to make that consumers can easily find feedback on anything. Feel free to start a page on any subject you wish! Give us feedback on the complementary platform that comes free with each domain by using our own .feedback domain located at www.platform.feedback.
+
+Thanks!
+
+Lauren Putnam
+
+Community Manager, .feedback

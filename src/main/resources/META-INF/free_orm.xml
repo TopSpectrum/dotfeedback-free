@@ -62,6 +62,7 @@
     <entity class="feedback.web.data.InstagramMedia"/>
     <entity class="feedback.web.data.PersistedOAuth2AccessToken"/>
     <entity class="feedback.register.free.data.FreeReservation"/>
+    <entity class="com.topspectrum.data.dto.EmailLog"/>
 
     <entity class="com.topspectrum.whois.WhoisRecord" />
     <entity class="com.topspectrum.cache.DiskCache" />

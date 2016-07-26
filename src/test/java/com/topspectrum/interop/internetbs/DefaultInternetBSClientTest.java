@@ -5,11 +5,11 @@ import com.topspectrum.registry.WhoisIdentity;
 import com.zipwhip.concurrent.ObservableFuture;
 import feedback.register.free.interop.internetbs.*;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
  * @author msmyers
  * @since 6/20/16
  */
+@Ignore
 public class DefaultInternetBSClientTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultInternetBSClientTest.class);
@@ -71,7 +72,7 @@ public class DefaultInternetBSClientTest {
     @Test
     public void testListAccount() throws Exception {
 //        https://api.internet.bs/Domain/List?apiKey=I1C3K5U1Q3A3O9U8L8H1&password=d%7D%402b5m%26%7BuZ7L%5DmQ
-//        switchToProduction();
+        switchToProduction();
 
         ObservableFuture<ListDomainsResult> future = client.listDomains();
 
@@ -104,6 +105,13 @@ public class DefaultInternetBSClientTest {
 
         assertTrue(account.isSuccess());
     }
+
+//    @Test
+//    public void testAssignDomain() throws Exception {
+//        switchToProduction();
+//
+//        ApiResult hostmastermarshallscouk = client.assignDomain("hostmastermarshallscouk", "marshalls.feedback").get();
+//    }
 
     protected void switchToProduction() {
         client.setBaseUrl("https://api.internet.bs");
@@ -162,10 +170,10 @@ public class DefaultInternetBSClientTest {
 
         RequestFailedException e = (RequestFailedException) t;
 
-        assertNotNull(e.getResponse());
-        assertEquals((Integer) 107002, e.getResponse().getCode());
-        assertEquals("Invalid API key and/or Password", e.getResponse().getMessage());
-        assertEquals("FAILURE", e.getResponse().getStatus());
+        assertNotNull(e.getResult());
+        assertEquals((Integer) 107002, e.getResult().getCode());
+        assertEquals("Invalid API key and/or Password", e.getResult().getMessage());
+        assertEquals("FAILURE", e.getResult().getStatus());
     }
 
     @Test

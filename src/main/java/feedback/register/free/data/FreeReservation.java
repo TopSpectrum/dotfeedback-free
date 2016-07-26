@@ -110,13 +110,24 @@ public class FreeReservation extends AbstractDto {
     private boolean deleted = false;
 
     @Column
-    private boolean suggested = false;
+    private String suggestedMode = null;
 
     @Column
     @Nullable
     private Boolean approved = null;
 
+    @Column
+    private String externalAccountVendorTransactionId;
+
     //region getter/setter
+    public String getExternalAccountVendorTransactionId() {
+        return externalAccountVendorTransactionId;
+    }
+
+    public void setExternalAccountVendorTransactionId(String externalAccountVendorTransactionId) {
+        this.externalAccountVendorTransactionId = externalAccountVendorTransactionId;
+    }
+
     @Nullable
     public Boolean getApproved() {
         return approved;
@@ -258,12 +269,32 @@ public class FreeReservation extends AbstractDto {
         return toWhoisIdentity(WhoisRecordBuilder.CommonAgent.Registrant);
     }
 
+    public String getSuggestedMode() {
+        return suggestedMode;
+    }
+
+    public void setSuggestedMode(String suggestedMode) {
+        this.suggestedMode = suggestedMode;
+    }
+
+    public boolean isSuggestedPassively() {
+        return StringUtils.equalsIgnoreCase("passive", suggestedMode);
+    }
+
+    public boolean isSuggestedAggressively() {
+        return StringUtils.equalsIgnoreCase("aggressive", suggestedMode);
+    }
+
     public boolean isSuggested() {
-        return suggested;
+        return StringUtils.isNotBlank(suggestedMode);
     }
 
     public void setSuggested(boolean suggested) {
-        this.suggested = suggested;
+        if (suggested) {
+            this.suggestedMode = "passive";
+        } else {
+            this.suggestedMode = null;
+        }
     }
 
     public DateTime getPurchaseDate() {
@@ -275,6 +306,7 @@ public class FreeReservation extends AbstractDto {
     }
     //endregion
 
+    // checks
     @NotNull
     public FreeReservation shouldBePurchased() {
         shouldBeCheckout();
@@ -339,7 +371,7 @@ public class FreeReservation extends AbstractDto {
 
     @NotNull
     public FreeReservation markApproved(boolean approved) {
-        shouldBePendingApproval();
+        shouldLackApprovalDecision();
 
         setPendingPolicyApproval(false);
         setApproved(approved);
@@ -394,18 +426,42 @@ public class FreeReservation extends AbstractDto {
     }
 
     @NotNull
-    public FreeReservation markSuggested(@NotNull final PendingVerificationToken token) {
-        markPendingApproval();
-        markApproved();
+    public FreeReservation markSuggestedAggressively() {
+        markSuggested();
 
-        setSuggested(true);
-        setPendingVerificationToken(token);
+        setSuggestedMode("aggressive");
 
         return this;
     }
 
     @NotNull
+    public FreeReservation markSuggestedPassively(@NotNull final PendingVerificationToken token) {
+        markSuggested();
+
+        setSuggestedMode("passive");
+        setPendingVerificationToken(token);
+
+        return this;
+    }
+
+    private void markSuggested() {
+        if (!isCheckedOut()) {
+            markCheckout();
+        }
+
+        if (!isApproved()) {
+            if (!isPendingPolicyApproval()) {
+                markPendingApproval();
+            }
+
+            markApproved();
+        }
+    }
+
+    @NotNull
     public FreeReservation markCheckout() {
+        shouldBeReady();
+        shouldNotBeCheckout();
         shouldLackApprovalDecision();
         shouldNotBePurchased();
 
@@ -453,10 +509,37 @@ public class FreeReservation extends AbstractDto {
     }
 
     @NotNull
-    public FreeReservation markPurchased() {
+    public FreeReservation markPurchased(@NotNull final String externalAccountVendorTransactionId) {
         shouldBeApproved();
+        shouldNotBePurchased();
+        shouldHaveAccount();
+        shouldLackTransactionId();
 
-        this.purchaseDate = DateTime.now();
+        Preconditions.checkState(StringUtils.isNotBlank(externalAccountVendorTransactionId), "The transactionId is null");
+
+        this.setPurchaseDate(DateTime.now());
+        this.setExternalAccountVendorTransactionId(externalAccountVendorTransactionId);
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation shouldLackTransactionId() {
+        Preconditions.checkState(StringUtils.isBlank(externalAccountVendorTransactionId), "TransactionId should not exist. Was: " + externalAccountVendorTransactionId);
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation shouldHaveAccount() {
+        Preconditions.checkState(null != freeReservationAccount, "Account must exist. Was null.");
+
+        return this;
+    }
+
+    @NotNull
+    public FreeReservation shouldLackAccount() {
+        Preconditions.checkState(null == freeReservationAccount, "Should not have an account. Has: " + freeReservationAccount);
 
         return this;
     }
@@ -480,4 +563,5 @@ public class FreeReservation extends AbstractDto {
 
         return this;
     }
+    //endregion
 }

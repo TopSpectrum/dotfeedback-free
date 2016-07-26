@@ -15,11 +15,15 @@ public interface InternetBSClient {
     ObservableFuture<CreateDomainResult> registerDomain(@NotNull WhoisIdentity identity, @NotNull String fullDomainName);
 
     @NotNull
+    ObservableFuture<ApiResult> assignDomain(@NotNull String username, @NotNull String fullDomainName);
+
+    @NotNull
     ObservableFuture<AvailabilityResult> isAvailable(@NotNull String fullDomainName);
 
     @NotNull
-    ObservableFuture<ApiResult> createAccount(String username, String email, String password, String firstName, String lastName, String countryCode);
+    ObservableFuture<ApiResult> createAccount(@NotNull String username, @NotNull String email, @NotNull String password, @NotNull String firstName, @NotNull String lastName, @NotNull String countryCode);
 
+    @NotNull
     String getVendorId();
 
 }

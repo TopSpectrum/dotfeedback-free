@@ -3,6 +3,12 @@
 import Ember from "ember";
 import EmberValidations, {validator} from "ember-validations";
 import DomainNameUtil from '../../utils/domain-name-util';
+import CountryUtil from '../../utils/country-util';
+
+import libphonenumber from 'npm:google-libphonenumber';
+
+let PhoneNumberFormat = libphonenumber.PhoneNumberFormat;
+let PhoneNumberUtil = libphonenumber.PhoneNumberUtil.getInstance();
 
 export default Ember.Controller.extend(EmberValidations, {
 
@@ -30,8 +36,42 @@ export default Ember.Controller.extend(EmberValidations, {
         'city': {presence: true},
         // 'state': {presence: true},
         'postal': {presence: true},
-        'country': {presence: true},
-        'phone': {presence: true}
+        'country': {
+            presence: true,
+
+            inline: validator(function() {
+                let value = this.get('country');
+
+                if (!value) {
+                    return;
+                }
+
+                if (!CountryUtil.isValidCountryString(value)) {
+                    return 'Please enter a valid country code';
+                }
+            })
+        },
+        'phone': {
+            presence: true,
+
+            inline: validator(function() {
+                let value = this.get('phone');
+
+                if (!value) {
+                    return;
+                }
+
+                // Parse number with country code.
+                var phoneNumber = PhoneNumberUtil.parse(value, 'US');
+
+                // Print number in the international format.
+                if (!PhoneNumberUtil.isValidNumber(phoneNumber)) {
+                    return 'Please enter a valid phone number.'
+                }
+            })
+
+
+        }
     },
 
     focused: false,
@@ -82,13 +122,18 @@ export default Ember.Controller.extend(EmberValidations, {
         attemptNext() {
             let self = this;
 
+            // this.transitionToRoute('protected-registrations.finished');
+
             self.set('spinning', true);
 
             Ember.RSVP.Promise.resolve()
                 .then(() => {
                     let record = self.get('model.reservation');
 
-                    return record.save()
+                    return record.save();
+                })
+                .then(() => {
+                    self.transitionToRoute('protected-registrations.finished');
                 })
                 .catch((err) => {
                     self.set('error', err);
@@ -98,15 +143,13 @@ export default Ember.Controller.extend(EmberValidations, {
                 });
 
 
+            Ember.RSVP.Promise.resolve(Ember.$.ajax({
+                method: 'POST',
+                url: '/api/v1/protected-registrations',
+                data: {
 
-            // Ember.RSVP.Promise.resolve(Ember.$.ajax({
-            //     method: 'POST',
-            //     url: '/api/v1/protected-registrations',
-            //     data: {
-            //
-            //     }
-            // }));
-
+                }
+            }));
         }
     }
     //endregion

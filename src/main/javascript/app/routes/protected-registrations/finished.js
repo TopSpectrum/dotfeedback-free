@@ -1,8 +1,25 @@
 import Ember from "ember";
 
-export default Ember.Route.extend({
+import WizardStepRoute from '../wizard-step';
 
-    contextService: Ember.inject.service('context'),
+export default WizardStepRoute.extend({
+
+    beforeModel(transition) {
+        let self = this;
+
+        if (self.get('contextService.hasActiveOrder')) {
+            return;
+        }
+
+        let model = self.get('contextService.model');
+        let reservation = self.get('model.reservation');
+
+        if (transition && transition.queryParams) {
+            return;
+        }
+
+        return super.beforeModel(...arguments);
+    },
 
     model(params) {
         let approvedBy = params.approvedBy;
@@ -14,6 +31,13 @@ export default Ember.Route.extend({
          */
         let store = this.get('store');
         let self = this;
+
+        let model = this.get('contextService.model');
+        let reservation = model.get('reservation');
+
+        if (reservation) {
+            return model;
+        }
 
         return Ember.RSVP.Promise
             .resolve(Ember.$.ajax({
@@ -34,19 +58,10 @@ export default Ember.Route.extend({
                 record.set('approvedBy', approvedBy);
                 record.set('protectedFor', protectedFor);
 
-                let model = self.get('contextService.model');
-
                 model.set('email', record.get('email'));
                 model.set('reservation', record);
-
-                if (record.get('purchaseDate')) {
-                    // already purchased!
-                    self.transitionTo('protected-registrations.finished');
-                    return;
-                }
 
                 return model;
             });
     }
-
 });

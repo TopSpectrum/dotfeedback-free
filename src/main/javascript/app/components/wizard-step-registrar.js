@@ -53,7 +53,7 @@ export default AbstractWizardStep.extend(InboundActions, {
                 'phoneExt': this.get('model.sourceFullDomainNameRecord.phoneExt'),
                 'fax': this.get('model.sourceFullDomainNameRecord.fax'),
                 'affiliateCode': this.get('model.affiliateCode'),
-                'suggested': this.get('model.suggestedReservationMode'),
+                'suggestionMode': this.get('model.suggestedReservationMode'),
                 'faxExt': this.get('model.sourceFullDomainNameRecord.faxExt')
                 //'fingerprint': DS.attr(),
                 //'remoteHost': DS.attr(),

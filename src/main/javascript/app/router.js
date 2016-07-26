@@ -38,10 +38,11 @@ Router.map(function () {
     this.route('manage');
 
     this.route('protected-registrations', function () {
-        this.route('review');
+      this.route('review');
+      this.route('finished');
     });
 
-
+    
     
 
 

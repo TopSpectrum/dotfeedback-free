@@ -53,6 +53,13 @@
             <repository:exclude-filter type="regex" expression=".*PendingVerificationTokenRepository" />
         </jpa:repositories>
 
+        <jpa:repositories transaction-manager-ref="transactionManager"
+                          entity-manager-factory-ref="entityManagerFactory"
+                          base-package="com.topspectrum.data.dao">
+
+            <repository:exclude-filter type="assignable" expression="com.topspectrum.data.dao.EmailLogRepository" />
+        </jpa:repositories>
+
         <jpa:repositories transaction-manager-ref="freeTransactionManager"
                           entity-manager-factory-ref="freeEntityManagerFactory"
                           base-package="feedback.web.data.repositories">
@@ -61,15 +68,8 @@
             <repository:include-filter type="regex" expression=".*PendingVerificationTokenRepository" />
         </jpa:repositories>
 
-        <jpa:repositories transaction-manager-ref="transactionManager"
-                          entity-manager-factory-ref="entityManagerFactory"
-                          base-package="com.topspectrum.data.dao">
-
-            <repository:exclude-filter type="regex" expression=".*EmailLogRepository" />
-        </jpa:repositories>
-
         <jpa:repositories transaction-manager-ref="freeTransactionManager"
-                          entity-manager-factory-ref="entityManagerFactory"
+                          entity-manager-factory-ref="freeEntityManagerFactory"
                           base-package="com.topspectrum.data.dao">
 
             <repository:include-filter type="regex" expression=".*EmailLogRepository" />
@@ -95,17 +95,21 @@
                           entity-manager-factory-ref="freeEntityManagerFactory"
                           base-package="com.topspectrum.whois"/>
 
-
-
-        <jpa:auditing auditor-aware-ref="springSecurityAuditorAwareBean" modify-on-creation="true" set-dates="true"/>
+        <jpa:auditing auditor-aware-ref="springSecurityAuditorAwareBean" modify-on-creation="true" set-dates="true" />
 
         <!-- For autowiring. -->
-        <bean class="feedback.jpa.ContextHelper"/>
+        <bean id="contextHelper" class="feedback.jpa.ContextHelper"/>
 
-        <bean class="feedback.web.data.DefaultJpaContextHelper"/>
+        <bean id="jpaContextHelper" class="feedback.web.data.DefaultJpaContextHelper"/>
 
-        <bean class="org.springframework.transaction.support.TransactionTemplate">
+        <bean id="transactionTemplate" class="org.springframework.transaction.support.TransactionTemplate">
             <property name="transactionManager" ref="transactionManager"/>
+            <!--PROPAGATION_REQUIRES_NEW-->
+            <property name="propagationBehavior" value="3"/>
+        </bean>
+
+        <bean id="freeTransactionTemplate" class="org.springframework.transaction.support.TransactionTemplate">
+            <property name="transactionManager" ref="freeTransactionManager"/>
             <!--PROPAGATION_REQUIRES_NEW-->
             <property name="propagationBehavior" value="3"/>
         </bean>
@@ -115,7 +119,7 @@
         <bean id="jpaDialect" class="org.springframework.orm.jpa.vendor.HibernateJpaDialect"/>
 
         <!--<tx:annotation-driven transaction-manager="transactionManager" />-->
-        <tx:annotation-driven transaction-manager="transactionManager"/>
+        <tx:annotation-driven transaction-manager="transactionManager"  />
 
         <bean id="freeEntityManagerFactory"
               class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">

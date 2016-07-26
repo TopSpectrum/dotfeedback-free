@@ -1,5 +1,6 @@
 "use strict";
 
+import Ember from "ember";
 import DS from "ember-data";
 
 export default DS.Model.extend({
@@ -22,13 +23,46 @@ export default DS.Model.extend({
     'registrar': DS.attr('string'),
     'affiliateCode': DS.attr('string'),
     'checkoutDate': DS.attr('date'),
-    'suggested': DS.attr(),
+    'approvalDate': DS.attr('date'),
+    'purchaseDate': DS.attr('date'),
+    'suggestionMode': DS.attr('string'),
     'pendingPolicyApproval': DS.attr('boolean'),
+
+    'externalAccountVendor': DS.attr('string'),
+    'externalAccountVendorUsername': DS.attr('string'),
+    'externalAccountVendorPassword': DS.attr('string'),
 
     //region Protected Registration Mode
     // this is used to verify that the caller has authority to execute the request.
     // this is used during 'protected registration' mode
     'protectedFor': DS.attr('string'),
-    'approvedBy': DS.attr('string')
+    'approvedBy': DS.attr('string'),
     //endregion
+
+    /**
+     * @return {boolean}
+     */
+    isSuggested: Ember.computed('suggestionMode', function() {
+        let suggestionMode = this.get('suggestionMode');
+
+        return !!suggestionMode;
+    }),
+
+    /**
+     * @return {boolean}
+     */
+    isSuggestedAggressively: Ember.computed('suggestionMode', function() {
+        let suggestionMode = this.get('suggestionMode');
+
+        return 'aggressive' === suggestionMode;
+    }),
+
+    /**
+     * @return {boolean}
+     */
+    isSuggestedPassively: Ember.computed('suggestionMode', function() {
+        let suggestionMode = this.get('suggestionMode');
+
+        return 'passive' === suggestionMode;
+    })
 });

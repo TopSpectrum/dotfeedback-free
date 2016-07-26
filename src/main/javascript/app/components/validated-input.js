@@ -65,6 +65,10 @@ export default Ember.Component.extend(InboundActions, {
         }
     }),
 
+    isPhoneNumber: Ember.computed('type', function() {
+        return this.get('type') === 'tel';
+    }),
+
     isTextarea: Ember.computed('type', function () {
         return this.get('type') === 'textarea';
     }),

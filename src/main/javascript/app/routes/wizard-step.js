@@ -16,20 +16,25 @@ export default Ember.Route.extend({
      * @param {Ember.Transition} transition
      */
     beforeModel(transition) {
-        let targetName = Ember.get(transition, 'targetName');
+        let self = this;
 
-        if (targetName === 'step-welcome') {
-            return;
-        }
+        return Ember.RSVP.Promise.resolve()
+            .then(() => {
+                let targetName = Ember.get(transition, 'targetName');
 
-        /**
-         * @type {boolean}
-         */
-        let hasActiveOrder = this.get('contextService.hasActiveOrder');
+                if (targetName === 'step-welcome') {
+                    return;
+                }
 
-        if (!hasActiveOrder) {
-            this.transitionTo('step-welcome');
-        }
+                /**
+                 * @type {boolean}
+                 */
+                let hasActiveOrder = self.get('contextService.hasActiveOrder');
+
+                if (!hasActiveOrder) {
+                    self.transitionTo('step-welcome');
+                }
+            });
     },
 
     model() {

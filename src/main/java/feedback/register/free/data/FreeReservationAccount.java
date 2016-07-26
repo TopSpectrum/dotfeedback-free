@@ -1,7 +1,6 @@
 package feedback.register.free.data;
 
 import com.topspectrum.data.dto.AbstractDto;
-import com.topspectrum.names.Name;
 import com.topspectrum.names.NameUtil;
 import com.topspectrum.names.Named;
 import com.topspectrum.util.StringUtils;
@@ -41,6 +40,8 @@ public class FreeReservationAccount extends AbstractDto {
 
     @Column
     private String lastName;
+
+    @Column
     private String externalTransactionId;
 
     public String getExternalAccountVendor() {

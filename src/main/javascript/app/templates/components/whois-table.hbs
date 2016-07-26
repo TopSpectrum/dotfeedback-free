@@ -11,13 +11,15 @@
                         <label class="control-label col-sm-3">Suggestions</label>
                         <div class="col-sm-9" style="padding-top: 10px;">
                             {{#if model.emails}}
+                                <ul>
                                 {{#each model.emails as | email | }}
-                                    <a href="#" {{action 'selectEmailAlternative' email}}>{{email}}</a>
+                                    <li><a href="#" {{action 'selectEmailAlternative' email}}>{{email}}</a></li>
                                 {{/each}}
 
                                 {{#if initialEmail}}
-                                    <a href="#" {{action 'selectEmailAlternative' initialEmail}}>{{initialEmail}}</a>
+                                    <li><a href="#" {{action 'selectEmailAlternative' initialEmail}}>{{initialEmail}}</a></li>
                                 {{/if}}
+                            </ul>
                             {{/if}}
                         </div>
                     </div>
@@ -33,6 +35,6 @@
         {{validated-input value=model.state errors=errors.state name='admin_state' label='State/Prov' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12" disabled=disabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors}}
         {{validated-input value=model.postal errors=errors.postal name='admin_postal' label='Postal' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12" disabled=disabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors}}
         {{validated-input value=model.country errors=errors.country name='admin_country' label='Country' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12" disabled=disabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors}}
-        {{validated-input value=model.phone errors=errors.phone name='admin_phone' label='Phone' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12" disabled=disabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors}}
+        {{validated-input value=model.phone errors=errors.phone name='admin_phone' label='Phone' labelWidthClasses='col-sm-3' inputWidthClasses='col-sm-9' class="col-sm-12" disabled=disabled muteInitialErrors=muteInitialErrors muteErrors=muteErrors type='tel' }}
     </div>
 </div>

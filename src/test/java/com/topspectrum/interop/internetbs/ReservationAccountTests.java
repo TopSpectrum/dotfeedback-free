@@ -21,6 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
 import java.util.UUID;
@@ -89,16 +90,17 @@ public class ReservationAccountTests extends ApplicationContextAwareTestBase {
         assertEquals(one, account);
     }
 
-    @Test
-    public void testSendEmail() throws Exception {
-        WhoisIdentity identity = identity();
-
-        identity.setEmail("michael@topspectrum.com");
-
-        FreeReservation reservation1 = reservation(whoisRecord(identity));
-
-        freeReservationWelcomeService.send(reservation1);
-    }
+//    @Test
+//    @Transactional("freeTransactionManager")
+//    public void testSendEmail() throws Exception {
+//        WhoisIdentity identity = identity();
+//
+//        identity.setEmail("michael@topspectrum.com");
+//
+//        FreeReservation reservation1 = reservation(whoisRecord(identity));
+//
+//        freeReservationWelcomeService.send(reservation1);
+//    }
 
     public WhoisIdentity identity() {
         WhoisIdentity identity = new WhoisIdentity();

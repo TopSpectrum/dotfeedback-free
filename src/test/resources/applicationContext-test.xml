@@ -23,9 +23,9 @@ This file contains overrides that are used for unit tests.
         <bean class="com.topspectrum.cache.MemoryCachedDependencyManager"/>
         <bean class="org.springframework.cache.guava.GuavaCacheManager"/>
 
-        <bean id="registrationService" class="feedback.register.free.services.MockDomainRegistrationService"/>
+        <bean id="domainRegistrationService" class="feedback.register.free.services.MockDomainRegistrationService"/>
 
-        <bean id="internetBSClient" class="feedback.register.free.interop.internetbs.DefaultInternetBSClient"/>
+        <bean id="internetBSClient" class="feedback.register.free.interop.internetbs.MockInternetBSClient"/>
 
         <bean id="hostedContentService" class="feedback.web.services.NullHostedContentService"/>
 

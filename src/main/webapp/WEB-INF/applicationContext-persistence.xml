@@ -44,7 +44,6 @@
     </beans>
 
     <beans>
-
         <jpa:repositories transaction-manager-ref="transactionManager"
                           entity-manager-factory-ref="entityManagerFactory"
                           base-package="feedback.web.data.repositories">

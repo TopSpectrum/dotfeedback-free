@@ -1,10 +1,9 @@
 "use strict";
 
-import Ember from 'ember';
-
-import domainParser from 'javascript/utils/utility-domain-parser';
-import EmberValidations /*, { validator }*/ from 'ember-validations';
-import AbstractWizardStep from './abstract-wizard-step';
+import Ember from "ember";
+import domainParser from "javascript/utils/utility-domain-parser";
+import EmberValidations from "ember-validations";
+import AbstractWizardStep from "./abstract-wizard-step";
 
 //region Global Utilities
 var customerDomainNameRegex = /^[\w-]+$/;
@@ -64,6 +63,7 @@ function sanitizeCustomerDomainName(customerDomainName) {
 export default AbstractWizardStep.extend(EmberValidations, {
 
     store: Ember.inject.service(),
+    contextService: Ember.inject.service('context'),
 
     //region Validations
     validations: {
@@ -112,7 +112,7 @@ export default AbstractWizardStep.extend(EmberValidations, {
         return status;
     }),
 
-    isAvailableAndSettled: Ember.computed('isAvailable', 'isFetchingSomething', 'isEditingDestination', function() {
+    isAvailableAndSettled: Ember.computed('isAvailable', 'isFetchingSomething', 'isEditingDestination', function () {
         let available = this.get('isAvailable');
         let fetching = this.get('isFetchingSomething');
         let editing = this.get('isEditingDestination');
@@ -120,7 +120,7 @@ export default AbstractWizardStep.extend(EmberValidations, {
         return !fetching && available && !editing;
     }),
 
-    inputBoxClass: Ember.computed('isAvailableAndSettled', 'isFetchingSomething', 'isEditingDestination', function() {
+    inputBoxClass: Ember.computed('isAvailableAndSettled', 'isFetchingSomething', 'isEditingDestination', function () {
         let isAvailableAndSettled = this.get('isAvailableAndSettled');
         let isFetchingSomething = this.get('isFetchingSomething');
         let editing = this.get('isEditingDestination');
@@ -138,7 +138,7 @@ export default AbstractWizardStep.extend(EmberValidations, {
     //endregion
 
     //region Computed Properties that Decide
-    shouldWarnAboutBelowErrors: Ember.computed('muteInitialWhoisErrors', 'isValid', 'isAvailable', function() {
+    shouldWarnAboutBelowErrors: Ember.computed('muteInitialWhoisErrors', 'isValid', 'isAvailable', function () {
         var isAvailable = this.get('isAvailable');
         var muteInitialWhoisErrors = this.get('muteInitialWhoisErrors');
         var isValid = this.get('isValid');
@@ -146,7 +146,7 @@ export default AbstractWizardStep.extend(EmberValidations, {
         return !isValid && !muteInitialWhoisErrors && isAvailable;
     }),
 
-    muteInitialWhoisErrors: Ember.computed('nextIsDisabled', 'hasDestinationRecord', 'isAvailable', function() {
+    muteInitialWhoisErrors: Ember.computed('nextIsDisabled', 'hasDestinationRecord', 'isAvailable', function () {
         var nextIsDisabled = this.get('nextIsDisabled');
         var isAvailable = this.get('isAvailable');
         var hasDestinationRecord = this.get('hasDestinationRecord');
@@ -158,7 +158,7 @@ export default AbstractWizardStep.extend(EmberValidations, {
         return !(nextIsDisabled && isAvailable);
     }),
 
-    muteWhoisErrors: Ember.computed('nextIsDisabled', 'hasDestinationRecord', 'isAvailable', function() {
+    muteWhoisErrors: Ember.computed('nextIsDisabled', 'hasDestinationRecord', 'isAvailable', function () {
         /*var nextIsDisabled = this.get('nextIsDisabled');*/
         /*var isAvailable = this.get('isAvailable');*/
         var hasDestinationRecord = this.get('hasDestinationRecord');
@@ -208,7 +208,7 @@ export default AbstractWizardStep.extend(EmberValidations, {
         return !isEditingSource;// && hasSourceRecord; //&& !isFetching && isAvailable;
     }),
 
-    copyIsDisabled: Ember.computed('isFetchingSomething', 'hasInvalidNewSourceFullDomainName', 'model.sourceFullDomainName', 'model.newSourceFullDomainName', function() {
+    copyIsDisabled: Ember.computed('isFetchingSomething', 'hasInvalidNewSourceFullDomainName', 'model.sourceFullDomainName', 'model.newSourceFullDomainName', function () {
         let fetching = this.get('isFetchingSomething');
         let invalid = this.get('hasInvalidNewSourceFullDomainName');
 
@@ -380,7 +380,7 @@ export default AbstractWizardStep.extend(EmberValidations, {
         },
 
         focusedMainInputBox() {
-            this.set('model.newDestinationCustomerDomainName', (this.get('model.newDestinationCustomerDomainName')||'').replace('.feedback', ''));
+            this.set('model.newDestinationCustomerDomainName', (this.get('model.newDestinationCustomerDomainName') || '').replace('.feedback', ''));
         },
 
         blurredMainInputBox() {
@@ -426,6 +426,16 @@ export default AbstractWizardStep.extend(EmberValidations, {
                     this.send('selectModelFromDomainName');
                 }
             }
+        },
+
+        refreshAvailabilityCheck() {
+            let store = this.get('store');
+            let record = this.get('model.destinationAvailabilityRecord');
+
+            store.query('availability', {
+                id: record.get('id'),
+                allowCache: false
+            });
         },
 
         selectModelFromDomainName() {

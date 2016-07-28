@@ -576,7 +576,8 @@ public class FreeDotFeedbackRootController implements InitializingBean {
     @ResponseBody
     public Map<String, Object> query_available(
             HttpServletRequest request,
-            @PathVariable("fullDomainName") String fullDomainName
+            @PathVariable("fullDomainName") String fullDomainName,
+            @RequestParam(value = "allowCache", required = false, defaultValue = "true") Boolean allowCache
     ) throws Exception {
         RestExceptions.checkBadRequest(fullDomainName, DomainNameUtils::isValidDotFeedbackFullDomainName);
 
@@ -587,13 +588,23 @@ public class FreeDotFeedbackRootController implements InitializingBean {
 
             {
                 availability.put("id", fullDomainName);
-                availability.put("status", this.availability(fullDomainName));
+                availability.put("status", this.availability(fullDomainName, allowCache));
             }
 
-            result.put("availability", availability);
+            result.put("availability", Arrays.asList(availability));
         }
 
         return result;
+    }
+
+    @RequestMapping(value = "/availabilities", method = RequestMethod.GET)
+    @ResponseBody
+    public Map<String, Object> query_available2(
+            HttpServletRequest request,
+            @RequestParam("id") String fullDomainName,
+            @RequestParam(value = "allowCache", required = false, defaultValue = "true") Boolean allowCache
+    ) throws Exception {
+        return query_available(request, fullDomainName, allowCache);
     }
     //endregion
 
@@ -605,7 +616,7 @@ public class FreeDotFeedbackRootController implements InitializingBean {
     ) throws Exception {
         RestExceptions.checkBadRequest(sourceFullDomainName);
 
-        WhoisRecord whoisRecord = findAndSaveMostRecentWhoisRecord(sourceFullDomainName);
+        WhoisRecord whoisRecord = findAndSaveMostRecentWhoisRecord(sourceFullDomainName, true);
 
         Map<String, Object> result = new HashMap<>();
 
@@ -704,14 +715,14 @@ public class FreeDotFeedbackRootController implements InitializingBean {
     }
 
     protected boolean isAvailable(@NotNull final String dotfeedbackFullDomainName) throws Exception {
-        String availability = availability(dotfeedbackFullDomainName);
+        String availability = availability(dotfeedbackFullDomainName, true);
 
         return "available".equalsIgnoreCase(availability);
     }
 
     @NotNull
     @VisibleForTesting
-    protected String availability(@NotNull final String dotfeedbackFullDomainName) throws Exception {
+    protected String availability(@NotNull final String dotfeedbackFullDomainName, boolean allowCache) throws Exception {
         RestExceptions.checkBadRequest(dotfeedbackFullDomainName, DomainNameUtils::isValidDotFeedbackFullDomainName);
 
         if (DomainNameUtils.isValidDotFeedbackFullDomainName(dotfeedbackFullDomainName)) {
@@ -720,7 +731,7 @@ public class FreeDotFeedbackRootController implements InitializingBean {
             }
         }
 
-        WhoisRecord record = findAndSaveMostRecentWhoisRecord(dotfeedbackFullDomainName);
+        WhoisRecord record = findAndSaveMostRecentWhoisRecord(dotfeedbackFullDomainName, allowCache);
 
         if (record.isNotFound()) {
             return "available";
@@ -756,8 +767,8 @@ public class FreeDotFeedbackRootController implements InitializingBean {
 
     @NotNull
     @VisibleForTesting
-    protected WhoisRecord findAndSaveMostRecentWhoisRecord(@NotNull final String fullDomainName) throws Exception {
-        WhoisRecord record = findMostRecentWhoisRecord(fullDomainName);
+    protected WhoisRecord findAndSaveMostRecentWhoisRecord(@NotNull final String fullDomainName, boolean allowCache) throws Exception {
+        WhoisRecord record = null;//allowCache ? findMostRecentWhoisRecord(fullDomainName) : null;
 
         if (null == record) {
             if (DomainNameUtils.isOurTopLevelDomainName(DomainNameUtils.getTopLevelDomainName(fullDomainName))) {
@@ -793,9 +804,7 @@ public class FreeDotFeedbackRootController implements InitializingBean {
                 WhoisRecord record1 = xmlApiWhoisConnection.queryForRecord(fullDomainName);
 
                 if (isHealthy(record1)) {
-                    whoisRecordRepository.save(record1);
-
-                    return record1;
+                    return whoisRecordRepository.save(record1);
                 }
 
                 WhoisRecord record2 = whoisConnection.queryForRecord(fullDomainName);
@@ -805,9 +814,7 @@ public class FreeDotFeedbackRootController implements InitializingBean {
                             .merge(record1)
                             .build();
 
-                    whoisRecordRepository.save(record2);
-
-                    return record1;
+                    return whoisRecordRepository.save(record2);
                 }
 
                 WhoisRecord record3 = feedbackWhoisConnection.queryForRecord(fullDomainName);
@@ -818,9 +825,7 @@ public class FreeDotFeedbackRootController implements InitializingBean {
                             .merge(record2)
                             .build();
 
-                    whoisRecordRepository.save(record3);
-
-                    return record1;
+                    return whoisRecordRepository.save(record3);
                 }
 
                 record = new WhoisRecordBuilder()

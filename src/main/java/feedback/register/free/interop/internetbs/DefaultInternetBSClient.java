@@ -79,14 +79,14 @@ public class DefaultInternetBSClient implements InternetBSClient {
         return execute(builder, AvailabilityResult.class);
     }
 
-    @NotNull
-    public ObservableFuture<ApiResult> createAccount(@NotNull final String username, @NotNull String email, @NotNull String password, @NotNull String displayName) {
-        Named named = NameUtil.parse(displayName);
-        String firstName = StringUtils.defaultString(named.getFirstName(), "Guest");
-        String lastName = StringUtils.defaultString(named.getLastName());
-
-        return createAccount(username, email, password, firstName, lastName, "US");
-    }
+//    @NotNull
+//    public ObservableFuture<ApiResult> createAccount(@NotNull final String username, @NotNull String email, @NotNull String password, @NotNull String displayName) {
+//        Named named = NameUtil.parse(displayName);
+//        String firstName = StringUtils.defaultString(named.getFirstName(), "Guest");
+//        String lastName = StringUtils.defaultString(named.getLastName());
+//
+//        return createAccount(username, email, password, firstName, lastName, "US");
+//    }
 
     @NotNull
     @Override
@@ -94,6 +94,9 @@ public class DefaultInternetBSClient implements InternetBSClient {
         AsyncHttpClient.BoundRequestBuilder builder = prepareGet("/subaccount/create");
 
         // TODO: further sanitize it?
+
+        firstName = StringUtils.defaultIfBlank(firstName, StringUtils.defaultIfBlank(lastName, "Admin"));
+        lastName = StringUtils.defaultIfBlank(lastName, firstName);
 
         builder.addQueryParam("firstname", firstName);
         builder.addQueryParam("lastname", lastName);
@@ -286,14 +289,17 @@ public class DefaultInternetBSClient implements InternetBSClient {
             for (IdentityPart part : IdentityPart.values()) {
                 Named parse = NameUtil.parse(identity.getName());
 
-                result.put(part.name() + "_" + "FirstName", parse.getFirstName());
-                result.put(part.name() + "_" + "LastName", parse.getLastName());
+                String firstName = StringUtils.defaultIfBlank(parse.getFirstName(), StringUtils.defaultIfBlank(parse.getLastName(), "Admin"));
+                String lastName = StringUtils.defaultIfBlank(parse.getLastName(), firstName);
+
+                result.put(part.name() + "_" + "FirstName", firstName);
+                result.put(part.name() + "_" + "LastName", lastName);
 
                 result.put(part.name() + "_" + "Email", identity.getEmail());
                 result.put(part.name() + "_" + "PhoneNumber", serializePhoneNumber(identity.getPhone()));
                 result.put(part.name() + "_" + "Organization", identity.getOrganization());
 
-                result.put(part.name() + "_" + "Street", identity.getStreet());
+                result.put(part.name() + "_" + "Street", DefaultInternetBSClient.ninjaTrim(identity.getStreet(), identity.getCity()));
                 result.put(part.name() + "_" + "Street2", "");
                 result.put(part.name() + "_" + "Street3", identity.getState());
                 result.put(part.name() + "_" + "City", identity.getCity());
@@ -311,7 +317,13 @@ public class DefaultInternetBSClient implements InternetBSClient {
     public static String getUsernameFromEmail(@NotNull final String email) {
         MorePreconditions.checkNotBlank(email);
 
-        return org.apache.commons.lang3.StringUtils.replaceEach(email, new String[]{"@", ".", "-", "+"}, new String[]{"", "", "", ""});
+        String string = org.apache.commons.lang3.StringUtils.replaceEach(email, new String[]{"@", ".", "-", "+"}, new String[]{"", "", "", ""});
+
+        if (string.length() > 20) {
+            string = StringUtils.substring(string, 0, 20) + org.apache.commons.lang3.RandomUtils.nextInt(1000, 10000);
+        }
+
+        return string;
     }
 
     @Nullable
@@ -345,4 +357,20 @@ public class DefaultInternetBSClient implements InternetBSClient {
 
     //endregion
 
+    // 6F, Tower B, Chuangxin Building, Xiamen Torch High-tech Zone Software Park, Xiamen, Fujian, China.
+    public static String ninjaTrim(String street, String city) {
+        street = StringUtils.superTrim(street);
+        city = StringUtils.superTrim(city);
+
+        if (StringUtils.containsIgnoreCase(street, city)) {
+            street = StringUtils.substringBeforeLast(street, city);
+        }
+
+        street = StringUtils.trim(street);
+        street = org.apache.commons.lang3.StringUtils.stripStart(street, ",.");
+        street = StringUtils.trim(street);
+        street = org.apache.commons.lang3.StringUtils.stripEnd(street, ",.");
+
+        return StringUtils.substringByWord(street, null, 60);
+    }
 }

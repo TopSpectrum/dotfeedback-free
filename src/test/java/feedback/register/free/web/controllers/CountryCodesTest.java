@@ -17,6 +17,7 @@ public class CountryCodesTest {
     public void name() throws Exception {
 
         assertEquals("GB", CountryCodes.convert("UK"));
+        assertEquals("KY", CountryCodes.convert("Cayman Islands"));
 
     }
 }

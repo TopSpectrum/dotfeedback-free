@@ -205,7 +205,7 @@
 
                 {{#unless shouldEditSourceFullDomainName}}
                     <div class="whois-source-block">
-                        Importing whois from <span>{{ model.sourceFullDomainName }}</span> (<a href="#" {{action 'editSourceFullDomainName'}}>change</a>)
+                        Importing whois from <span>{{ model.sourceFullDomainName }}</span> (<a href="#" {{action 'editSourceFullDomainName'}}>change</a>) {{#if model.suggestedReservationMode}}(<a href="#" {{action 'refreshAvailabilityCheck'}}>refresh</a>){{/if}}
                     </div>
                 {{/unless}}
 

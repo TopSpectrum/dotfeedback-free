@@ -28,7 +28,9 @@ public class CountryCodes {
         Map<String, Locale> builder = Maps.newHashMapWithExpectedSize(Locale.getAvailableLocales().length * 2);
 
         //Do this once
-        for (Locale locale : Locale.getAvailableLocales()) {
+        for (String country : Locale.getISOCountries()) {
+            Locale locale = new Locale("", country);
+
             builder.put(sanitize(locale.getDisplayCountry()), locale);
             builder.put(sanitize(locale.getCountry()), locale);
 
@@ -40,6 +42,14 @@ public class CountryCodes {
 
         LOCALE_MAP = builder;
     }
+
+//    String[] countriesList = Locale.getISOCountries();
+//
+//  System.out.println("ID \t COUNTRY CODE \t COUNTRY NAME");
+//
+//  for (String country : countriesList) {
+//
+//        Locale tmp = new Locale("", country);
 
     @NotNull
     private static String sanitize(@Nullable final String displayCountry) {

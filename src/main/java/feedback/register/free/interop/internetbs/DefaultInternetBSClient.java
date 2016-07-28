@@ -289,8 +289,11 @@ public class DefaultInternetBSClient implements InternetBSClient {
             for (IdentityPart part : IdentityPart.values()) {
                 Named parse = NameUtil.parse(identity.getName());
 
-                result.put(part.name() + "_" + "FirstName", parse.getFirstName());
-                result.put(part.name() + "_" + "LastName", parse.getLastName());
+                String firstName = StringUtils.defaultIfBlank(parse.getFirstName(), StringUtils.defaultIfBlank(parse.getLastName(), "Admin"));
+                String lastName = StringUtils.defaultIfBlank(parse.getLastName(), firstName);
+
+                result.put(part.name() + "_" + "FirstName", firstName);
+                result.put(part.name() + "_" + "LastName", lastName);
 
                 result.put(part.name() + "_" + "Email", identity.getEmail());
                 result.put(part.name() + "_" + "PhoneNumber", serializePhoneNumber(identity.getPhone()));

@@ -768,7 +768,7 @@ public class FreeDotFeedbackRootController implements InitializingBean {
     @NotNull
     @VisibleForTesting
     protected WhoisRecord findAndSaveMostRecentWhoisRecord(@NotNull final String fullDomainName, boolean allowCache) throws Exception {
-        WhoisRecord record = allowCache ? findMostRecentWhoisRecord(fullDomainName) : null;
+        WhoisRecord record = null;//allowCache ? findMostRecentWhoisRecord(fullDomainName) : null;
 
         if (null == record) {
             if (DomainNameUtils.isOurTopLevelDomainName(DomainNameUtils.getTopLevelDomainName(fullDomainName))) {
@@ -804,9 +804,7 @@ public class FreeDotFeedbackRootController implements InitializingBean {
                 WhoisRecord record1 = xmlApiWhoisConnection.queryForRecord(fullDomainName);
 
                 if (isHealthy(record1)) {
-                    whoisRecordRepository.save(record1);
-
-                    return record1;
+                    return whoisRecordRepository.save(record1);
                 }
 
                 WhoisRecord record2 = whoisConnection.queryForRecord(fullDomainName);
@@ -816,9 +814,7 @@ public class FreeDotFeedbackRootController implements InitializingBean {
                             .merge(record1)
                             .build();
 
-                    whoisRecordRepository.save(record2);
-
-                    return record1;
+                    return whoisRecordRepository.save(record2);
                 }
 
                 WhoisRecord record3 = feedbackWhoisConnection.queryForRecord(fullDomainName);
@@ -829,9 +825,7 @@ public class FreeDotFeedbackRootController implements InitializingBean {
                             .merge(record2)
                             .build();
 
-                    whoisRecordRepository.save(record3);
-
-                    return record1;
+                    return whoisRecordRepository.save(record3);
                 }
 
                 record = new WhoisRecordBuilder()

@@ -929,7 +929,7 @@ public class FreeDotFeedbackRootController implements InitializingBean {
 
     @Nullable
     protected String sanitize(@Nullable final String string) {
-        return StringUtils.trimToNull(StringUtils.defaultString(string).replace("\n", "").replace("\r", ""));
+        return StringUtils.trimToNull(StringUtils.remove(string, "\n\r,.&;$#!()^%"));
     }
 
     protected static boolean isSuccess(@Nullable final WhoisRecord record) {

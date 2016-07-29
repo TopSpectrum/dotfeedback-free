@@ -18,6 +18,7 @@ public class CountryCodesTest {
 
         assertEquals("GB", CountryCodes.convert("UK"));
         assertEquals("KY", CountryCodes.convert("Cayman Islands"));
+        assertEquals("KR", CountryCodes.convert("South Korea"));
 
     }
 }

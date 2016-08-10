@@ -15,6 +15,10 @@
         <mvc:cache-control cache-public="true" must-revalidate="false" max-age="86400"/>
     </mvc:resources>
 
+    <mvc:resources mapping="/favicon.ico" location="/assets/" order="0">
+        <mvc:cache-control cache-public="true" must-revalidate="false" max-age="86400"/>
+    </mvc:resources>
+
     <bean class="com.topspectrum.web.EmberHandlerMapping"/>
 
     <!--<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">-->

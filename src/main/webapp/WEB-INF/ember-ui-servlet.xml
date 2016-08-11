@@ -11,28 +11,33 @@
 
     <context:annotation-config/>
 
-    <mvc:resources mapping="/assets/**" location="/static/assets/" order="0">
-        <mvc:cache-control cache-public="true" must-revalidate="false" max-age="86400"/>
-    </mvc:resources>
-
     <mvc:resources mapping="/favicon.ico" location="/assets/" order="0">
         <mvc:cache-control cache-public="true" must-revalidate="false" max-age="86400"/>
     </mvc:resources>
 
-    <bean class="com.topspectrum.web.EmberHandlerMapping"/>
+    <mvc:resources mapping="/assets/**" location="/static/assets/" order="0">
+        <mvc:cache-control cache-public="true" must-revalidate="false" max-age="86400"/>
+    </mvc:resources>
 
-    <!--<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">-->
-        <!--<property name="order" value="0"/>-->
-        <!--<property name="prefix" value="/static/"/>-->
-        <!--<property name="suffix" value=".html"/>-->
+    <mvc:resources mapping="/static/**" location="/static/" order="0">
+        <mvc:cache-control cache-public="true" must-revalidate="false" max-age="86400"/>
+    </mvc:resources>
 
-        <!--<property name="viewNames">-->
-            <!--<list>-->
-                <!--<value>index</value>-->
-                <!--<value>404</value>-->
-            <!--</list>-->
-        <!--</property>-->
-    <!--</bean>-->
+    <bean class="com.topspectrum.web.EmberHandlerMapping" />
+    <bean class="com.topspectrum.web.controllers.EmberController"/>
+
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="order" value="0"/>
+        <property name="prefix" value="/static/"/>
+        <property name="suffix" value=".html"/>
+
+        <property name="viewNames">
+            <list>
+                <value>index</value>
+                <value>404</value>
+            </list>
+        </property>
+    </bean>
 
     <mvc:annotation-driven>
         <!--<mvc:argument-resolvers>-->
@@ -55,6 +60,5 @@
         </mvc:message-converters>
     </mvc:annotation-driven>
 
-    <bean class="com.topspectrum.web.controllers.EmberController"/>
 
 </beans>

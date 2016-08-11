@@ -768,7 +768,7 @@ public class FreeDotFeedbackRootController implements InitializingBean {
     @NotNull
     @VisibleForTesting
     protected WhoisRecord findAndSaveMostRecentWhoisRecord(@NotNull final String fullDomainName, boolean allowCache) throws Exception {
-        WhoisRecord record = null;//allowCache ? findMostRecentWhoisRecord(fullDomainName) : null;
+        WhoisRecord record = allowCache ? findMostRecentWhoisRecord(fullDomainName) : null;
 
         if (null == record) {
             if (DomainNameUtils.isOurTopLevelDomainName(DomainNameUtils.getTopLevelDomainName(fullDomainName))) {
@@ -929,7 +929,7 @@ public class FreeDotFeedbackRootController implements InitializingBean {
 
     @Nullable
     protected String sanitize(@Nullable final String string) {
-        return StringUtils.trimToNull(StringUtils.removeAllChars(string, "\n\r,.&;$#!()^%"));
+        return StringUtils.trimToNull(StringUtils.removeAllChars(string, "\n\r,&;$#!()^%"));
     }
 
     protected static boolean isSuccess(@Nullable final WhoisRecord record) {

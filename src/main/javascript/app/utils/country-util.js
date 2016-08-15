@@ -2,7 +2,6 @@ import countries from 'ember-i18n-iso-countries';
 
 export default class CountryUtil {
 
-
     /**
      *
      * @param {String} string

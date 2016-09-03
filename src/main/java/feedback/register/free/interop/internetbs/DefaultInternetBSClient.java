@@ -14,7 +14,7 @@ import com.topspectrum.registry.WhoisIdentity;
 import com.topspectrum.util.MorePreconditions;
 import com.topspectrum.util.StringUtils;
 import com.zipwhip.concurrent.ObservableFuture;
-import feedback.register.free.web.controllers.CountryCodes;
+import com.topspectrum.location.CountryCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

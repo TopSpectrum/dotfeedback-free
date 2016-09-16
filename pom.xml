@@ -339,6 +339,7 @@
                 </configuration>
             </plugin>
 
+            <!--region slack-->
             <plugin>
                 <groupId>br.com.kibutx</groupId>
                 <artifactId>slack-maven-plugin</artifactId>
@@ -369,6 +370,7 @@
                     </execution>
                 </executions>
             </plugin>
+            <!--endregion-->
         </plugins>
     </build>
 

@@ -22,7 +22,7 @@ import com.topspectrum.whois.WhoisRecordRepository;
 import feedback.register.free.data.FreeReservation;
 import feedback.register.free.data.FreeReservationRepository;
 import feedback.services.VerificationService;
-import feedback.web.controllers.exceptions.RestExceptions;
+import com.topspectrum.web.exceptions.RestExceptions;
 import feedback.web.data.JpaContextHelper;
 import feedback.web.data.PendingVerificationToken;
 import org.slf4j.Logger;

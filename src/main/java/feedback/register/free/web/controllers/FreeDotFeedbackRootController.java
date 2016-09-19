@@ -28,7 +28,7 @@ import feedback.register.free.services.FreeReservationWelcomeService;
 import feedback.register.free.web.model.FreeReservationToken;
 import feedback.register.free.web.model.FreeReservationTokenWrapper;
 import feedback.services.VerificationService;
-import feedback.web.controllers.exceptions.RestExceptions;
+import com.topspectrum.web.exceptions.RestExceptions;
 import feedback.web.data.JpaContextHelper;
 import feedback.web.data.PendingVerificationToken;
 import feedback.web.data.Site;

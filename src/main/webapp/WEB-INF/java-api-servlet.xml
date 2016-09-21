@@ -54,7 +54,7 @@
                     <property name="exceptionMappings">
                         <props>
                             <prop key="java.lang.ClassNotFoundException">404</prop>
-                            <prop key="com.topspectrum.web.exceptions.NotFoundException">404</prop>
+                            <prop key="com.topspectrum.data.exceptions.NotFoundException">404</prop>
                             <prop key="org.springframework.web.servlet.NoHandlerFoundException">404</prop>
                         </props>
                     </property>

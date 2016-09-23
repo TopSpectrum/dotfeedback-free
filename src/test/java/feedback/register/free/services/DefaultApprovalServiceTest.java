@@ -2,7 +2,6 @@ package feedback.register.free.services;
 
 import com.topspectrum.data.dao.ApplicationContextAwareTestBase;
 import com.topspectrum.test.TestUtil;
-import com.topspectrum.util.FutureUtils;
 import com.topspectrum.whois.WhoisRecord;
 import com.topspectrum.whois.WhoisRecordBuilder;
 import com.topspectrum.whois.WhoisRecordRepository;
@@ -43,7 +42,7 @@ public class DefaultApprovalServiceTest extends ApplicationContextAwareTestBase 
 
         record1 = new WhoisRecordBuilder()
                 .fullDomainName(TestUtil.randomFullDomainName())
-                .name(TestUtil.randomCustomerName())
+                .name(TestUtil.randomDisplayName())
                 .email(TestUtil.randomCustomerEmailAddress())
                 .build();
 
@@ -51,7 +50,7 @@ public class DefaultApprovalServiceTest extends ApplicationContextAwareTestBase 
 
         record2 = new WhoisRecordBuilder()
                 .fullDomainName(TestUtil.randomFullDomainName())
-                .name(TestUtil.randomCustomerName())
+                .name(TestUtil.randomDisplayName())
                 .email(TestUtil.randomCustomerEmailAddress())
                 .build();
 

@@ -21,7 +21,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
 import java.util.UUID;
@@ -105,8 +104,8 @@ public class ReservationAccountTests extends ApplicationContextAwareTestBase {
     public WhoisIdentity identity() {
         WhoisIdentity identity = new WhoisIdentity();
 
-        identity.setName(TestUtil.randomCustomerName());
-        identity.setEmail(TestUtil.randomCustomerName());
+        identity.setName(TestUtil.randomDisplayName());
+        identity.setEmail(TestUtil.randomDisplayName());
         identity.setAddress(TestUtil.randomAddress());
         identity.setEmail(TestUtil.randomCustomerEmailAddress());
         identity.setPhone(TestUtil.randomPhoneNumber());

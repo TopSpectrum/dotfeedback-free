@@ -86,7 +86,6 @@ public class FreeDotFeedbackRootControllerTest extends ApplicationContextAwareTe
     @Transactional("freeTransactionManager")
     public void testTransaction() throws Exception {
 
-
     }
 
     //region suggestion

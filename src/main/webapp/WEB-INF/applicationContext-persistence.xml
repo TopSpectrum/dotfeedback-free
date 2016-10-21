@@ -99,7 +99,7 @@
         <!-- For autowiring. -->
         <bean id="contextHelper" class="feedback.jpa.ContextHelper"/>
 
-        <bean id="jpaContextHelper" class="feedback.web.data.DefaultJpaContextHelper"/>
+        <bean id="jpaContextHelper" class="com.topspectrum.data.jpa.DefaultJpaContextHelper"/>
 
         <bean id="transactionTemplate" class="org.springframework.transaction.support.TransactionTemplate">
             <property name="transactionManager" ref="transactionManager"/>

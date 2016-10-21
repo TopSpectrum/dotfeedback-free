@@ -23,7 +23,7 @@ import feedback.register.free.data.FreeReservation;
 import feedback.register.free.data.FreeReservationRepository;
 import feedback.services.VerificationService;
 import com.topspectrum.web.exceptions.RestExceptions;
-import feedback.web.data.JpaContextHelper;
+import com.topspectrum.data.jpa.JpaContextHelper;
 import feedback.web.data.PendingVerificationToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -341,10 +341,10 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
                     .put("customerName", reservation.getDestinationWhoisRecord().getRegistrantName())
                     .put("fullDomainName", reservation.getDestinationFullDomainName())
                     .put("approveUrl", actionUrl
-                            .buildAndExpand(Parameters.single("approved", true))
+                            .buildAndExpand(Parameters.of("approved", true))
                             .toUriString())
                     .put("denyUrl", actionUrl
-                            .buildAndExpand(Parameters.single("approved", false))
+                            .buildAndExpand(Parameters.of("approved", false))
                             .toUriString());
         }
 
@@ -377,10 +377,10 @@ public class DefaultFreeReservationWelcomeService implements FreeReservationWelc
                                         .put("customerName", reservation.getDestinationWhoisRecord().getRegistrantName())
                                         .put("fullDomainName", reservation.getDestinationFullDomainName())
                                         .put("approveUrl", actionUrl
-                                                .buildAndExpand(Parameters.single("approved", true))
+                                                .buildAndExpand(Parameters.of("approved", true))
                                                 .toUriString())
                                         .put("denyUrl", actionUrl
-                                                .buildAndExpand(Parameters.single("approved", false))
+                                                .buildAndExpand(Parameters.of("approved", false))
                                                 .toUriString())
                         ))
                 .execute();

@@ -94,6 +94,10 @@
                           entity-manager-factory-ref="freeEntityManagerFactory"
                           base-package="com.topspectrum.whois"/>
 
+        <jpa:repositories transaction-manager-ref="freeTransactionManager"
+                          entity-manager-factory-ref="freeEntityManagerFactory"
+                          base-package="com.topspectrum.billing.dao"/>
+
         <jpa:auditing auditor-aware-ref="springSecurityAuditorAwareBean" modify-on-creation="true" set-dates="true" />
 
         <!-- For autowiring. -->

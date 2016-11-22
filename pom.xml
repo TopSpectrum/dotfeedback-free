@@ -5,7 +5,7 @@
 
     <groupId>com.topspectrum</groupId>
     <artifactId>dotfeedback-free</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
 
     <packaging>war</packaging>
     <modelVersion>4.0.0</modelVersion>
@@ -390,7 +390,7 @@
         <dependency>
             <groupId>com.topspectrum</groupId>
             <artifactId>dotfeedback-lib</artifactId>
-            <version>1.23-SNAPSHOT</version>
+            <version>1.23</version>
 
             <exclusions>
                 <exclusion>

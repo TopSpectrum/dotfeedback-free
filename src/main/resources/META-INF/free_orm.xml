@@ -17,6 +17,7 @@
 
     <entity class="com.topspectrum.billing.dto.BillingPurchase"/>
     <entity class="com.topspectrum.billing.dto.BillingPurchaseOption"/>
+    <entity class="com.topspectrum.billing.dto.BillingPurchaseProduct"/>
     <entity class="com.topspectrum.billing.dto.BillingTransaction"/>
     <entity class="com.topspectrum.billing.dto.CreditCardBillingWallet"/>
     <entity class="com.topspectrum.events.subscriptions.Subscription"/>

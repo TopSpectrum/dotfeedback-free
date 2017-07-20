@@ -411,31 +411,31 @@ textarea {
   padding-left: 40px;
 }
 .has-card-icon .form-control.identified.mastercard + .card-icon {
-  background: url('//cdn.feedback/img/cards/32/mastercard_32.png');
+  background: url('//www.cdn.feedback/img/cards/32/mastercard_32.png');
 }
 .has-card-icon .form-control.identified.visa + .card-icon {
-  background: url('//cdn.feedback/img/cards/32/visa_32.png');
+  background: url('//www.cdn.feedback/img/cards/32/visa_32.png');
 }
 .has-card-icon .form-control.identified.visaelectron + .card-icon {
-  background: url('//cdn.feedback/img/cards/32/visa_32.png');
+  background: url('//www.cdn.feedback/img/cards/32/visa_32.png');
 }
 .has-card-icon .form-control.identified.maestro + .card-icon {
-  background: url('//cdn.feedback/img/cards/32/maestro_32.png');
+  background: url('//www.cdn.feedback/img/cards/32/maestro_32.png');
 }
 .has-card-icon .form-control.identified.amex + .card-icon {
-  background: url('//cdn.feedback/img/cards/32/american_express_32.png');
+  background: url('//www.cdn.feedback/img/cards/32/american_express_32.png');
 }
 .has-card-icon .form-control.identified.dinersclub + .card-icon {
-  background: url('//cdn.feedback/img/cards/32/diners_club_32.png');
+  background: url('//www.cdn.feedback/img/cards/32/diners_club_32.png');
 }
 .has-card-icon .form-control.identified.discover + .card-icon {
-  background: url('//cdn.feedback/img/cards/32/discover_club_32.png');
+  background: url('//www.cdn.feedback/img/cards/32/discover_club_32.png');
 }
 .has-card-icon .form-control.identified.unionpay + .card-icon {
-  background: url('//cdn.feedback/img/cards/32/china_union_pay_32.png');
+  background: url('//www.cdn.feedback/img/cards/32/china_union_pay_32.png');
 }
 .has-card-icon .form-control.identified.jcb + .card-icon {
-  background: url('//cdn.feedback/img/cards/32/jcb_32.png');
+  background: url('//www.cdn.feedback/img/cards/32/jcb_32.png');
 }
 .has-error .help-block {
   margin-top: 10px;
